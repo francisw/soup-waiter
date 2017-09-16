@@ -1,0 +1,187 @@
+{% extends 'admin/vacation-soup.twig' %}
+{% block content %}
+<script>
+    // Global so they can be accessed when needed (including in pixabay-images)
+    var vs_topics = {{ trending_topics|json_encode|raw }};
+    vs_topics.push({"content":"","tags":[]});
+    var vs_title;
+    var vs_query;
+
+    var chooseTopic = function(topicId){
+        var html,tags;
+
+        var topic = vs_topics[topicId];
+        // global the selected tags for pixabay and the subject
+        vs_query = topic.tags;
+        vs_title = topic.content + (topic.content? ' ' + '{{ soup.join() }}' + ' ' + '{{ soup.destination() }}':'');
+
+        // Build the complete tag list
+        tags = topic.tags.concat({{ tags|json_encode|raw }});
+
+        html = '';
+        var i = 0;
+        tags.forEach(function (tag) {
+            i++;
+            var label = '<label for="tag_' + i + '">' + tag + '</label>';
+            var input = '<input type="checkbox" name="tags[]" id="tag_' + i + '" value="' + tag + '" title="' + tag + '"/>';
+            html += '<li class="checklist-item">' + label + input + '</li>';
+        });
+
+        jQuery('#post_title').val(vs_title);
+        jQuery('.tags-container').html(html);
+    };
+    var postDateElem,postStatusElem;
+    var setPostDateAndStatus = function(){
+        var postDate, postStatus;
+        var when = jQuery('#when').val();
+        postDateElem = jQuery('#post_date');
+        postStatusElem = jQuery('#post_status');
+        var dayInMsec = 86400000; // 24 * 60 * 60 * 1000 = 1 day in msec
+        var futureDays = 1; // Default to adding one day, for 'tomorrow'
+
+        switch(when){
+            case 'days':
+                futureDays = jQuery('#days').val();
+                // Fall-through to tomorrow code
+            case 'tomorrow':
+                postStatusElem.val('future');
+                postDate = new Date(new Date().getTime() + (futureDays * dayInMsec));
+                postDateElem.val(postDate.toISOString().split('T')[0]);
+                break;
+            case 'on':
+                postDateElem.val(jQuery('#datepicker').val());
+                postStatusElem.val('future'); // postDateElem already set
+                break;
+            case '': // Now!
+            default:
+                postDateElem.val('');
+                postStatusElem.val('publish');
+                break;
+        }
+
+    };
+
+    jQuery(function(){
+        var randomTopic = Math.floor((Math.random() * {{ trending_topics|length }}));
+        jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
+        chooseTopic(randomTopic);
+        jQuery( ".datepicker" ).datepicker({
+            dateFormat : "yyyy-mm-dd"
+        });
+    });
+
+</script>
+
+{% embed 'admin/post-form.twig' %}{% block form_content %}
+<div class="vs-content tab-create row">
+    <div class="col-xs-12 col-sm-6 col-lg-8">
+        <div class="vs-panel row">
+            <div id="title" class="col-sm-12">
+                <h1>Create Post</h1>
+            </div>
+            <div class="col-sm-8">
+                <p>Select one of the trending post subjects on the right, or create your own. Ideally post 3 <strong>trending searches</strong> a week to feed the search engines optimally.</p>
+                <div class="vs-panel row">
+                    <div id="motd" class="col-sm-12">
+                        <h1>Message of the day</h1>
+                        <h2>Idea 73: Turn your writing into a game</h2>
+                        <p>
+                            Instead of thinking of writing as work, imagine it to be a computer game. You have to succeed at various tasks before you’re admitted into the next level. For example, imagine you need to write 3 posts in 30 minutes. Go!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 float-right">
+                <h2>Trending searches</h2>
+                <ul class="hoverable">
+                    {% for topic in trending_topics %}
+                        <li><input type="radio" name="trending_topics" id="topic_{{ loop.index0 }}" value="{{ loop.index0 }}" onchange="chooseTopic(jQuery(this).val())"/>
+                            <label for="topic_{{ loop.index0 }}">
+                                {{ topic.content }} {{ amdin.join }} {{ admin.destination }}
+                            </label>
+                        </li>
+                        {% if loop.last %}
+                            <li><input type="radio" name="trending_topics" id="topic_{{ trending_topics|length }}" onchange="chooseTopic({{ trending_topics|length }});jQuery('#post_title').focus()"/>
+                                <label for="topic_{{ trending_topics|length }}">
+                                    I'll write my own Subject
+                                </label>
+                            </li>
+                    {% endif %}
+                    {% else %}
+                        <li>No search trends available</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-sm-12">
+                <div class="subject">
+                    <h2>
+                        <label for="post_title">
+                            Subject
+                        </label>
+                    </h2>
+                    <input type="text" name="post_title" id="post_title" value=""/>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div id="wp-content-editor-container">
+                    {{ fn('wp_editor','','post_content') }}
+                </div>
+            </div>
+            {#- Layout the tags in a centered column (lg) or on its own (sm) -#}
+            <div id="tagger" class="col-lg-4 col-sm-12">
+                <h2>Tags</h2>
+                <ul class="tags-container checklist hoverable">
+                    <li class="checklist-item">{# The contents are replaced by javascript #}
+                        There are no automatic tags for this topic.
+                    </li>
+                </ul>
+            </div>
+            <div id="scheduler" class="col-lg-4 col-sm-12">
+                <h2><label for="when">Schedule</label></h2>
+                <div class="vs-field">
+                    <select id="when" onchange="
+                           setPostDateAndStatus();
+                           jQuery('.vs-field.hideable').addClass('hidden');
+                           jQuery('[autofocus]').removeProp('autofocus');
+                           jQuery('.vs-field.vs-'+this.options[this.selectedIndex].value).removeClass('hidden'); // e.g. unhide .vs-days input
+                           jQuery('.vs-field.vs-'+this.options[this.selectedIndex].value+' INPUT').prop('autofocus',true).focus();
+                        ">
+                        <option value="" selected>Now</option>
+                        <option value="tomorrow">Tomorrow</option>
+                        <option value="days">Wait a number of days</option>
+                        <option value="date">Select date</option>
+                    </select>
+                </div>
+                <div class="vs-field hideable hidden vs-days">
+                    <label for="days">Wait</label>
+                    <input type="number" id="days" value="2" onchange="setPostDateAndStatus()"/> days before posting
+                </div>
+                <div class="vs-field hideable hidden vs-date">
+                    <label for="datepicker">Post this on: </label>
+                    <input type="text" class="datepicker" id="datepicker" onchange="setPostDateAndStatus()"/>
+                </div>
+            </div>
+            <div id="poster" class="col-lg-4 col-sm-12">
+                <h2>Post</h2>
+                <input type="submit" name="post_status" id="save-post" value="draft" class="button button-secondary button-large">
+                <input type="submit" name="post_status" id="publish" class="button button-primary button-large" value="publish">
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="vs-panel row">
+            <div id="post-lister" class="col-sm-12">
+                <h1>Your recent posts</h1>
+                <ul>
+                    {% for post in posts %}
+                        {% include "tease-post.twig" %}
+                    {% else %}
+                        <li>No posts available</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock form_content %}{% endembed %}
+{% endblock content %}

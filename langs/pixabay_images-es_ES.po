@@ -1,0 +1,57 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Pixabay Images WordPress Plugin\n"
+"POT-Creation-Date: 2014-06-03 15:00+0100\n"
+"PO-Revision-Date: 2014-06-04 09:44+0100\n"
+"Last-Translator: Simon Steinberger <simon@pixabay.com>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _e;__;esc_html_e;esc_attr_e;esc_html__;esc_attr__\n"
+
+msgid "Photos"
+msgstr "Fotos"
+
+msgid "Cliparts"
+msgstr "Imágenes prediseñadas"
+
+msgid "Horizontal"
+msgstr "Horizontal"
+
+msgid "Vertical"
+msgstr "Vertical"
+
+msgid "Settings"
+msgstr "Configuración"
+
+msgid "Search"
+msgstr "Buscar"
+
+msgid "All"
+msgstr "Todos"
+
+msgid "Insert image credits"
+msgstr "Inserte créditos de imagen"
+
+msgid "Pixabay Images"
+msgstr "Pixabay Imágenes"
+
+msgid "Pixabay Images Settings"
+msgstr "Pixabay Imágenes Configuración"
+
+msgid "Language"
+msgstr "Idioma"
+
+msgid "Attribution"
+msgstr "Atribución"
+
+msgid "Button"
+msgstr "Botón"
+
+msgid "Show Pixabay button next to \"Add Media\""
+msgstr "Mostre botón Pixabay lado de \"Añadir objeto\""
+
+msgid "Search for \"red roses\", \"flowers -red\", etc."
+msgstr ""

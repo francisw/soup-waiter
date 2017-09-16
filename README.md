@@ -1,2 +1,2 @@
-# SoupWaiter
-VacationSoup Wordpress Plugin for Vacation Rental owners
+# SoupKitchen
+VacationSoup's Wordpress plugin for Owners
