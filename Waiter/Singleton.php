@@ -1,5 +1,5 @@
 <?php
-require_once "Base.php";
+namespace Waiter;
 
 /**
  * Created by PhpStorm.

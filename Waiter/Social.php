@@ -1,6 +1,5 @@
 <?php
-
-require_once "PersistedSingleton.php";
+namespace Waiter;
 
 /**
  * Created by PhpStorm.

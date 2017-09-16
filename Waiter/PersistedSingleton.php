@@ -1,5 +1,5 @@
 <?php
-require_once "Singleton.php";
+namespace Waiter;
 
 /**
  * Created by PhpStorm.
@@ -17,5 +17,4 @@ class PersistedSingleton extends Singleton  {
 		update_site_option("vs-{$class}",$this);
 		return $this;
 	}
-
 }

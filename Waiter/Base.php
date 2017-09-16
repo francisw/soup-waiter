@@ -1,5 +1,7 @@
 <?php
+namespace Waiter;
 
+use Exception;
 /**
  * Created by PhpStorm.
  * User: francisw
@@ -50,7 +52,8 @@ class Base {
 	public function __isset($name){
 		return property_exists($this,$name) ||
 		       method_exists($this,self::PFX_SET.$name) || // For a write-only property
-		       method_exists($this,self::PFX_GET.$name);   // For a read-only property
+		       method_exists($this,self::PFX_GET.$name) || // For a write-only property
+		       method_exists($this,self::PFX_IS.$name);   // For a read-only property
 	}
 	public function __unset($name){
 		unset($this->$name);

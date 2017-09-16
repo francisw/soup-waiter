@@ -1,6 +1,8 @@
 <?php
-require_once "SoupWaiterAdmin.php";
-require_once "PersistedSingleton.php";
+namespace Waiter;
+
+use WP_Post;
+use Exception;
 
 /**
  * Created by PhpStorm.
@@ -70,13 +72,13 @@ class SoupWaiter extends PersistedSingleton {
 	/**
 	 * @param $host string The base url, including scheme, which must be https
 	 *
-	 * @throws Exception if not SSL
+	 * @throws \Exception if not SSL
 	 */
 	public function set_kitchen_host($host){
 		if (0==strncasecmp($host,'https://',8)){
 			$this->kitchen_host = $host;
 		} else {
-			throw new Exception("SoupKitchen location must begin https://, but got ".$host);
+			throw new \Exception("SoupKitchen location must begin https://, but got ".$host);
 		}
 	}
 
@@ -129,7 +131,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * Admin NOTICE on Creating the account (should be once only)
 	 * @param $refresh boolean get a new token anyway
 	 * @return string the Token
-	 * @throws Exception On Requesting Token from Kitchen
+	 * @throws \Exception On Requesting Token from Kitchen
 	 */
 	private function getSoupKitchenToken($refresh=FALSE){
 		if (null==$this->kitchen_token || $refresh) {
@@ -156,7 +158,7 @@ class SoupWaiter extends PersistedSingleton {
 				// And re-request the token from the Kitchen
 				$response = wp_remote_post($auth, $request);
 				if (!$this->api_success($response)) {
-					throw new Exception ('Sign-in '.$this->api_error_message($response));
+					throw new \Exception ('Sign-in '.$this->api_error_message($response));
 				}
 			}
 			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
@@ -170,7 +172,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * Request a new registration for the current user
 	 * Always returns a valid new user, throws on any failure
 	 *
-	 * @return array|WP_Error
+	 * @return array|\WP_Error
 	 */
 	public function newRegistration(){
 
@@ -191,7 +193,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * Always returns a valid key, throws on error
 	 *
 	 * @return string The token
-	 * @throws Exception On Requesting the token
+	 * @throws \Exception On Requesting the token
 	 */
 	private function getSoupKitchenRegistryToken(){
 		$response = wp_remote_post($this->soupKitchenJwtApi.'/token', [
@@ -208,7 +210,7 @@ class SoupWaiter extends PersistedSingleton {
 			$token = $tokenResponse->token;
 		} else {
 
-			throw new Exception ("Soup Kitchen Registration: ".$this->api_error_message($response));
+			throw new \Exception ("Soup Kitchen Registration: ".$this->api_error_message($response));
 		}
 		return $token;
 	}
@@ -236,7 +238,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * Return the error message from a wp_remote_* $response
 	 * Usually called after $this->api_success() has returned an error
 	 *
-	 * @param WP_Error|array $response
+	 * @param \WP_Error|array $response
 	 *
 	 * @return mixed
 	 */
@@ -258,7 +260,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * @param null|string $token if identifying as other (e.g. registrar) user
 	 *
 	 * @return array
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function despatchToKitchen($rri,$body=null,$token=null){
 
@@ -288,7 +290,7 @@ class SoupWaiter extends PersistedSingleton {
 			]);
 		}
 		if (!$this->api_success($response)) {
-			throw new Exception ("Kitchen: ".$this->api_error_message($response));
+			throw new \Exception ("Kitchen: ".$this->api_error_message($response));
 		}
 
 		return $response;
@@ -336,10 +338,10 @@ class SoupWaiter extends PersistedSingleton {
 	 *
 	 * @param $newStatus string
 	 * @param $oldStatus string
-	 * @param $post WP_Post The post
+	 * @param $post \WP_Post The post
 	 *
 	 */
-	public function transition_post_status( $newStatus, $oldStatus, WP_Post $post ) {
+	public function transition_post_status( $newStatus, $oldStatus, \WP_Post $post ) {
 		try {
 			if ( 'publish' == $newStatus ){
 				if ($newStatus != $oldStatus){

@@ -1,6 +1,5 @@
 <?php
-require_once "PersistedSingleton.php";
-require_once "Social.php";
+namespace Waiter;
 require_once "pixabay-images.php";
 
 use Timber\Timber;
@@ -82,8 +81,8 @@ class SoupWaiterAdmin extends PersistedSingleton {
 	 * Register our stylesheets.
 	 */
 	public function register_styles() {
-		wp_register_style( 'vs-bootstrap', plugins_url( 'css/bootstrap-grid.min.css',__FILE__) );
-		wp_register_style( 'vacation-soup', plugins_url( 'css/vs-admin.css',__FILE__) );
+		wp_register_style( 'vs-bootstrap', plugins_url( '../css/bootstrap-grid.min.css',__FILE__) );
+		wp_register_style( 'vacation-soup', plugins_url( '../css/vs-admin.css',__FILE__) );
 	}
 
 	/**
@@ -111,7 +110,7 @@ class SoupWaiterAdmin extends PersistedSingleton {
 				} else {
 					// Default behaviour
 					if (!isset($_REQUEST['name']) || !isset($_REQUEST['value'])) {
-						throw new Exception('missing parameters: name or value');
+						throw new \Exception('missing parameters: name or value');
 					}
 					$key = $_REQUEST['name'];
 					$class = 'SoupWaiter'; // Default
@@ -120,15 +119,16 @@ class SoupWaiterAdmin extends PersistedSingleton {
 							$class = $check[0];
 							$key = $check[1];
 					}
+					$class = __NAMESPACE__ . '\\' . $class;
 					if (class_exists($class)){
 						if (method_exists($class,'single')){
 							$obj = $class::single();
-						} else throw new Exception("Class '{$class}' must be a Singleton");
+						} else throw new \Exception("Class '{$class}' must be a Singleton");
 						$obj->$key = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
-					} else throw new Exception("Class '{$class}' not found'");
+					} else throw new \Exception("Class '{$class}' not found'");
 				}
-			} catch (Exception $e){
+			} catch (\Exception $e){
 				$response = [
 					'error' => [
 						'message' => $e->getMessage(),
