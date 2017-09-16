@@ -12,4 +12,3 @@ License: GPL2
 */
 
 add_action ('init',array(SoupWaiter::single(),'init'));
-
