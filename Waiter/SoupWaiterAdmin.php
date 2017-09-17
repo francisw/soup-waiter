@@ -1,6 +1,6 @@
 <?php
 namespace Waiter;
-require_once "pixabay-images.php";
+require_once (plugin_dir_path( __FILE__ )."../pixabay-images.php");
 
 use Timber\Timber;
 

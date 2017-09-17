@@ -22,6 +22,9 @@ namespace Waiter;
  * Author URI:        http://francis.wallinger.uk
  * License:           GPL-3.0+
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * Depends:           timber-library
+ * Conflicts:         pixabay-images (disable that plugin, pixabay images is incorporated (modified) within this plugin
  */
 // If this file is accessed directory, then abort.
 if ( ! defined( 'WPINC' ) ) {
