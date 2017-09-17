@@ -36,29 +36,36 @@ class SoupWaiter extends SitePersisted {
 	 */
 	protected $kitchen_token;
 
-	/**********
-	 * FROM HERE are 'fake' properties, they have to be defined for
-	 * twig to see them, the there is a function that actually implements the
-	 * member through getters and setters. These do not actuallyy get set
-	 */
 	/**
 	 * Expose whether the Kitchen is up
 	 *
 	 * use as SoupWaiter::single()->connected?
-	 * @var boolean $connected - implemented as is_connected()
 	 * @return bool
 	 */
-	protected $connected; // Never actually set
 	protected function is_connected(){
 		return ($this->getSoupKitchenToken(TRUE)?true:false);
 	}
 	/**
-	 * @var $image_url
+	 * @param $folder
 	 * @return string
 	 */
-	protected $image_url;
+	protected function get_base_url($folder=''){
+		$folder .= '/';
+		$image_url=null; // This was static, but with persistence will fail on hostname/schema change
+		if (!$image_url){
+			$mydir = explode('/',__DIR__);
+			$uplevels = count(explode('\\',__NAMESPACE__));
+			$dir = array_slice($mydir,0,0-$uplevels);
+			$dir[] = "{$folder}FakeFile";
+			$image_url = implode('/',$dir);
+		}
+		return plugin_dir_url($image_url);
+	}
+	/**
+	 * @return string
+	 */
 	protected function get_image_url(){
-		return plugin_dir_url( __FILE__ ).'/img';
+		return $this->get_base_url('img');
 	}
 	/**
 	 * SoupWaiter constructor.
