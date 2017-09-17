@@ -10,7 +10,7 @@ use Exception;
  * Date: 23/06/2017
  * Time: 16:41
  */
-class SoupWaiter extends PersistedSingleton {
+class SoupWaiter extends SitePersisted {
 	const REGISTRY_USER = 'soup-kitchen-registry';
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS = 'OpenDoor';

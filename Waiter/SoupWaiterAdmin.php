@@ -12,7 +12,7 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
  * Date: 03/07/2017
  * Time: 21:02
  */
-class SoupWaiterAdmin extends PersistedSingleton {
+class SoupWaiterAdmin extends SitePersisted {
 	/**
 	 * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
 	 */
@@ -48,7 +48,7 @@ class SoupWaiterAdmin extends PersistedSingleton {
 		// Tried attaching this to send_headers hook but it didn't fire
 		$this->add_header_cors();
 
-		add_action( 'wp_ajax_soup', [ $this, 'process_ajax_data' ] );
+		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
 
@@ -95,7 +95,7 @@ class SoupWaiterAdmin extends PersistedSingleton {
 	 *
 	 * @internal Singleton::class $single
 	 */
-	public function process_ajax_data(){
+	public function ajax_controller(){
 		$response=[];
 
 		if (!empty($_REQUEST) &&

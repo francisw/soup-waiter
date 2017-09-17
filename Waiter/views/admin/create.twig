@@ -13,7 +13,7 @@
         var topic = vs_topics[topicId];
         // global the selected tags for pixabay and the subject
         vs_query = topic.tags;
-        vs_title = topic.content + (topic.content? ' ' + '{{ soup.join() }}' + ' ' + '{{ soup.destination() }}':'');
+        vs_title = topic.content + (topic.content? ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}':'');
 
         // Build the complete tag list
         tags = topic.tags.concat({{ tags|json_encode|raw }});
@@ -97,7 +97,7 @@
                     {% for topic in trending_topics %}
                         <li><input type="radio" name="trending_topics" id="topic_{{ loop.index0 }}" value="{{ loop.index0 }}" onchange="chooseTopic(jQuery(this).val())"/>
                             <label for="topic_{{ loop.index0 }}">
-                                {{ topic.content }} {{ amdin.join }} {{ admin.destination }}
+                                {{ topic.content }} {{ admin.join }} {{ admin.destination }}
                             </label>
                         </li>
                         {% if loop.last %}
