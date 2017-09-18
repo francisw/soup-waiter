@@ -35,8 +35,9 @@ class Base {
 	}
 
 	public function __get($name){
-		$methods = [self::PFX_GET.$name,self::PFX_IS.$name];
+		$methods = [self::PFX_GET,self::PFX_IS];
 		foreach ($methods as $method){
+			$method .= $name;
 			if(method_exists($this, $method)){
 				return $this->$method();
 			}
@@ -50,10 +51,12 @@ class Base {
 	}
 
 	public function __isset($name){
-		return property_exists($this,$name) ||
-		       method_exists($this,self::PFX_SET.$name) || // For a write-only property
-		       method_exists($this,self::PFX_GET.$name) || // For a write-only property
-		       method_exists($this,self::PFX_IS.$name);   // For a read-only property
+		return (
+			property_exists($this,$name) ||
+			method_exists($this,self::PFX_SET.$name) || // For a write-only property
+			method_exists($this,self::PFX_GET.$name) || // For a read-only property
+			method_exists($this,self::PFX_IS.$name)     // For a read-only boolean property
+		);
 	}
 	public function __unset($name){
 		unset($this->$name);

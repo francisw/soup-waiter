@@ -13,35 +13,31 @@
                     Please enter your social urls here so we can widen the message.
                 </p>
                 <div class="row">
+                        <script>
+                            jQuery(function(){
+                                jQuery(".social-container").click(function(){
+                                    var j = jQuery(this);
+                                    if (!j.hasClass("currently-editing")){
+                                        jQuery(".social-container").removeClass("currently-editing");
+                                        j.addClass("currently-editing");
+                                    }
+                                });
+                            });
+                        </script>
                     <div class="col-sm-8">
-                        <div class="social field">
-                            <div class="social-icon facebook">
-                                <i class="fa fa-5x fa-facebook-square"></i>
-                            </div>
-                            <label for="facebook_link">
-                                Facebook
-                            </label>
-                            <input type="text" class="persist" name="Social.facebook_link" id="facebook_link" value="{{ social.facebook_link }}"/>
+                        <div class="social-icons">
+                            {% for key,soc in social %}
+                                    <div class="social-container">
+                                        <i class="fa fa-5x fa-{{ soc.name }}-square"></i>
+                                        <div class="field-container">
+                                            <div class="field-row">
+                                                {% include 'social/'~key~'.twig' %}
+                                            </div>
+                                        </div>
+                                    </div>
+                            {% endfor %}
                         </div>
-                        <div class="social field">
-                            <div class="social-icon twitter">
-                                <i class="fa fa-5x fa-twitter-square"></i>
-                            </div>
-                            <label for="twitter_link">
-                                Twitter
-                            </label>
-                            <input type="text" class="persist" name="Social.twitter_link" id="twitter_link" value="{{ social.twitter_link }}"/>
-                        </div>
-                        <div class="social field">
-                            <div class="social-icon pinterest">
-                                <i class="fa fa-5x fa-pinterest-square"></i>
-                            </div>
-                            <label for="pinterest_link">
-                                Pinterest
-                            </label>
-                            <input type="text" class="persist" name="Social.pinterest_link" id="pinterest_link" value="{{ social.pinterest_link }}"/>
-                        </div>
-                    </div>
+                     </div>
                 </div>
             </div>
         </div>

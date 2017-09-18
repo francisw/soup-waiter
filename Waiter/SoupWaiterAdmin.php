@@ -386,7 +386,9 @@ class SoupWaiterAdmin extends SitePersisted {
 	private function get_connect_context(){
 		// Grab the basics
 		$context = $this->get_context('connect');
-		$context['social'] = Social::single();
+		$context['social']['FB'] = FB::single();
+		$context['social']['TW'] = TW::single();
+		$context['social']['PI'] = PI::single();
 		return $context;
 	}
 }

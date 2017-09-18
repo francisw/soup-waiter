@@ -178,9 +178,10 @@ DIV.field LABEL{
     min-width: 30%;
     display: inline-block;
 }
-DIV.social.field LABEL{
+/*DIV.social.field LABEL{
     min-width: 80px;
-}
+}*/
+
 DIV.social.field LABEL,
 DIV.social.field INPUT[type="text"] {
     vertical-align: bottom;
@@ -189,63 +190,142 @@ DIV.social.field INPUT[type="text"] {
 
 DIV.field INPUT[type='text']{
     min-width: 65%;
-    display: inline-block;
+    /*display: inline-block;*/
 }
-DIV.social-icon {
-    width: 80px;
-    display: inline-flex;
-    padding: 0;
-    align-items: center;
-    justify-content: center;
-    height: 80px;
-}
-DIV.social.field
 
-.wrapper {
-    display: inline-flex;
+.social-icons {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
     margin: 0;
-    padding: 0;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+    padding: 15px;
+    align-items: flex-start;
+    justify-content: left;
+    min-height: 300px;
 }
 
 i {
-    padding: 0px 10px;
+    position: relative;
+    padding: 0 10px;
 }
 
-.social-icon.facebook i {
-    color: #4867AA;
+.fa-facebook-square         {  color: #4867AA;  }
+.fa-twitter-square          {  color: #1DA1F2;  }
+.fa-pinterest-square        {  color: #cb2027;  }
+.fa-somethingyellow-square  {  color: #fffc00;  }
+
+.social-icons i,
+.social-icons .currently-editing i:hover {
     cursor: pointer;
-    text-shadow: 5px 7px 10px rgba(0, 0, 0, 0.4);
+    margin-top: 0;
+    text-shadow: 0 7px 10px rgba(0, 0, 0, 0.4);
     transition: all ease-in-out 150ms;
 }
-
-.social-icon.hover i:hover {
+.social-icons .social-container:not(.currently-editing) i:hover {
     margin-top: -10px;
-    text-shadow: 6px 16px 10px rgba(0, 0, 0, 0.3);
-    transform: translate(0, -8);
+    text-shadow: 4px 16px 12px rgba(0, 0, 0, 0.2);
+    transform: translate(0, -8px);
 }
 
-.social-icon.twitter {
-    color: #1DA1F2;
-    cursor: pointer;
-    text-shadow: 0px 7px 10px rgba(0, 0, 0, 0.4);
+.social-container {
+    display: inline-flex;
     transition: all ease-in-out 150ms;
+    flex-basis: 75px;
+}
+.social-container .field-container {
+    display: inline-flex;
+    max-height: 0;
+    max-width: 0;
+}
+.social-container .field-row {
+    max-width: none;
+    max-height: none;
+}
+.social-container .field {
+    width: 600px;
 }
 
-.social-icon.pinterest {
-    color: #cb2027;
-    cursor: pointer;
-    text-shadow: 0px 7px 10px rgba(0, 0, 0, 0.5);
-    transition: all ease-in-out 150ms;
+
+.social-container .field-container,
+.social-container .field-container INPUT[type="text"]
+{
+    color: rgba(255, 255, 255, 0.0);
+    border-color: rgba(255, 255, 255, 0.0);
+    -webkit-box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.0);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.0);
+    transition: all 200ms linear;
+}
+.social-container.currently-editing .field-container
+{
+    color: rgba(0, 0, 0, 1.0);
+    transition:all 800ms ease-in;
+}
+.social-container.currently-editing .field LABEL {
+    display: inline-block;
+    text-align: right;
+    margin-right: 15px;
+}
+.social-container.currently-editing .field INPUT {
+    display: inline-block;
+/*    width: 200px; */
 }
 
-.social-icon.somethingyellow {
-    color: #fffc00;
-    cursor: pointer;
-    text-shadow: 0px 7px 10px rgba(0, 0, 0, 0.4);
-    transition: all ease-in-out 150ms;
+
+.social-container.currently-editing .field-container INPUT[type="text"]
+{
+    border-color: rgba(221, 221, 221, 1.0);
+    -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
+    transition:all 800ms ease-in;
+
+}
+.social-container.currently-editing {
+    transition: all 600ms ease-in-out;
+}
+
+.social-container.currently-editing:nth-child(1) {
+    -webkit-transform: translate(0,150%);
+    -moz-transform: translate(0,150%);
+    -ms-transform: translate(0,150%);
+    -o-transform: translate(0,150%);
+    transform: translate(0,150%);
+}
+.social-container.currently-editing:nth-child(2) {
+    -webkit-transform: translate(-75px,150%);
+    -moz-transform: translate(-75px,150%);
+    -ms-transform: translate(-75px,150%);
+    -o-transform: translate(-75px,150%);
+    transform: translate(-75px,150%);
+}
+.social-container.currently-editing:nth-child(3) {
+    -webkit-transform: translate(-150px,150%);
+    -moz-transform: translate(-150px,150%);
+    -ms-transform: translate(-150px,150%);
+    -o-transform: translate(-150px,150%);
+    transform: translate(-150px,150%);
+}
+.social-container.currently-editing:nth-child(4) {
+    -webkit-transform: translate(-225px,150%);
+    -moz-transform: translate(-225px,150%);
+    -ms-transform: translate(-225px,150%);
+    -o-transform: translate(-225px,150%);
+    transform: translate(-225px,150%);
+}
+.social-container.currently-editing:nth-child(5) {
+    -webkit-transform: translate(-225px,150%);
+    -moz-transform: translate(-225px,150%);
+    -ms-transform: translate(-225px,150%);
+    -o-transform: translate(-225px,150%);
+    transform: translate(-225px,150%);
+}
+.social-container.currently-editing:nth-child(6) {
+    -webkit-transform: translate(-300px,150%);
+    -moz-transform: translate(-300px,150%);
+    -ms-transform: translate(-300px,150%);
+    -o-transform: translate(-300px,150%);
+    transform: translate(-300px,150%);
 }
 
 .soup-icon.hover IMG {
