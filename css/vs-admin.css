@@ -214,7 +214,11 @@ i {
 .fa-facebook-square         {  color: #4867AA;  }
 .fa-twitter-square          {  color: #1DA1F2;  }
 .fa-pinterest-square        {  color: #cb2027;  }
-.fa-somethingyellow-square  {  color: #fffc00;  }
+.fa-google-plus-square      {  color: #dd4b39;  }
+.fa-linkedin-square         {  color: #007bb5;  }
+.fa-reddit-square           {  color: #ff4500;  }
+.fa-stumbleupon-circle      {  color: #f74425;  }
+.fa-instagram               {  color: #e95950;  }
 
 .social-icons i,
 .social-icons .currently-editing i:hover {
@@ -246,10 +250,12 @@ i {
 .social-container .field {
     width: 600px;
 }
-
-
+.social-container .field-container INPUT[type=checkbox]
+{
+    display: none;
+}
 .social-container .field-container,
-.social-container .field-container INPUT[type="text"]
+.social-container .field-container INPUT
 {
     color: rgba(255, 255, 255, 0.0);
     border-color: rgba(255, 255, 255, 0.0);
@@ -264,27 +270,22 @@ i {
 }
 .social-container.currently-editing .field LABEL {
     display: inline-block;
-    text-align: right;
-    margin-right: 15px;
+    text-align: left;
+    margin-left: 15px;
 }
 .social-container.currently-editing .field INPUT {
     display: inline-block;
-/*    width: 200px; */
 }
-
-
-.social-container.currently-editing .field-container INPUT[type="text"]
+DIV.social-container.currently-editing DIV.field-container INPUT
 {
     border-color: rgba(221, 221, 221, 1.0);
+    color: rgba(0, 0, 0, 1.0);
     -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
     box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
-    transition:all 800ms ease-in;
-
 }
 .social-container.currently-editing {
     transition: all 600ms ease-in-out;
 }
-
 .social-container.currently-editing:nth-child(1) {
     -webkit-transform: translate(0,150%);
     -moz-transform: translate(0,150%);
@@ -314,18 +315,32 @@ i {
     transform: translate(-225px,150%);
 }
 .social-container.currently-editing:nth-child(5) {
-    -webkit-transform: translate(-225px,150%);
-    -moz-transform: translate(-225px,150%);
-    -ms-transform: translate(-225px,150%);
-    -o-transform: translate(-225px,150%);
-    transform: translate(-225px,150%);
-}
-.social-container.currently-editing:nth-child(6) {
     -webkit-transform: translate(-300px,150%);
     -moz-transform: translate(-300px,150%);
     -ms-transform: translate(-300px,150%);
     -o-transform: translate(-300px,150%);
     transform: translate(-300px,150%);
+}
+.social-container.currently-editing:nth-child(6) {
+    -webkit-transform: translate(-375px,150%);
+    -moz-transform: translate(-375px,150%);
+    -ms-transform: translate(-375px,150%);
+    -o-transform: translate(-375px,150%);
+    transform: translate(-375px,150%);
+}
+.social-container.currently-editing:nth-child(7) {
+    -webkit-transform: translate(-450px,150%);
+    -moz-transform: translate(-450px,150%);
+    -ms-transform: translate(-450px,150%);
+    -o-transform: translate(-450px,150%);
+    transform: translate(-450px,150%);
+}
+.social-container.currently-editing:nth-child(8) {
+    -webkit-transform: translate(-525px,150%);
+    -moz-transform: translate(-525px,150%);
+    -ms-transform: translate(-525px,150%);
+    -o-transform: translate(-525px,150%);
+    transform: translate(-525px,150%);
 }
 
 .soup-icon.hover IMG {

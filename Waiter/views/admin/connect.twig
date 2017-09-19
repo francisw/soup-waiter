@@ -19,7 +19,7 @@
                                     var j = jQuery(this);
                                     if (!j.hasClass("currently-editing")){
                                         jQuery(".social-container").removeClass("currently-editing");
-                                        j.addClass("currently-editing");
+                                        j.addClass("currently-editing").find("INPUT").first().focus();
                                     }
                                 });
                             });
@@ -28,7 +28,7 @@
                         <div class="social-icons">
                             {% for key,soc in social %}
                                     <div class="social-container">
-                                        <i class="fa fa-5x fa-{{ soc.name }}-square"></i>
+                                        <i class="fa fa-5x {{ soc.fa_name }}"></i>
                                         <div class="field-container">
                                             <div class="field-row">
                                                 {% include 'social/'~key~'.twig' %}

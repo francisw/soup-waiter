@@ -389,6 +389,19 @@ class SoupWaiterAdmin extends SitePersisted {
 		$context['social']['FB'] = FB::single();
 		$context['social']['TW'] = TW::single();
 		$context['social']['PI'] = PI::single();
+		$context['social']['GP'] = GP::single();
+		$context['social']['LI'] = LI::single();
+		$context['social']['RD'] = RD::single();
+		$context['social']['SU'] = SU::single();
+		$context['social']['IG'] = IG::single();
+		/*
+		 * Still to add
+		 * vk.com
+		 * Weibo
+		 * Xing
+		 * renren
+		 * weixin (wechat)
+		 */
 		return $context;
 	}
 }
