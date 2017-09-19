@@ -12,10 +12,8 @@ use Waiter\SoupWaiter;
  *
  * I would like to use class constants here but that creates a PHP 7.1 dependency
  */
-class GP extends SocialProvider {
-	//protected $nName;
+class GP extends SocialNotImplemented {
 	protected function get_name() { return "google+"; }
-	protected function get_nName() { return "fb:".SoupWaiter::single()->kitchen_user; }
 	protected function get_fa_name(){
 		return "fa-google-plus-square";
 	}

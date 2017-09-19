@@ -20,6 +20,12 @@ class SocialProvider extends SitePersisted {
 	}
 
 	/**
+	 * Default NickName (nName)
+	 * @return string
+	 */
+	protected function get_nName() { return get_called_class().':'.SoupWaiter::single()->kitchen_user; }
+
+	/**
 	 * Default font-awesome unique identifier (override if name won't do)
 	 * NB: this has 'fa-' prepended and '-square' appended
 	 * @return string

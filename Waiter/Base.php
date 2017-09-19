@@ -18,6 +18,9 @@ class Base {
 	 */
 	protected function persist(){
 	}
+	static protected function getPersisted(){
+		return null;
+	}
 
 	public function __set($name,$value){
 		$method = self::PFX_SET.$name;

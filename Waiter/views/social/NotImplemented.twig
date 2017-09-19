@@ -1,5 +1,8 @@
 <div class="field">
-<p>We have not yet implemented auto-posting to this network. If you would like us to prioritise {{ soc.display_name }}, please vote for it by ticking the checkbox.</p>
-    <label for="publish_{{ key|lower }}">Vote</label>
-    <input type="checkbox" name="vote" id="publish_{{ key|lower }}" value="{{ key }}"/>
+    <p>
+        We have not yet implemented auto-posting to {{ soc.display_name }}. Voting is set to {{ soc.vote }}.
+        If you would like to connect to {{ soc.display_name }}, please vote for it by ticking the checkbox, and we will move it up the list.
+    </p>
+    <label for="vote_{{ key|lower }}">Vote for {{ soc.display_name }}</label>
+    <input type="checkbox" id="vote_{{ key|lower }}" class="persist" name="{{ key }}.vote" {{ (soc.vote)?'checked':'' }}/>
 </div>

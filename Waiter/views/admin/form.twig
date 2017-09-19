@@ -4,12 +4,17 @@
             var jElem = jQuery(this);
             this.disabled=true;
 
+            var value = jElem.val();
+            if ('checkbox'==this.type){
+                value = (this.checked)?1:0; // otherwise boolean strings of 'false'
+            }
+
             var data = {
                 action: "soup",
                 tab: "{{ tab }}",
                 _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
                 name: jElem.attr("name"),
-                value: jElem.val(),
+                value: value,
                 id: jElem.prop("id")
             };
 
