@@ -2,8 +2,6 @@
 
 namespace Waiter;
 
-use Waiter\SoupWaiter;
-
 /**
  * Created by PhpStorm.
  * User: francisw

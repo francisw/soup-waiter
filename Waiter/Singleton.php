@@ -1,5 +1,5 @@
 <?php
-namespace Waiter;
+namespace Kitchen;
 
 /**
  * Created by PhpStorm.
