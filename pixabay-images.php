@@ -334,7 +334,7 @@ function media_pixabay_images_tab() {
             }, function (response) {
                 if (response.error === undefined) {
                     if (parent.jQuery('#featured_image').val()) {
-                        window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + data;
+                        window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + response.id;
                     } else {
                         parent.jQuery('#featured_image').val(response.id);
                         parent.jQuery('#motd').html(
