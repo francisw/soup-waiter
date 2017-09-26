@@ -30,11 +30,11 @@ class Base {
 			// Getter/Setter not defined so set as property of object
 			if (property_exists($this,$name)) {
 				$this->$name = $value;
-				$this->persist();
 			} else {
 				throw new Exception("Property '{$name}' does not exist in ".get_called_class());
 			}
 		}
+		$this->persist();
 	}
 
 	public function __get($name){

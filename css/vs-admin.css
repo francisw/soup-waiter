@@ -265,7 +265,7 @@ i {
 }
 DIV.social-container.currently-editing DIV.field-container INPUT.persist[disabled]
 {
-    color: rgba(255,0,255,0.7);
+    color: rgba(0,100,0,0.5);
 }
 .social-container.currently-editing .field-container
 {

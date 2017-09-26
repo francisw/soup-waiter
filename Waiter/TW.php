@@ -16,7 +16,7 @@ class TW extends SocialProvider {
 	//protected $nName;
 	protected function get_name() { return "twitter"; }
 	protected function get_display_name(){
-		return $this->name;
+		return $this->name; // Don't uppercase first letter (which is default)
 	}
 	protected function get_nName() { return "tw:".SoupWaiter::single()->kitchen_user; }
 	protected $appKey;

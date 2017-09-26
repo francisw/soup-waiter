@@ -33,4 +33,13 @@ class SocialProvider extends SitePersisted {
 	protected function get_fa_name(){
 		return "fa-".$this->name."-square";
 	}
+
+	public function toArray(){
+		$arr = [];
+		foreach ($this as $key => $val){
+			$arr[$key] = $val;
+		}
+		return $arr;
+	}
+
 }

@@ -47,6 +47,7 @@ class SoupWaiterAdmin extends SitePersisted {
 
 		// Tried attaching this to send_headers hook but it didn't fire
 		$this->add_header_cors();
+		$this->process_post_data();
 
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
@@ -238,6 +239,7 @@ class SoupWaiterAdmin extends SitePersisted {
 		}
 
 		SoupWaiter::single()->addNotice( 'success', 'Posted: '.$_POST['post_title']);
+		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	/**
 	 * get base context
@@ -386,14 +388,10 @@ class SoupWaiterAdmin extends SitePersisted {
 	private function get_connect_context(){
 		// Grab the basics
 		$context = $this->get_context('connect');
-		$context['social']['FB'] = FB::single();
-		$context['social']['TW'] = TW::single();
-		$context['social']['PI'] = PI::single();
-		$context['social']['GP'] = GP::single();
-		$context['social']['LI'] = LI::single();
-		$context['social']['RD'] = RD::single();
-		$context['social']['SU'] = SU::single();
-		$context['social']['IG'] = IG::single();
+		$socials = ['FB','TW','PI','GP','LI','RD','SU','IG'];
+		foreach ($socials as $social){
+			$context['social'][$social] = $social::single();
+		}
 		/*
 		 * Still to add
 		 * vk.com

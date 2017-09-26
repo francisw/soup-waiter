@@ -24,6 +24,10 @@ class SoupWaiter extends SitePersisted {
 	 */
 	protected $kitchen_api;
 	/**
+	 * @var string $kitchen_api Kitchen API partial URL
+	 */
+	protected $social_api;
+	/**
 	 * @var string $kitchen_jwt_api Kitchen AUTH API partial URL
 	 */
 	protected $kitchen_jwt_api;
@@ -66,6 +70,12 @@ class SoupWaiter extends SitePersisted {
 	 */
 	protected function get_image_url(){
 		return $this->get_base_url('img');
+	}
+	/**
+	 * @return string
+	 */
+	protected function get_social_api(){
+		return "{$this->kitchen_host}/{$this->social_api}";
 	}
 	/**
 	 * SoupWaiter constructor.
