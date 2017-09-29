@@ -166,6 +166,7 @@ function media_pixabay_images_tab() {
                         title="<?= _e( 'Search', 'pixabay_images' ); ?>"><img
                             src="<?= plugin_dir_url( __FILE__ ) . 'img/search.png' ?>"></button>
             </div>
+	        <?php /*
             <div style="margin:1em 0;padding-left:2px;line-height:2">
                 <label style="margin-right:15px;white-space:nowrap"><input type="checkbox"
                                                                            id="filter_photos"><?= _e( 'Photos', 'pixabay_images' ); ?>
@@ -184,6 +185,7 @@ function media_pixabay_images_tab() {
                                         src="<?= plugin_dir_url( __FILE__ ) . 'img/settings.png' ?>"
                                         title="<?= _e( 'Settings', 'pixabay_images' ); ?>"></a>
             </div>
+                */ ?>
         </form>
         <div id="pixabay_results" class="flex-images"
              style="margin-top:20px;padding-top:25px;border-top:1px solid #ddd"></div>
@@ -262,13 +264,15 @@ function media_pixabay_images_tab() {
         form.submit(function (e) {
             e.preventDefault();
             q = jQuery('#q', form).val();
-            if (jQuery('#filter_photos', form).is(':checked') && !jQuery('#filter_cliparts', form).is(':checked')) image_type = 'photo';
+            /** if (jQuery('#filter_photos', form).is(':checked') && !jQuery('#filter_cliparts', form).is(':checked')) image_type = 'photo';
             else if (!jQuery('#filter_photos', form).is(':checked') && jQuery('#filter_cliparts', form).is(':checked')) image_type = 'clipart';
             else image_type = 'all';
             if (jQuery('#filter_horizontal', form).is(':checked') && !jQuery('#filter_vertical', form).is(':checked')) orientation = 'horizontal';
             else if (!jQuery('#filter_horizontal', form).is(':checked') && jQuery('#filter_vertical', form).is(':checked')) orientation = 'vertical';
-            else orientation = 'all';
+            else orientation = 'all'; */
             jQuery('#pixabay_results').html('');
+            image_type = 'photo'; // Override for Vacation Soup
+            orientation = 'horizontal'; // Override for Vacation Soup
             call_api(q, 1);
         });
 

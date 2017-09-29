@@ -388,10 +388,15 @@ class SoupWaiterAdmin extends SitePersisted {
 	private function get_connect_context(){
 		// Grab the basics
 		$context = $this->get_context('connect');
-		$socials = ['FB','TW','PI','GP','LI','RD','SU','IG'];
-		foreach ($socials as $social){
-			$context['social'][$social] = $social::single();
-		}
+
+		$context['social']['FB'] = FB::single();
+		$context['social']['TW'] = TW::single();
+		$context['social']['PI'] = PI::single();
+		$context['social']['GP'] = GP::single();
+		$context['social']['LI'] = LI::single();
+		$context['social']['RD'] = RD::single();
+		$context['social']['SU'] = SU::single();
+		$context['social']['IG'] = IG::single();
 		/*
 		 * Still to add
 		 * vk.com
