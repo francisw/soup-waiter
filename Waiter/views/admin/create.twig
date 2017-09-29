@@ -6,6 +6,7 @@
     vs_topics.push({"content":"","tags":[]});
     var vs_title;
     var vs_query;
+    var motdClicked = false;
 
     var chooseTopic = function(topicId){
         var html,tags;
@@ -68,7 +69,15 @@
         jQuery( ".datepicker" ).datepicker({
             dateFormat : "yyyy-mm-dd"
         });
+        jQuery('#motd').click(function(){
+            if (jQuery.find('IMG')) {
+                motdClicked = true;
+                jQuery("#-add_media").click();
+            }
+        });
+
     });
+
 
 </script>
 

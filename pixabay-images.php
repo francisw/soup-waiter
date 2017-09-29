@@ -319,35 +319,38 @@ function media_pixabay_images_tab() {
             jQuery('.flex-images').flexImages({rowHeight: 260});
         }
 
-        jQuery(document).on('click', '.upload', function () {
+        var motdClicked = parent.motdClicked;
+        parent.motdClicked = false;
+
+        var handleLightbox = function () {
             jQuery(document).off('click', '.upload');
             // loading animation
             jQuery(this).addClass('uploading').find('.download img').replaceWith('<img src="<?= plugin_dir_url( __FILE__ ) . 'img/loading.svg' ?>" style="height:80px !important">');
             jQuery.post('.', {
-                pixabay_upload: "1",
-                image_url: jQuery(this).data('url'),
-                image_user: jQuery(this).data('user'),
-                q: q,
-                vs_title: parent.vs_title,
-                vs_query: parent.vs_query,
-                wpnonce: '<?= wp_create_nonce( 'pixabay_images_security_nonce' ); ?>'
-            }, function (response) {
-                if (response.error === undefined) {
-                    if (parent.jQuery('#featured_image').val()) {
-                        window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + response.id;
-                    } else {
-                        parent.jQuery('#featured_image').val(response.id);
-                        parent.jQuery('#motd').html(
-                            '<h1>Featured Image</h1>'+response.html
-                        );
-                        parent.tb_remove();
+                    pixabay_upload: "1",
+                    image_url: jQuery(this).data('url'),
+                    image_user: jQuery(this).data('user'),
+                    vs_title: parent.vs_title,
+                    vs_query: parent.vs_query,
+                    wpnonce: '<?= wp_create_nonce( 'pixabay_images_security_nonce' ); ?>'
+                }, function (response) {
+                    if (response.error === undefined) {
+                        if (parent.jQuery('#featured_image').val() && !motdClicked) {
+                            window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + response.id;
+                        } else {
+                            parent.jQuery('#featured_image').val(response.id);
+                            parent.jQuery('#motd').html(
+                                '<h1>Featured Image</h1>'+response.html
+                            );
+                            parent.tb_remove();
+                        }
                     }
-                }
-                else alert('Oops:\n' + response.error.message);
-            },
-            'json');
+                    else alert('Oops:\n' + response.error.message);
+                },
+                'json');
             return false;
-        });
+        };
+        jQuery(document).on('click', '.upload', handleLightbox);
     </script>
 	<?php
 }
