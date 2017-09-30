@@ -81,7 +81,7 @@ class SoupWaiter extends SitePersisted {
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
-		$this->set_kitchen_host('https://localhost/privy2'); # 'https://staging1.privy2.com';#
+		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
 	}
