@@ -6,6 +6,7 @@
     vs_topics.push({"content":"","tags":[]});
     var vs_title;
     var vs_query;
+    var motdClicked = false;
 
     var chooseTopic = function(topicId){
         var html,tags;
@@ -13,7 +14,7 @@
         var topic = vs_topics[topicId];
         // global the selected tags for pixabay and the subject
         vs_query = topic.tags;
-        vs_title = topic.content + (topic.content? ' ' + '{{ soup.join() }}' + ' ' + '{{ soup.destination() }}':'');
+        vs_title = topic.content + (topic.content? ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}':'');
 
         // Build the complete tag list
         tags = topic.tags.concat({{ tags|json_encode|raw }});
@@ -68,7 +69,15 @@
         jQuery( ".datepicker" ).datepicker({
             dateFormat : "yyyy-mm-dd"
         });
+        jQuery('#motd').click(function(){
+            if (jQuery.find('IMG')) {
+                motdClicked = true;
+                jQuery("#-add_media").click();
+            }
+        });
+
     });
+
 
 </script>
 
@@ -97,7 +106,7 @@
                     {% for topic in trending_topics %}
                         <li><input type="radio" name="trending_topics" id="topic_{{ loop.index0 }}" value="{{ loop.index0 }}" onchange="chooseTopic(jQuery(this).val())"/>
                             <label for="topic_{{ loop.index0 }}">
-                                {{ topic.content }} {{ amdin.join }} {{ admin.destination }}
+                                {{ topic.content }} {{ admin.join }} {{ admin.destination }}
                             </label>
                         </li>
                         {% if loop.last %}

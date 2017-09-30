@@ -1,7 +1,6 @@
 <?php
-require_once "PersistedSingleton.php";
-require_once "Social.php";
-require_once "pixabay-images.php";
+namespace Waiter;
+require_once (plugin_dir_path( __FILE__ )."../pixabay-images.php");
 
 use Timber\Timber;
 
@@ -13,7 +12,7 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
  * Date: 03/07/2017
  * Time: 21:02
  */
-class SoupWaiterAdmin extends PersistedSingleton {
+class SoupWaiterAdmin extends SitePersisted {
 	/**
 	 * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
 	 */
@@ -48,8 +47,10 @@ class SoupWaiterAdmin extends PersistedSingleton {
 
 		// Tried attaching this to send_headers hook but it didn't fire
 		$this->add_header_cors();
+		if (!defined( 'DOING_AJAX' )) $this->process_post_data();
 
-		add_action( 'wp_ajax_soup', [ $this, 'process_ajax_data' ] );
+		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
+		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
 
@@ -82,8 +83,8 @@ class SoupWaiterAdmin extends PersistedSingleton {
 	 * Register our stylesheets.
 	 */
 	public function register_styles() {
-		wp_register_style( 'vs-bootstrap', plugins_url( 'css/bootstrap-grid.min.css',__FILE__) );
-		wp_register_style( 'vacation-soup', plugins_url( 'css/vs-admin.css',__FILE__) );
+		wp_register_style( 'vs-bootstrap', plugins_url( '../css/bootstrap-grid.min.css',__FILE__) );
+		wp_register_style( 'vacation-soup', plugins_url( '../css/vs-admin.css',__FILE__) );
 	}
 
 	/**
@@ -96,7 +97,7 @@ class SoupWaiterAdmin extends PersistedSingleton {
 	 *
 	 * @internal Singleton::class $single
 	 */
-	public function process_ajax_data(){
+	public function ajax_controller(){
 		$response=[];
 
 		if (!empty($_REQUEST) &&
@@ -111,7 +112,7 @@ class SoupWaiterAdmin extends PersistedSingleton {
 				} else {
 					// Default behaviour
 					if (!isset($_REQUEST['name']) || !isset($_REQUEST['value'])) {
-						throw new Exception('missing parameters: name or value');
+						throw new \Exception('missing parameters: name or value');
 					}
 					$key = $_REQUEST['name'];
 					$class = 'SoupWaiter'; // Default
@@ -120,16 +121,18 @@ class SoupWaiterAdmin extends PersistedSingleton {
 							$class = $check[0];
 							$key = $check[1];
 					}
+					$class = __NAMESPACE__ . '\\' . $class;
 					if (class_exists($class)){
 						if (method_exists($class,'single')){
 							$obj = $class::single();
-						} else throw new Exception("Class '{$class}' must be a Singleton");
+						} else throw new \Exception("Class '{$class}' must be a Singleton");
 						$obj->$key = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
-					} else throw new Exception("Class '{$class}' not found'");
+					} else throw new \Exception("Class '{$class}' not found'");
 				}
-			} catch (Exception $e){
+			} catch (\Exception $e){
 				$response = [
+					'success' => false,
 					'error' => [
 						'message' => $e->getMessage(),
 						'code' => $e->getCode()
@@ -149,6 +152,31 @@ class SoupWaiterAdmin extends PersistedSingleton {
 		$obj->debug = 'My Old Value';
 		$obj->persist();
 		return ['success'=>true];
+	}
+
+	public function do_servicecheck(){
+		header("Content-type: application/json");
+		try {
+			$services['Authorisation'] = SoupWaiter::single()->connected;
+			$services['Post Syndication'] = false;
+			$services['Main Vacation Soup site'] = false;
+			$services['Community'] = false;
+			$services['Learning Centre'] = false;
+			$services['Social Syndication'] = false;
+			echo json_encode([
+				'success' => true,
+				'html' => Timber::compile( array( "admin/servicecheck.twig" ), ['services'=>$services])
+			]);
+		} catch (\Exception $e){
+			echo json_encode([
+				'success' => false,
+				'error' => [
+					'message' => $e->getMessage(),
+					'code' => $e->getCode()
+				]
+			]);
+		}
+		wp_die();
 	}
 	/**
 	 * Process POST data
@@ -238,6 +266,7 @@ class SoupWaiterAdmin extends PersistedSingleton {
 		}
 
 		SoupWaiter::single()->addNotice( 'success', 'Posted: '.$_POST['post_title']);
+		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	/**
 	 * get base context
@@ -386,7 +415,23 @@ class SoupWaiterAdmin extends PersistedSingleton {
 	private function get_connect_context(){
 		// Grab the basics
 		$context = $this->get_context('connect');
-		$context['social'] = Social::single();
+
+		$context['social']['FB'] = FB::single();
+		$context['social']['TW'] = TW::single();
+		$context['social']['PI'] = PI::single();
+		$context['social']['GP'] = GP::single();
+		$context['social']['LI'] = LI::single();
+		$context['social']['RD'] = RD::single();
+		$context['social']['SU'] = SU::single();
+		$context['social']['IG'] = IG::single();
+		/*
+		 * Still to add
+		 * vk.com
+		 * Weibo
+		 * Xing
+		 * renren
+		 * weixin (wechat)
+		 */
 		return $context;
 	}
 }

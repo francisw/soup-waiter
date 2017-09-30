@@ -1,6 +1,8 @@
 <?php
-require_once "SoupWaiterAdmin.php";
-require_once "PersistedSingleton.php";
+namespace Waiter;
+
+use WP_Post;
+use Exception;
 
 /**
  * Created by PhpStorm.
@@ -8,7 +10,7 @@ require_once "PersistedSingleton.php";
  * Date: 23/06/2017
  * Time: 16:41
  */
-class SoupWaiter extends PersistedSingleton {
+class SoupWaiter extends SitePersisted {
 	const REGISTRY_USER = 'soup-kitchen-registry';
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS = 'OpenDoor';
@@ -22,6 +24,10 @@ class SoupWaiter extends PersistedSingleton {
 	 */
 	protected $kitchen_api;
 	/**
+	 * @var string $kitchen_api Kitchen API partial URL
+	 */
+	protected $social_api;
+	/**
 	 * @var string $kitchen_jwt_api Kitchen AUTH API partial URL
 	 */
 	protected $kitchen_jwt_api;
@@ -34,35 +40,48 @@ class SoupWaiter extends PersistedSingleton {
 	 */
 	protected $kitchen_token;
 
-	/**********
-	 * FROM HERE are 'fake' properties, they have to be defined for
-	 * twig to see them, the there is a function that actually implements the
-	 * member through getters and setters. These do not actuallyy get set
-	 */
 	/**
 	 * Expose whether the Kitchen is up
 	 *
 	 * use as SoupWaiter::single()->connected?
-	 * @var boolean $connected - implemented as is_connected()
 	 * @return bool
 	 */
-	protected $connected; // Never actually set
 	protected function is_connected(){
 		return ($this->getSoupKitchenToken(TRUE)?true:false);
 	}
 	/**
-	 * @var $image_url
+	 * @param $folder
 	 * @return string
 	 */
-	protected $image_url;
+	protected function get_base_url($folder=''){
+		$folder .= '/';
+		$image_url=null; // This was static, but with persistence will fail on hostname/schema change
+		if (!$image_url){
+			$mydir = explode('/',__DIR__);
+			$uplevels = count(explode('\\',__NAMESPACE__));
+			$dir = array_slice($mydir,0,0-$uplevels);
+			$dir[] = "{$folder}FakeFile";
+			$image_url = implode('/',$dir);
+		}
+		return plugin_dir_url($image_url);
+	}
+	/**
+	 * @return string
+	 */
 	protected function get_image_url(){
-		return plugin_dir_url( __FILE__ ).'/img';
+		return $this->get_base_url('img');
+	}
+	/**
+	 * @return string
+	 */
+	protected function get_social_api(){
+		return "{$this->kitchen_host}/{$this->social_api}";
 	}
 	/**
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
-		$this->set_kitchen_host('https://localhost/privy2'); # 'https://staging1.privy2.com';#
+		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
 	}
@@ -70,13 +89,13 @@ class SoupWaiter extends PersistedSingleton {
 	/**
 	 * @param $host string The base url, including scheme, which must be https
 	 *
-	 * @throws Exception if not SSL
+	 * @throws \Exception if not SSL
 	 */
 	public function set_kitchen_host($host){
 		if (0==strncasecmp($host,'https://',8)){
 			$this->kitchen_host = $host;
 		} else {
-			throw new Exception("SoupKitchen location must begin https://, but got ".$host);
+			throw new \Exception("SoupKitchen location must begin https://, but got ".$host);
 		}
 	}
 
@@ -129,7 +148,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * Admin NOTICE on Creating the account (should be once only)
 	 * @param $refresh boolean get a new token anyway
 	 * @return string the Token
-	 * @throws Exception On Requesting Token from Kitchen
+	 * @throws \Exception On Requesting Token from Kitchen
 	 */
 	private function getSoupKitchenToken($refresh=FALSE){
 		if (null==$this->kitchen_token || $refresh) {
@@ -156,7 +175,7 @@ class SoupWaiter extends PersistedSingleton {
 				// And re-request the token from the Kitchen
 				$response = wp_remote_post($auth, $request);
 				if (!$this->api_success($response)) {
-					throw new Exception ('Sign-in '.$this->api_error_message($response));
+					throw new \Exception ('Sign-in '.$this->api_error_message($response));
 				}
 			}
 			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
@@ -170,13 +189,13 @@ class SoupWaiter extends PersistedSingleton {
 	 * Request a new registration for the current user
 	 * Always returns a valid new user, throws on any failure
 	 *
-	 * @return array|WP_Error
+	 * @return array|\WP_Error
 	 */
 	public function newRegistration(){
 
 		return $this->despatchToKitchen('/users',
 			[
-				'username' => $this->soupKitchenUser,
+				'username' => $this->kitchen_user,
 				'email' => wp_get_current_user()->user_email,
 				'url' => get_site_url(),
 				'roles' =>['author'],
@@ -191,10 +210,10 @@ class SoupWaiter extends PersistedSingleton {
 	 * Always returns a valid key, throws on error
 	 *
 	 * @return string The token
-	 * @throws Exception On Requesting the token
+	 * @throws \Exception On Requesting the token
 	 */
 	private function getSoupKitchenRegistryToken(){
-		$response = wp_remote_post($this->soupKitchenJwtApi.'/token', [
+		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_jwt_api.'/token', [
 			'body' => [
 				'username' => self::REGISTRY_USER,
 				'password' => self::REGISTRY_PASS
@@ -207,8 +226,7 @@ class SoupWaiter extends PersistedSingleton {
 			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
 			$token = $tokenResponse->token;
 		} else {
-
-			throw new Exception ("Soup Kitchen Registration: ".$this->api_error_message($response));
+			throw new \Exception ("Soup Kitchen Registration: ".$this->api_error_message($response));
 		}
 		return $token;
 	}
@@ -236,7 +254,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * Return the error message from a wp_remote_* $response
 	 * Usually called after $this->api_success() has returned an error
 	 *
-	 * @param WP_Error|array $response
+	 * @param \WP_Error|array $response
 	 *
 	 * @return mixed
 	 */
@@ -258,7 +276,7 @@ class SoupWaiter extends PersistedSingleton {
 	 * @param null|string $token if identifying as other (e.g. registrar) user
 	 *
 	 * @return array
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function despatchToKitchen($rri,$body=null,$token=null){
 
@@ -267,7 +285,7 @@ class SoupWaiter extends PersistedSingleton {
 		}
 
 		if ($body){
-			$response = wp_remote_post($this->soupKitchenApi.$rri,[
+			$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
 				'headers' => [
 					'Authorization' => 'Bearer '.$token,
 					'Content-Type' => 'application/json'
@@ -278,7 +296,7 @@ class SoupWaiter extends PersistedSingleton {
 
 			]);
 		} else {
-			$response = wp_remote_get($this->soupKitchenApi.$rri,[
+			$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
 				'headers' => [
 					'Authorization' => 'Bearer '.$token
 				],
@@ -288,7 +306,7 @@ class SoupWaiter extends PersistedSingleton {
 			]);
 		}
 		if (!$this->api_success($response)) {
-			throw new Exception ("Kitchen: ".$this->api_error_message($response));
+			throw new \Exception ("Kitchen: ".$this->api_error_message($response));
 		}
 
 		return $response;
@@ -336,10 +354,10 @@ class SoupWaiter extends PersistedSingleton {
 	 *
 	 * @param $newStatus string
 	 * @param $oldStatus string
-	 * @param $post WP_Post The post
+	 * @param $post \WP_Post The post
 	 *
 	 */
-	public function transition_post_status( $newStatus, $oldStatus, WP_Post $post ) {
+	public function transition_post_status( $newStatus, $oldStatus, \WP_Post $post ) {
 		try {
 			if ( 'publish' == $newStatus ){
 				if ($newStatus != $oldStatus){

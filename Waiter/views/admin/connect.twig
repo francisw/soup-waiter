@@ -1,0 +1,129 @@
+{% extends 'admin/vacation-soup.twig' %}
+{% block content %}
+{% embed 'admin/form.twig' %}
+{% block form_name %}connect{% endblock form_name %}
+{% block form_content %}
+    <script>
+        jQuery(function() {
+            var doServiceCheck = function () {
+                jQuery('#servicecheck').html('<p>Checking all services...</p>');
+                var ServiceAjaxCall = {
+                    type: "post",
+                    dataType: "json",
+                    context: this,
+                    url: ajaxurl,
+                    data: {
+                        action: "servicecheck",
+                        _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
+                    }
+                };
+                jQuery.ajax(ServiceAjaxCall)
+                    .fail(function (jqXHR, status, error) {
+                        console.log('fail (vacation-soup) ' + status + ' ' + error);
+                        alert('Error: Could not connect to Wordpress\n' + status);
+                    })
+                    .done(function (response) {
+                        if (response.error) {
+                            jQuery('#servicecheck').html('<h2>An <span class="inactive">Error</span> occurred</h2>' + response.error.message);
+                        } else {
+                            jQuery('#servicecheck').html(response.html);
+                        }
+                    });
+            }
+            jQuery('.soup-icon').click(doServiceCheck);
+            doServiceCheck();
+        });
+    </script>
+
+    <div class="vs-content tab-connect row">
+    <div class="col-lg-8 col-sm-12">
+        <div class="vs-panel row">
+            <div id="title" class="col-sm-12">
+                <h1>Social Connections</h1>
+                <p>
+                    Much of the power in your strategy comes in how widely you share your posts.
+                    Please enter your social urls here so we can widen the message.
+                </p>
+                <div class="row">
+                        <script>
+                            jQuery(function(){
+                                jQuery(".social-container").click(function(){
+                                    var j = jQuery(this);
+                                    if (!j.hasClass("currently-editing")){
+                                        jQuery(".social-container").removeClass("currently-editing");
+                                        j.addClass("currently-editing").find("INPUT").first().focus();
+                                    }
+                                });
+                            });
+                        </script>
+                    <div class="col-sm-8">
+                        <div class="social-icons">
+                            {% for key,soc in social %}
+                                    <div class="social-container">
+                                        <i class="fa fa-5x {{ soc.fa_name }}"></i>
+                                        <div class="field-container">
+                                            <div class="field-row">
+                                                {% include 'social/'~key~'.twig' %}
+                                            </div>
+                                        </div>
+                                    </div>
+                            {% endfor %}
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+        <div class="vs-panel row">
+            <div id="title" class="col-sm-12">
+                <h1>Vacation Soup Status</h1>
+            </div>
+            <div class="soup-icon hover col-sm-4">
+                <img title="Connect" src="{{ soup.image_url }}/vacation_soup_FB_logo_180sq.png"/>
+            </div>
+
+            <div id="servicecheck" class="soup-status col-sm-8">
+                <p>Service check is not running</p>
+            </div>
+        </div>
+        <div class="vs-panel row field-container">
+            <div id="title" class="col-sm-12">
+                <h1>Vacation Soup HQ Settings</h1>
+                <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
+                <div class="field">
+                    <label for="kitchen_host">
+                        Kitchen Host
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_user">
+                        Kitchen Username
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_user" id="kitchen_user" value="{{ soup.kitchen_user }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_auth_api">
+                        Kitchen Auth
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_api">
+                        Kitchen Api
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
+                </div>
+                <div class="field">
+                    <label for="social_api">
+                        Social Api
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.social_api" id="social_api" value="{{ soup.social_api }}"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock form_content -%}{% endembed %}
+{% endblock content %}

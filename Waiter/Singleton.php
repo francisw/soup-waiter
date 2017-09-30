@@ -1,5 +1,5 @@
 <?php
-require_once "Base.php";
+namespace Waiter;
 
 /**
  * Created by PhpStorm.
@@ -18,10 +18,9 @@ class Singleton extends Base  {
 		$class = get_called_class();
 
 		if( empty($single[$class]) ) {
-			$single[$class] = get_site_option("vs-{$class}");
+			$single[$class] = static::getPersisted();
 			if (!$single[$class]) {
 				$single[$class] = new $class();
-				//$single[$class]->persist();
 			}
 		}
 		return $single[$class];

@@ -1,6 +1,5 @@
 <?php
-
-require_once "PersistedSingleton.php";
+namespace Waiter;
 
 /**
  * Created by PhpStorm.
@@ -8,7 +7,7 @@ require_once "PersistedSingleton.php";
  * Date: 13/09/2017
  * Time: 21:59
  */
-class Social extends PersistedSingleton {
+class Social extends SitePersisted {
 	protected $facebook_link;
 	protected $twitter_link;
 	protected $pinterest_link;

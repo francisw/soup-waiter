@@ -1,5 +1,7 @@
 <?php
+namespace Waiter;
 
+use Exception;
 /**
  * Created by PhpStorm.
  * User: francisw
@@ -16,6 +18,9 @@ class Base {
 	 */
 	protected function persist(){
 	}
+	static protected function getPersisted(){
+		return null;
+	}
 
 	public function __set($name,$value){
 		$method = self::PFX_SET.$name;
@@ -25,16 +30,17 @@ class Base {
 			// Getter/Setter not defined so set as property of object
 			if (property_exists($this,$name)) {
 				$this->$name = $value;
-				$this->persist();
 			} else {
 				throw new Exception("Property '{$name}' does not exist in ".get_called_class());
 			}
 		}
+		$this->persist();
 	}
 
 	public function __get($name){
-		$methods = [self::PFX_GET.$name,self::PFX_IS.$name];
+		$methods = [self::PFX_GET,self::PFX_IS];
 		foreach ($methods as $method){
+			$method .= $name;
 			if(method_exists($this, $method)){
 				return $this->$method();
 			}
@@ -48,9 +54,12 @@ class Base {
 	}
 
 	public function __isset($name){
-		return property_exists($this,$name) ||
-		       method_exists($this,self::PFX_SET.$name) || // For a write-only property
-		       method_exists($this,self::PFX_GET.$name);   // For a read-only property
+		return (
+			property_exists($this,$name) ||
+			method_exists($this,self::PFX_SET.$name) || // For a write-only property
+			method_exists($this,self::PFX_GET.$name) || // For a read-only property
+			method_exists($this,self::PFX_IS.$name)     // For a read-only boolean property
+		);
 	}
 	public function __unset($name){
 		unset($this->$name);

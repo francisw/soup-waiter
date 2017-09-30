@@ -166,6 +166,7 @@ function media_pixabay_images_tab() {
                         title="<?= _e( 'Search', 'pixabay_images' ); ?>"><img
                             src="<?= plugin_dir_url( __FILE__ ) . 'img/search.png' ?>"></button>
             </div>
+	        <?php /*
             <div style="margin:1em 0;padding-left:2px;line-height:2">
                 <label style="margin-right:15px;white-space:nowrap"><input type="checkbox"
                                                                            id="filter_photos"><?= _e( 'Photos', 'pixabay_images' ); ?>
@@ -184,6 +185,7 @@ function media_pixabay_images_tab() {
                                         src="<?= plugin_dir_url( __FILE__ ) . 'img/settings.png' ?>"
                                         title="<?= _e( 'Settings', 'pixabay_images' ); ?>"></a>
             </div>
+                */ ?>
         </form>
         <div id="pixabay_results" class="flex-images"
              style="margin-top:20px;padding-top:25px;border-top:1px solid #ddd"></div>
@@ -262,13 +264,15 @@ function media_pixabay_images_tab() {
         form.submit(function (e) {
             e.preventDefault();
             q = jQuery('#q', form).val();
-            if (jQuery('#filter_photos', form).is(':checked') && !jQuery('#filter_cliparts', form).is(':checked')) image_type = 'photo';
+            /** if (jQuery('#filter_photos', form).is(':checked') && !jQuery('#filter_cliparts', form).is(':checked')) image_type = 'photo';
             else if (!jQuery('#filter_photos', form).is(':checked') && jQuery('#filter_cliparts', form).is(':checked')) image_type = 'clipart';
             else image_type = 'all';
             if (jQuery('#filter_horizontal', form).is(':checked') && !jQuery('#filter_vertical', form).is(':checked')) orientation = 'horizontal';
             else if (!jQuery('#filter_horizontal', form).is(':checked') && jQuery('#filter_vertical', form).is(':checked')) orientation = 'vertical';
-            else orientation = 'all';
+            else orientation = 'all'; */
             jQuery('#pixabay_results').html('');
+            image_type = 'photo'; // Override for Vacation Soup
+            orientation = 'horizontal'; // Override for Vacation Soup
             call_api(q, 1);
         });
 
@@ -319,35 +323,38 @@ function media_pixabay_images_tab() {
             jQuery('.flex-images').flexImages({rowHeight: 260});
         }
 
-        jQuery(document).on('click', '.upload', function () {
+        var motdClicked = parent.motdClicked;
+        parent.motdClicked = false;
+
+        var handleLightbox = function () {
             jQuery(document).off('click', '.upload');
             // loading animation
             jQuery(this).addClass('uploading').find('.download img').replaceWith('<img src="<?= plugin_dir_url( __FILE__ ) . 'img/loading.svg' ?>" style="height:80px !important">');
             jQuery.post('.', {
-                pixabay_upload: "1",
-                image_url: jQuery(this).data('url'),
-                image_user: jQuery(this).data('user'),
-                q: q,
-                vs_title: parent.vs_title,
-                vs_query: parent.vs_query,
-                wpnonce: '<?= wp_create_nonce( 'pixabay_images_security_nonce' ); ?>'
-            }, function (response) {
-                if (response.error === undefined) {
-                    if (parent.jQuery('#featured_image').val()) {
-                        window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + data;
-                    } else {
-                        parent.jQuery('#featured_image').val(response.id);
-                        parent.jQuery('#motd').html(
-                            '<h1>Featured Image</h1>'+response.html
-                        );
-                        parent.tb_remove();
+                    pixabay_upload: "1",
+                    image_url: jQuery(this).data('url'),
+                    image_user: jQuery(this).data('user'),
+                    vs_title: parent.vs_title,
+                    vs_query: parent.vs_query,
+                    wpnonce: '<?= wp_create_nonce( 'pixabay_images_security_nonce' ); ?>'
+                }, function (response) {
+                    if (response.error === undefined) {
+                        if (parent.jQuery('#featured_image').val() && !motdClicked) {
+                            window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + response.id;
+                        } else {
+                            parent.jQuery('#featured_image').val(response.id);
+                            parent.jQuery('#motd').html(
+                                '<h1>Featured Image</h1>'+response.html
+                            );
+                            parent.tb_remove();
+                        }
                     }
-                }
-                else alert('Oops:\n' + response.error.message);
-            },
-            'json');
+                    else alert('Oops:\n' + response.error.message);
+                },
+                'json');
             return false;
-        });
+        };
+        jQuery(document).on('click', '.upload', handleLightbox);
     </script>
 	<?php
 }
