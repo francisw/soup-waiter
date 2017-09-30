@@ -1,0 +1,23 @@
+{% extends "tease.twig" %}
+
+{% block content %}
+    <div class="col-lg-3 col-sm-4 img">
+        {% if post.thumbnail.src %}
+            <img src="{{ post.thumbnail.src('thumbnail')|tojpg }}"
+                 {#srcset="{{ post.thumbnail.src('thumbnail')|tojpg|retina(1) }} 1x,
+                         {{ post.thumbnail.src('thumbnail')|tojpg|retina(2) }}  2x,
+                         {{ post.thumbnail.src('thumbnail')|tojpg|retina(3) }}  3x,
+                         {{ post.thumbnail.src('thumbnail')|tojpg|retina(4) }}  4x" #}
+                 alt="{{ post.thumbnail.alt }}"
+                 title="{{ post.thumbnail.title }}"
+            />
+        {% endif %}
+    </div>
+    <div class="col-lg-9 col-sm-8 ">
+        <h2 class="h2">
+            <span class="align-left">{{post.title}}</span>
+            <span class="align-right">{{ post.status=='draft'? 'draft': post.date|time_ago }}</span>
+        </h2><span class="clear"></span>
+        <p>{{post.get_preview(25)}}</p>
+    </div>
+{% endblock %}

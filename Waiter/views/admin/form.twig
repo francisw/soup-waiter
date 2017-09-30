@@ -1,0 +1,71 @@
+<script>
+    jQuery(function() {
+        jQuery('.persist').change(function () {
+            var ajaxCall;
+            var jElem = jQuery(this);
+            this.disabled=true;
+
+            var value = jElem.val();
+            if ('checkbox'===this.type){
+                value = (this.checked)?1:0; // otherwise boolean strings of 'false' handled as true in php
+            }
+
+            var broken = jElem.attr("name").split('.');
+            var type = broken[0];
+            var name = broken[1];
+
+            // If SoupWaiter or SoupWaiterAdmin send as current
+            // Else send to Kitchen, using new API
+
+            if (true || "SoupWaiter"==type || "SoupWaiterAdmin"==type){
+
+                ajaxCall = {
+                    type: "post",
+                    dataType: "json",
+                    context: this,
+                    url: ajaxurl,
+                    data: {
+                        action: "soup",
+                        tab: "{{ tab }}",
+                        _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
+                        name: jElem.attr("name"),
+                        value: value,
+                        id: jElem.prop("id")
+                    }
+                };
+            } else {
+                ajaxCall = {
+                    type: "post",
+                    dataType: "json",
+                    context: this,
+                    url: '{{ soup.social_api~'/' }}'+type,
+                    data: {
+                        name: name,
+                        value: value,
+                    }
+                };
+            }
+
+            jQuery.ajax(ajaxCall).fail(function(jqXHR,status,error) {
+                console.log('fail (vacation-soup) '+status+' '+error);
+                alert('Error: Could not save change, refreshing page may help\n'+status);
+            }).done(function(response) {
+                this.disabled=false;
+                if (response.error) {
+                    alert('Error: could not save change,\n'+response.error.message)
+                }
+            });
+        })
+    });
+</script>
+<form
+        name="{% block form_name %}post{% endblock form_name %}"
+        action="{% block form_action %}{% endblock form_action %}"
+        method="post"
+        id="{% block form_id %}{{ block('form_name') }}{% endblock form_id %}">
+    {{ fn('wp_nonce_field', 'vacation-soup-'~tab, '_vs_nonce', false, false) }}
+    <input type="hidden" id="tab" name="tab" value="{{ tab }}">
+    <input type="hidden" id="user-id" name="user_ID" value="{{ user.id }}">
+    {% block form_header %}{% endblock form_header %}
+    {% block form_content %}{% endblock form_content %}
+</form>
