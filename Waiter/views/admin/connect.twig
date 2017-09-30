@@ -3,7 +3,39 @@
 {% embed 'admin/form.twig' %}
 {% block form_name %}connect{% endblock form_name %}
 {% block form_content %}
-<div class="vs-content tab-connect row">
+    <script>
+        jQuery(function() {
+            var doServiceCheck = function () {
+                jQuery('#servicecheck').html('<p>Checking all services...</p>');
+                var ServiceAjaxCall = {
+                    type: "post",
+                    dataType: "json",
+                    context: this,
+                    url: ajaxurl,
+                    data: {
+                        action: "servicecheck",
+                        _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
+                    }
+                };
+                jQuery.ajax(ServiceAjaxCall)
+                    .fail(function (jqXHR, status, error) {
+                        console.log('fail (vacation-soup) ' + status + ' ' + error);
+                        alert('Error: Could not connect to Wordpress\n' + status);
+                    })
+                    .done(function (response) {
+                        if (response.error) {
+                            jQuery('#servicecheck').html('<h2>An <span class="inactive">Error</span> occurred</h2>' + response.error.message);
+                        } else {
+                            jQuery('#servicecheck').html(response.html);
+                        }
+                    });
+            }
+            jQuery('.soup-icon').click(doServiceCheck);
+            doServiceCheck();
+        });
+    </script>
+
+    <div class="vs-content tab-connect row">
     <div class="col-lg-8 col-sm-12">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
@@ -50,13 +82,9 @@
             <div class="soup-icon hover col-sm-4">
                 <img title="Connect" src="{{ soup.image_url }}/vacation_soup_FB_logo_180sq.png"/>
             </div>
-            <div class="soup-status col-sm-8">
-                <p>You are {{ true?'':'not' }} connected to Vacation Soup.</p>
-                {% if true  %}
-                    <p>All Vacation Soup services should be working, although this page does not automatically check each service currently</p>
-                {% else %}
-                    <p>You may not be connected due to a configuration error. Please check your parameters before contacting support@vacationsoup.com.</p>
-                {% endif %}
+
+            <div id="servicecheck" class="soup-status col-sm-8">
+                <p>Service check is not running</p>
             </div>
         </div>
         <div class="vs-panel row field-container">

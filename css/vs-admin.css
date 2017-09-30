@@ -351,7 +351,15 @@ DIV.social-container.currently-editing DIV.field-container INPUT
     transition: all ease-in-out 150ms;
 }
 .soup-status {
-    margin-bottom: 40px;
+    min-height: 160px;
+}
+.soup-status .active {
+    font-weight: bold;
+    color: green;
+}
+.soup-status .inactive {
+    font-weight:bold;
+    color: red;
 }
 
 .soup-icon IMG {

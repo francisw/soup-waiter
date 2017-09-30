@@ -1,0 +1,5 @@
+{% for service,status in services %}
+<div>
+    <span class="{{ status?'active':'inactive' }}">{{ service }}</span> {{ status?'is running and connected':'is not running' }}
+</div>
+{% endfor %}

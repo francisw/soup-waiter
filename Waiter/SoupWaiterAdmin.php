@@ -50,6 +50,7 @@ class SoupWaiterAdmin extends SitePersisted {
 		if (!defined( 'DOING_AJAX' )) $this->process_post_data();
 
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
+		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
 
@@ -131,6 +132,7 @@ class SoupWaiterAdmin extends SitePersisted {
 				}
 			} catch (\Exception $e){
 				$response = [
+					'success' => false,
 					'error' => [
 						'message' => $e->getMessage(),
 						'code' => $e->getCode()
@@ -150,6 +152,31 @@ class SoupWaiterAdmin extends SitePersisted {
 		$obj->debug = 'My Old Value';
 		$obj->persist();
 		return ['success'=>true];
+	}
+
+	public function do_servicecheck(){
+		header("Content-type: application/json");
+		try {
+			$services['Authorisation'] = SoupWaiter::single()->connected;
+			$services['Post Syndication'] = false;
+			$services['Main Vacation Soup site'] = false;
+			$services['Community'] = false;
+			$services['Learning Centre'] = false;
+			$services['Social Syndication'] = false;
+			echo json_encode([
+				'success' => true,
+				'html' => Timber::compile( array( "admin/servicecheck.twig" ), ['services'=>$services])
+			]);
+		} catch (\Exception $e){
+			echo json_encode([
+				'success' => false,
+				'error' => [
+					'message' => $e->getMessage(),
+					'code' => $e->getCode()
+				]
+			]);
+		}
+		wp_die();
 	}
 	/**
 	 * Process POST data

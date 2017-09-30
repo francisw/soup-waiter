@@ -195,7 +195,7 @@ class SoupWaiter extends SitePersisted {
 
 		return $this->despatchToKitchen('/users',
 			[
-				'username' => $this->soupKitchenUser,
+				'username' => $this->kitchen_user,
 				'email' => wp_get_current_user()->user_email,
 				'url' => get_site_url(),
 				'roles' =>['author'],
@@ -213,7 +213,7 @@ class SoupWaiter extends SitePersisted {
 	 * @throws \Exception On Requesting the token
 	 */
 	private function getSoupKitchenRegistryToken(){
-		$response = wp_remote_post($this->soupKitchenJwtApi.'/token', [
+		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_jwt_api.'/token', [
 			'body' => [
 				'username' => self::REGISTRY_USER,
 				'password' => self::REGISTRY_PASS
@@ -226,7 +226,6 @@ class SoupWaiter extends SitePersisted {
 			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
 			$token = $tokenResponse->token;
 		} else {
-
 			throw new \Exception ("Soup Kitchen Registration: ".$this->api_error_message($response));
 		}
 		return $token;
@@ -286,7 +285,7 @@ class SoupWaiter extends SitePersisted {
 		}
 
 		if ($body){
-			$response = wp_remote_post($this->soupKitchenApi.$rri,[
+			$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
 				'headers' => [
 					'Authorization' => 'Bearer '.$token,
 					'Content-Type' => 'application/json'
@@ -297,7 +296,7 @@ class SoupWaiter extends SitePersisted {
 
 			]);
 		} else {
-			$response = wp_remote_get($this->soupKitchenApi.$rri,[
+			$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
 				'headers' => [
 					'Authorization' => 'Bearer '.$token
 				],
