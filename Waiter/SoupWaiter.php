@@ -133,7 +133,9 @@ class SoupWaiter extends SitePersisted {
 		// Now install the admin screens if needed
 		if (is_admin()) {
 			add_action('admin_notices', [$this, 'general_admin_notice']);
-			SoupWaiterAdmin::single()->init();
+			if (defined('TIMBER_LOADED')) {
+				SoupWaiterAdmin::single()->init();
+			}
 		}
 	}
 

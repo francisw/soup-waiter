@@ -87,6 +87,7 @@ class SoupWaiterAdmin extends SitePersisted {
 		wp_register_style( 'vacation-soup', plugins_url( '../css/vs-admin.css',__FILE__) );
 	}
 
+
 	/**
 	 * Process AJAX data
 	 * If there is a do_{tab}_ajax function, call it, otherwise do the default
