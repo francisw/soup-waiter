@@ -2,11 +2,11 @@
 [![GitHub license](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://raw.githubusercontent.com/francisw/soup-waiter/release/LICENSE)
 
 
-**Lead Developer:**
+- **Lead Developer:**
 [Francis Wallinger](https://github.com/francisw)
-**Version:** 1006.87
-**Requires at least:** 4.7.0 
-**Tested up to:** 4.7.1 
+- **Version:** []1006.87](https://github.com/francisw/release)
+- **Requires at least:** 4.7.0 
+- **Tested up to:** 4.8.2
 
 ## Description
 
@@ -14,10 +14,12 @@ Soup Waiter is a plugin to connect your Vacation Rental website to Vacation Soup
 
 ## Installation
 
+This is a standard Wordpress plugin, and is installed using the wp-admin plugin installer.
+
 1. Download the latest Source code(zip) from our [Github](https://github.com/francisw/soup-waiter/releases) repository
-2. In the Admin panel select Plugins->Add New
+2. In the wp-admin dashoard panel select Plugins->Add New
 3. Click Upload and select the zip file you downloaded for this plugin
-4. Click Activate - You may be instructed to install additional plugins
+4. Click Activate - You may be instructed to install any required additional plugins
 
 
 ## Frequently Asked Questions
