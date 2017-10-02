@@ -387,4 +387,6 @@ DIV.social-container.currently-editing DIV.field-container INPUT
 .nav-tab-row.nav-tab-wrapper {
     padding-top: 0;
 }
-
+#servicecheck.checking {
+    background: url(../img/loading.svg) center no-repeat;
+}

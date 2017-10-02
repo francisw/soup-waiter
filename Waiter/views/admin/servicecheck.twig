@@ -1,5 +1,16 @@
-{% for service,status in services %}
+{% for key,service in services %}
 <div>
-    <span class="{{ status?'active':'inactive' }}">{{ service }}</span> {{ status?'is running and connected':'is not running' }}
-</div> TODO Split into premium services
+    <span class="{{ service.status?'active':'inactive' }}">{{ key }}</span>
+    {{ service.status?'is running and connected':'is not running' }}
+</div>
+{% endfor %}
+<h2>Premium services</h2>
+{% for key,service in premiumServices %}
+    <div>
+        <span class="{{ service.status?'active':'inactive' }}">{{ key }}</span>
+        {{ service.status?'is running and connected':'is not enabled' }}
+        {% if service.status == false %}
+            <a href="#">enable</a>
+        {% endif %}
+    </div>
 {% endfor %}

@@ -158,15 +158,17 @@ class SoupWaiterAdmin extends SitePersisted {
 	public function do_servicecheck(){
 		header("Content-type: application/json");
 		try {
-			$services['Authorisation'] = SoupWaiter::single()->connected;
-			$services['Post Syndication'] = false;
-			$services['Main Vacation Soup site'] = false;
-			$services['Community'] = false;
-			$services['Learning Centre'] = false;
-			$services['Social Syndication'] = false;
+			$services['Authorisation'] = [ 'status'=> SoupWaiter::single()->connected ];
+			$services['Post Syndication'] = [ 'status'=> false ];
+			$services['Property Social Syndication'] = [ 'status'=> false ];
+			$services['Main Vacation Soup site'] = [ 'status'=> false ];
+			$services['Community'] = [ 'status'=> false ];
+			$premiumServices['Referral to your site'] = [ 'status'=> false ];
+			$premiumServices['Learning Centre'] = [ 'status'=> false ];
+			$premiumServices['Soup Social Syndication'] = [ 'status'=> false ];
 			echo json_encode([
 				'success' => true,
-				'html' => Timber::compile( array( "admin/servicecheck.twig" ), ['services'=>$services])
+				'html' => Timber::compile( array( "admin/servicecheck.twig" ), compact('services','premiumServices'))
 			]);
 		} catch (\Exception $e){
 			echo json_encode([
