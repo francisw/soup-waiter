@@ -348,9 +348,9 @@ class SoupWaiterAdmin extends SitePersisted {
 			foreach (explode(' ',$textDestination) as $word){
 				$destination .= ucfirst($word);
 			}
-			$context['tags'][] = $destination;
+			$context['permTags'][] = $destination;
 			foreach (['Holiday','Vacation'] as $holiday){
-				$context['tags'][] = $holiday.ucfirst($this->join).$destination;
+				$context['permTags'][] = $holiday.ucfirst($this->join).$destination;
 			}
 		}
 
@@ -409,6 +409,15 @@ class SoupWaiterAdmin extends SitePersisted {
 	private function get_property_context(){
 		// Grab the basics
 		$context = $this->get_context('property');
+
+		$context['properties'] = [
+			[
+				'id'=>1,
+				'title'=>'Hostel California',
+				'destination'=>'Utopia',
+				'join'=>'in'
+			]
+		];
 
 		return $context;
 	}
