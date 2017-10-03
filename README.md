@@ -4,7 +4,7 @@
 
 - **Lead Developer:**
 [Francis Wallinger](https://github.com/francisw)
-- **Version:** []1006.87](https://github.com/francisw/release)
+- **Version:** [1003.90](https://github.com/francisw/release)
 - **Requires at least:** 4.7.0 
 - **Tested up to:** 4.8.2
 
