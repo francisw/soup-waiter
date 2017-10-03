@@ -63,6 +63,8 @@ ARTICLE.tease .clear {
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 30px;
+    max-width: 100%;
+    height: auto;
 }
 
 .nav-tab {
@@ -387,4 +389,6 @@ DIV.social-container.currently-editing DIV.field-container INPUT
 .nav-tab-row.nav-tab-wrapper {
     padding-top: 0;
 }
-
+#servicecheck.checking {
+    background: url(../img/loading.svg) center no-repeat;
+}

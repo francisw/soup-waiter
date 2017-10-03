@@ -278,7 +278,7 @@ function media_pixabay_images_tab() {
 
         function call_api(q, p) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'https://pixabay.com/api/?key=27347-23fd1708b1c4f768195a5093b&response_group=high_resolution&lang=' + lang + '&image_type=' + image_type + '&orientation=' + orientation + '&per_page=' + per_page + '&page=' + p + '&search_term=' + encodeURIComponent(q));
+            xhr.open('GET', 'https://pixabay.com/api/?key=27347-23fd1708b1c4f768195a5093b&response_group=high_resolution&lang=' + lang + '&image_type=photo&orientation=horizontal&per_page=' + per_page + '&page=' + p + '&search_term=' + encodeURIComponent(q));
             xhr.onreadystatechange = function () {
                 if (this.status == 200 && this.readyState == 4) {
                     var data = JSON.parse(this.responseText);

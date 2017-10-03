@@ -6,7 +6,7 @@
     <script>
         jQuery(function() {
             var doServiceCheck = function () {
-                jQuery('#servicecheck').html('<p>Checking all services...</p>');
+                jQuery('#servicecheck').addClass("checking").html('');
                 var ServiceAjaxCall = {
                     type: "post",
                     dataType: "json",
@@ -26,7 +26,7 @@
                         if (response.error) {
                             jQuery('#servicecheck').html('<h2>An <span class="inactive">Error</span> occurred</h2>' + response.error.message);
                         } else {
-                            jQuery('#servicecheck').html(response.html);
+                            jQuery('#servicecheck').removeClass("checking").html(response.html);
                         }
                     });
             }
