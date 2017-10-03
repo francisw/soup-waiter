@@ -7,6 +7,16 @@
     var vs_title;
     var vs_query;
     var motdClicked = false;
+    var checkedTag='';
+
+    var inputFromTag = function (tag, i) {
+        var label = '<label for="tag_' + i + '">' + tag + '</label>';
+        var input = '<input type="checkbox" name="tags[]" id="tag_' + i +
+                    '" value="' + tag +
+                    '" title="' + tag + '" '+
+                    checkedTag + '/>';
+        return '<li class="checklist-item">' + label + input + '</li>';
+    }
 
     var chooseTopic = function(topicId){
         var html,tags;
@@ -18,15 +28,18 @@
 
         // Build the complete tag list
         tags = topic.tags.concat({{ tags|json_encode|raw }});
+        var permTags = {{ permTags|json_encode|raw }};
 
         html = '';
         var i = 0;
         tags.forEach(function (tag) {
-            i++;
-            var label = '<label for="tag_' + i + '">' + tag + '</label>';
-            var input = '<input type="checkbox" name="tags[]" id="tag_' + i + '" value="' + tag + '" title="' + tag + '"/>';
-            html += '<li class="checklist-item">' + label + input + '</li>';
+            html += inputFromTag(tag,++i);
         });
+        checkedTag='checked';
+        permTags.forEach(function (tag) {
+            html += inputFromTag(tag,++i);
+        });
+
 
         jQuery('#post_title').val(vs_title);
         jQuery('.tags-container').html(html);

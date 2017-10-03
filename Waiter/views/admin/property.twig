@@ -4,11 +4,53 @@
         {% block form_name %}dash{% endblock form_name %}
         {% block form_content %}
             <div class="vs-content tab-property row">
+                {% for property in properties %}
+                    <div class="col-lg-8 col-sm-12">
+                        <div class="vs-panel row field-container">
+                            <div id="title" class="col-sm-12">
+                                <h1>{{ property.title }}</h1>
+                            </div>
+                            <script>
+                                var setExample{{ property.id }} = function(){
+                                    var destVal = jQuery("#prop{{ property.id }}-destination").val();
+                                    var joinVal = jQuery("#prop{{ property.id }}-join").val();
+                                    joinVal = joinVal.charAt(0).toUpperCase() + joinVal.substring(1);
+                                    jQuery("#examples").html(
+                                        "The following tags will be added to all posts:<br/>"+
+                                        "#"+destVal+" #holiday"+joinVal+destVal+" #vacation"+joinVal+destVal
+                                    );
+                                }
+                                jQuery(function(){
+                                    jQuery(".re-example").change(setExample{{ property.id }});
+                                    setExample{{ property.id }}();
+                                });
+                            </script>
+                            <div class="col-sm-4">
+                                <div class="field">
+                                    <label for="prop{{ property.id }}-destination">
+                                        Destination
+                                    </label>
+                                    <input type="text" class="nopersist re-example" name="property[{{ property.id }}].destination" id="prop{{ property.id }}-destination" value="{{ property.destination }}"/>
+                                </div>
+                                <div class="field">
+                                    <label for="prop{{ property.id }}-join">
+                                        Joining word
+                                    </label>
+                                    <input type="text" class="nopersist re-example" name="property[{{ property.id }}].join" id="prop{{ property.id }}-join" value="{{ property.join }}"/>
+                                </div>
+                            </div>
+                            <div id="examples" class="col-sm-6">
+                                No example available.
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
                 <div class="col-lg-8 col-sm-12">
                     <div class="vs-panel row">
                         <div id="title" class="col-sm-12">
-                            <h1>Property Details</h1>
+                            <h1>New Property</h1>
                         </div>
+
                     </div>
                 </div>
             </div>
