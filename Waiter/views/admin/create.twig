@@ -83,8 +83,8 @@
             dateFormat : "yyyy-mm-dd"
         });
         jQuery('#motd').click(function(){
-            if (jQuery.find('IMG')) {
-                motdClicked = true;
+            if (jQuery('#featured_image').val()) { // if they clicked and we have an FI
+                motdClicked = true; // Then tell pixabay we are replacing, not adding
                 jQuery("#-add_media").click();
             }
         });
