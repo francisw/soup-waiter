@@ -266,9 +266,8 @@ class SoupWaiterAdmin extends SitePersisted {
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
+			update_post_meta($postId,'topic',$_POST['topic']);
 		}
-
-		SoupWaiter::single()->addNotice( 'success', 'Posted: '.$_POST['post_title']);
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	/**
@@ -322,6 +321,12 @@ class SoupWaiterAdmin extends SitePersisted {
 		);
 
 		$context['posts'] = Timber::get_posts( $args );
+		$context['recent_topics']=[];
+		foreach ($context['posts'] as $post){
+			if (isset($post->topic) && $post->topic > 0){
+				$context['recent_topics'][] = $post->topic;
+			}
+		}
 
 		return $context;
 	}

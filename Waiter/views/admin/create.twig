@@ -18,14 +18,15 @@
             context: this,
             url: '{{ soup.kitchen_api~'/topic/' }}',
             data: {
-                without: [0]
+                exclude: {{ recent_topics|json_encode }}
             }
         }).fail(function(jqXHR,status,error) {
-            console.log('fail (vacation-soup) '+status+' '+error);
+            jQuery("#trending-topics").removeClass("checking");
             alert('Error: Waiter failed to contact Kitchen\n'+error);
         }).done(function(response) {
             var html='';
             if (response.error) {
+                jQuery("#trending-topics").removeClass("checking");
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
             } else {
                 response.forEach(function(topic){
@@ -44,12 +45,14 @@
                         per_page: 100
                     }
                 }).fail(function(jqXHR,status,error) {
-                    console.log('fail (vacation-soup) '+status+' '+error);
+                    jQuery("#trending-topics").removeClass("checking");
                     alert('Error: Waiter failed to contact Kitchen\n'+error);
                 }).done(function(response) {
+                    var target = jQuery("#trending-topics");
                     var html='';
                     k_tags = [];
                     if (response.error) {
+                        target.removeClass("checking");
                         html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
                     } else {
                         response.forEach(function(tag){
@@ -68,9 +71,9 @@
                             location = ' {{ admin.join }} {{ admin.destination }}';
                         }
                         $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
-                        jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
+                        target.append('<li>'+$input+$label+'</li>');
                     });
-                    jQuery("#trending-topics").removeClass("checking");
+                    target.removeClass("checking");
                     var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
                     jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
                     chooseTopic(randomTopic);
@@ -100,7 +103,7 @@
             });
             vs_title = topic.title.raw + ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}';
             jQuery('#post_title').prop('autofocus',false).val(vs_title);
-
+            jQuery('INPUT[name="topic"]').val(topic.id);
         } else {
             // They'll write their own
             jQuery('#post_title').prop('autofocus',true).focus().val("");
