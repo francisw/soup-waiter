@@ -210,7 +210,7 @@ class SoupWaiterAdmin extends SitePersisted {
 			'vacation-soup-admin',
 			array( $this, 'create_admin_page' ),
 			'dashicons-admin-site',
-			6
+			4
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
 	}
