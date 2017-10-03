@@ -57,16 +57,22 @@
                             k_tags[tag.id] = tag;
                         });
                     }
+                    var topicText = "I'll write my own";
+                    k_topics.push({"id":0,"tags":[],"title":{"rendered":topicText,"raw":topicText}});
                     k_topics.forEach(function(topic,i){
+                        var location='';
                         var elem = document.createElement('textarea');
                         elem.innerHTML = topic.title.rendered;
                         topic.title.raw = elem.value;
                         $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
-                        $label = '<label for="topic_'+i+'">'+topic.title.rendered+' {{ admin.join }} {{ admin.destination }}</label>';
+                        if (topic.id != 0){
+                            location = ' {{ admin.join }} {{ admin.destination }}';
+                        }
+                        $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
                         jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
                     });
                     jQuery("#trending-topics").removeClass("checking");
-                    var randomTopic = Math.floor((Math.random() * k_topics.length));
+                    var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
                     jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
                     chooseTopic(randomTopic);
                 });
@@ -84,31 +90,35 @@
     }
 
     var chooseTopic = function(topicId){
-        var html,tags;
-
         var topic = k_topics[topicId];
-        // global the selected tags for pixabay and the subject
-        vs_query = topic.tags.map(function(tag){
-            return k_tags[tag].name
-        });
-        vs_title = topic.title.raw + ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}';
+        var i = 0;
+        vs_query = [];
+
+        if (topic.id) {
+            // global the selected tags for pixabay and the subject
+            vs_query = topic.tags.map(function (tag) {
+                return k_tags[tag].name
+            });
+            vs_title = topic.title.raw + ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}';
+            jQuery('#post_title').prop('autofocus',false).val(vs_title);
+
+        } else {
+            // They'll write their own
+            jQuery('#post_title').prop('autofocus',true).focus().val("");
+        }
 
         // Build the complete tag list
-        tags = vs_query;
         var permTags = {{ permTags|json_encode|raw }};
-
-        html = '';
-        var i = 0;
+        var html = '';
         vs_query.forEach(function (tag) {
-            html += inputFromTag(tag,++i);
+            html += inputFromTag(tag, ++i);
         });
-        checkedTag='checked';
+
+        checkedTag = 'checked';
         permTags.forEach(function (tag) {
-            html += inputFromTag(tag,++i);
+            html += inputFromTag(tag, ++i);
         });
-
-
-        jQuery('#post_title').val(vs_title);
+        checkedTag = '';
         jQuery('.tags-container').html(html);
     };
     var postDateElem,postStatusElem;
