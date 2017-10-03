@@ -78,6 +78,12 @@ class SoupWaiter extends SitePersisted {
 		return "{$this->kitchen_host}/{$this->social_api}";
 	}
 	/**
+	 * @return string
+	 */
+	protected function get_kitchen_api(){
+		return "{$this->kitchen_host}/{$this->kitchen_api}";
+	}
+	/**
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
@@ -184,6 +190,13 @@ class SoupWaiter extends SitePersisted {
 			$this->kitchen_token = $_SESSION['soup-kitchen-token'] = $tokenResponse->token;
 		}
 		return $this->kitchen_token;
+	}
+	/**
+	 * To provide external access to it from __GET
+	 * @return string
+	 */
+	protected function get_kitchen_token(){
+		return $this->getSoupKitchenToken();
 	}
 
 	/**

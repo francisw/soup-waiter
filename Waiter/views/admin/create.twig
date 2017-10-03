@@ -4,10 +4,75 @@
     // Global so they can be accessed when needed (including in pixabay-images)
     var vs_topics = {{ trending_topics|json_encode|raw }};
     vs_topics.push({"content":"","tags":[]});
+    var k_topics = []; // Kitchen retrieved topics
+    var k_tags = []; // Kitchen retrieved tags
     var vs_title;
     var vs_query;
     var motdClicked = false;
     var checkedTag='';
+
+    var getTrendingTopics = function(){
+        jQuery('#trending-topics').addClass("checking").html('');
+        jQuery.ajax({
+            type: "get",
+            dataType: "json",
+            context: this,
+            url: '{{ soup.kitchen_api~'/topic/' }}',
+            data: {
+                without: [0]
+            }
+        }).fail(function(jqXHR,status,error) {
+            console.log('fail (vacation-soup) '+status+' '+error);
+            alert('Error: Waiter failed to contact Kitchen\n'+error);
+        }).done(function(response) {
+            var html='';
+            if (response.error) {
+                html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
+            } else {
+                response.forEach(function(topic){
+                    k_topics.push(topic);
+                    topic.tags.forEach(function(tag){
+                        if(jQuery.inArray(tag, k_tags) === -1) k_tags.push(tag);
+                    });
+                });
+                jQuery.ajax({
+                    type: "get",
+                    dataType: "json",
+                    context: this,
+                    url: '{{ soup.kitchen_api~'/tags/' }}',
+                    data: {
+                        include: k_tags.sort(),
+                        per_page: 100
+                    }
+                }).fail(function(jqXHR,status,error) {
+                    console.log('fail (vacation-soup) '+status+' '+error);
+                    alert('Error: Waiter failed to contact Kitchen\n'+error);
+                }).done(function(response) {
+                    var html='';
+                    k_tags = [];
+                    if (response.error) {
+                        html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
+                    } else {
+                        response.forEach(function(tag){
+                            k_tags[tag.id] = tag;
+                        });
+                    }
+                    k_topics.forEach(function(topic,i){
+                        var elem = document.createElement('textarea');
+                        elem.innerHTML = topic.title.rendered;
+                        topic.title.raw = elem.value;
+                        $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
+                        $label = '<label for="topic_'+i+'">'+topic.title.rendered+' {{ admin.join }} {{ admin.destination }}</label>';
+                        jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
+                    });
+                    jQuery("#trending-topics").removeClass("checking");
+                    var randomTopic = Math.floor((Math.random() * k_topics.length));
+                    jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
+                    chooseTopic(randomTopic);
+                });
+            }
+        });
+    }
 
     var inputFromTag = function (tag, i) {
         var label = '<label for="tag_' + i + '">' + tag + '</label>';
@@ -21,18 +86,20 @@
     var chooseTopic = function(topicId){
         var html,tags;
 
-        var topic = vs_topics[topicId];
+        var topic = k_topics[topicId];
         // global the selected tags for pixabay and the subject
-        vs_query = topic.tags;
-        vs_title = topic.content + (topic.content? ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}':'');
+        vs_query = topic.tags.map(function(tag){
+            return k_tags[tag].name
+        });
+        vs_title = topic.title.raw + ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}';
 
         // Build the complete tag list
-        tags = topic.tags.concat({{ tags|json_encode|raw }});
+        tags = vs_query;
         var permTags = {{ permTags|json_encode|raw }};
 
         html = '';
         var i = 0;
-        tags.forEach(function (tag) {
+        vs_query.forEach(function (tag) {
             html += inputFromTag(tag,++i);
         });
         checkedTag='checked';
@@ -76,9 +143,7 @@
     };
 
     jQuery(function(){
-        var randomTopic = Math.floor((Math.random() * {{ trending_topics|length }}));
-        jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
-        chooseTopic(randomTopic);
+        getTrendingTopics();
         jQuery( ".datepicker" ).datepicker({
             dateFormat : "yyyy-mm-dd"
         });
@@ -115,23 +180,7 @@
             </div>
             <div class="col-sm-4 float-right">
                 <h2>Trending searches</h2>
-                <ul class="hoverable">
-                    {% for topic in trending_topics %}
-                        <li><input type="radio" name="trending_topics" id="topic_{{ loop.index0 }}" value="{{ loop.index0 }}" onchange="chooseTopic(jQuery(this).val())"/>
-                            <label for="topic_{{ loop.index0 }}">
-                                {{ topic.content }} {{ admin.join }} {{ admin.destination }}
-                            </label>
-                        </li>
-                        {% if loop.last %}
-                            <li><input type="radio" name="trending_topics" id="topic_{{ trending_topics|length }}" onchange="chooseTopic({{ trending_topics|length }});jQuery('#post_title').focus()"/>
-                                <label for="topic_{{ trending_topics|length }}">
-                                    I'll write my own Subject
-                                </label>
-                            </li>
-                    {% endif %}
-                    {% else %}
-                        <li>No search trends available</li>
-                    {% endfor %}
+                <ul id="trending-topics" class="hoverable">
                 </ul>
             </div>
             <div class="col-sm-12">
