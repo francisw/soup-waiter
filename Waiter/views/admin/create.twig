@@ -2,8 +2,7 @@
 {% block content %}
 <script>
     // Global so they can be accessed when needed (including in pixabay-images)
-    var vs_topics = {{ trending_topics|json_encode|raw }};
-    vs_topics.push({"content":"","tags":[]});
+    var vs_topics = [];
     var k_topics = []; // Kitchen retrieved topics
     var k_tags = []; // Kitchen retrieved tags
     var vs_title;

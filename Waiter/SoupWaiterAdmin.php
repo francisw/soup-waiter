@@ -293,54 +293,6 @@ class SoupWaiterAdmin extends SitePersisted {
 		// Grab the basics
 		$context = $this->get_context('create');
 
-		// Trending Subjects
-		$context['trending_topics'] = [
-			[
-				'content' => 'Places to relax',
-				'tags' => [
-					'Spa',
-					'Swim',
-					'Walking'
-				]
-			],
-			[
-				'content' => "What's on",
-				'tags' => [
-					'Live Music',
-					'Theatre',
-					'Cinema',
-					'Exhibition'
-				]
-			],
-			[
-				'content' => 'Dog friendly places',
-				'tags' => [
-					'Pet',
-					'Dog',
-					'Animal',
-					'DogFriendly'
-				]
-			],
-			[
-				'content' => 'Favourite Beaches',
-				'tags' => [
-					'Beaches',
-					'Beach',
-					'Sea',
-					'Sand'
-				]
-			],
-			[
-				'content' => 'Best Nightspots',
-				'tags' => [
-					'Restaurant',
-					'Bar',
-					'Nightclub',
-					'Drinking'
-				]
-			],
-		];
-
 		// Available Tags for all posts
 		foreach ($this->destinations as $textDestination) {
 			// In case the destination is multiple words
