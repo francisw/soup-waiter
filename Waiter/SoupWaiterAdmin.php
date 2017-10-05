@@ -29,7 +29,10 @@ class SoupWaiterAdmin extends SitePersisted {
 	 * @var string[] $pixabay_images_gallery_languages left this in when porting code from pixabay just in case
 	 */
 	protected $pixabay_images_gallery_languages;
-
+    /**
+     * @var number $nextMOTD the bnext MOTD page to request
+     */
+    protected $nextMOTD;
 	/**
 	 * Called from the 'init' Wordpress action
 	 *
@@ -37,6 +40,7 @@ class SoupWaiterAdmin extends SitePersisted {
 	 * add action and filter hooks
 	 *
 	 */
+
 	public function init(){
 		$this->pixabay_images_gallery_languages = array('cs' => 'Čeština', 'da' => 'Dansk', 'de' => 'Deutsch', 'en' => 'English', 'es' => 'Español', 'fr' => 'Français', 'id' => 'Indonesia', 'it' => 'Italiano', 'hu' => 'Magyar', 'nl' => 'Nederlands', 'no' => 'Norsk', 'pl' => 'Polski', 'pt' => 'Português', 'ro' => 'Română', 'sk' => 'Slovenčina', 'fi' => 'Suomi', 'sv' => 'Svenska', 'tr' => 'Türkçe', 'vi' => 'Việt', 'th' => 'ไทย', 'bg' => 'Български', 'ru' => 'Русский', 'el' => 'Ελληνική', 'ja' => '日本語', 'ko' => '한국어', 'zh' => '简体中文');
 
@@ -65,12 +69,18 @@ class SoupWaiterAdmin extends SitePersisted {
 	public function add_header_cors() {
 		header( 'Access-Control-Allow-Origin: *' );
 	}
-	/**
-	 * @return string The current main destination
-	 */
-	public function get_destination(){
-		return $this->destinations[0];
-	}
+    public function get_nextMOTD(){
+        if (!$this->nextMOTD){
+            $this->nextMOTD = 1;
+        }
+        return $this->nextMOTD;
+    }
+    /**
+     * @return string The current main destination
+     */
+    public function get_destination(){
+        return $this->destinations[0];
+    }
 
 	/**
 	 * @return string The currently selected joining word
@@ -218,7 +228,7 @@ class SoupWaiterAdmin extends SitePersisted {
 		wp_enqueue_style( 'vs-bootstrap' );
 		wp_enqueue_style( 'vacation-soup' );
 		wp_enqueue_script('jquery-ui-datepicker');
-		wp_enqueue_style('vs-admin-ui-css','http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
+		wp_enqueue_style('vs-admin-ui-css','https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
 		wp_enqueue_style('vs-font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
 	}
 
@@ -268,6 +278,8 @@ class SoupWaiterAdmin extends SitePersisted {
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 		}
+		$this->nextMOTD = $_POST['nextMOTD'];
+		$this->persist();
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	/**

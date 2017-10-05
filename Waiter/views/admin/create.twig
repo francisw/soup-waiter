@@ -10,28 +10,40 @@
     var motdClicked = false;
     var checkedTag='';
 
-    var getMOTD = function(page){
+    var getMOTD = function() {
         jQuery('#motd').addClass("checking");
+
+        var page = jQuery('INPUT[name="nextMOTD"]').val();
         jQuery.ajax({
             type: "get",
             dataType: "json",
             context: this,
-            url: '{{ soup.kitchen_api~'/message/' }}',
+            url: '{{ soup.kitchen_api~'/motd/' }}',
             data: {
                 per_page: 1,
                 page: page
             }
-        }).fail(function(jqXHR,status,error) {
+        }).fail(function (jqXHR, status, error) {
             jQuery("#trending-topics").removeClass("checking");
-            alert('Error: Waiter failed to contact Kitchen\n'+error);
-        }).done(function(response) {
+            alert('Error: Waiter failed to contact Kitchen\n' + error);
+        }).done(function (response) {
             if (response.error) {
                 jQuery("#trending-topics").removeClass("checking");
-                html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
+                html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
             } else {
-
+                if (response.length) {
+                    jQuery('INPUT[name="nextMOTD"]').val(page + 1);
+                    var title = '<h1 id="title">'+response[0].title.rendered+'</h1>';
+                    jQuery('#motd').html(title+response[0].content.rendered);
+                } else {
+                    if (this.page != 1){ // reset back to the start
+                        jQuery('INPUT[name="nextMOTD"]').val(1);
+                        getMOTD();
+                    }
+                }
             }
-        }
+        });
+    }
 
     var getTrendingTopics = function(){
         jQuery('#trending-topics').addClass("checking").html('');
@@ -178,6 +190,7 @@
     };
 
     jQuery(function(){
+        getMOTD();
         getTrendingTopics();
         jQuery( ".datepicker" ).datepicker({
             dateFormat : "yyyy-mm-dd"

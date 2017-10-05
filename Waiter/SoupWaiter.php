@@ -124,9 +124,10 @@ class SoupWaiter extends SitePersisted {
 	public function init(){
 		if(!session_id()) session_start();
 
-		$user = wp_get_current_user();
-		$this->kitchen_user = $user->user_login.".api@".$_SERVER['SERVER_NAME'];
-
+        if (!$this->kitchen_user){
+            $user = wp_get_current_user();
+            $this->kitchen_user = $user->user_login.".api@".$_SERVER['SERVER_NAME'];
+        }
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
