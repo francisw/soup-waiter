@@ -373,20 +373,22 @@ class SoupWaiter extends SitePersisted {
 	 *
 	 */
 	public function transition_post_status( $newStatus, $oldStatus, \WP_Post $post ) {
-		try {
-			if ( 'publish' == $newStatus ){
-				if ($newStatus != $oldStatus){
-					// It's a new one
-					$this->syndicate_post($post);
-					$this->addNotice('info','Syndicated Post to VacationSoup');
-				} else {
-					// We need to update it
-					$this->syndicate_post( $post ); // TODO This needs to update instead giving the foreign ID of it
-					$this->addNotice('info','Updated Post on VacationSoup');
+		if ($post->type == 'post'){
+			try {
+				if ( 'publish' == $newStatus ){
+					if ($newStatus != $oldStatus){
+						// It's a new one
+						$this->syndicate_post($post);
+						$this->addNotice('info','Syndicated Post to VacationSoup');
+					} else {
+						// We need to update it
+						$this->syndicate_post( $post ); // TODO This needs to update instead giving the foreign ID of it
+						$this->addNotice('info','Updated Post on VacationSoup');
+					}
 				}
+			} catch (Exception $e) {
+				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
 			}
-		} catch (Exception $e) {
-			$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
 		}
 	}
 

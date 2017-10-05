@@ -10,6 +10,29 @@
     var motdClicked = false;
     var checkedTag='';
 
+    var getMOTD = function(page){
+        jQuery('#motd').addClass("checking");
+        jQuery.ajax({
+            type: "get",
+            dataType: "json",
+            context: this,
+            url: '{{ soup.kitchen_api~'/message/' }}',
+            data: {
+                per_page: 1,
+                page: page
+            }
+        }).fail(function(jqXHR,status,error) {
+            jQuery("#trending-topics").removeClass("checking");
+            alert('Error: Waiter failed to contact Kitchen\n'+error);
+        }).done(function(response) {
+            if (response.error) {
+                jQuery("#trending-topics").removeClass("checking");
+                html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
+            } else {
+
+            }
+        }
+
     var getTrendingTopics = function(){
         jQuery('#trending-topics').addClass("checking").html('');
         jQuery.ajax({
@@ -183,10 +206,6 @@
                 <div class="vs-panel row">
                     <div id="motd" class="col-sm-12">
                         <h1>Message of the day</h1>
-                        <h2>Idea 73: Turn your writing into a game</h2>
-                        <p>
-                            Instead of thinking of writing as work, imagine it to be a computer game. You have to succeed at various tasks before you’re admitted into the next level. For example, imagine you need to write 3 posts in 30 minutes. Go!
-                        </p>
                     </div>
                 </div>
             </div>
