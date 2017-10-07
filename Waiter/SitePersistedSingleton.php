@@ -7,7 +7,7 @@ namespace Waiter;
  * Date: 12/09/2017
  * Time: 11:30
  */
-class SitePersisted extends Singleton  {
+class SitePersistedSingleton extends Singleton  {
 	/**
 	 * Persist and recall this object in options
 	 * @return self The object calling this method

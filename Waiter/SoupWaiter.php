@@ -10,7 +10,7 @@ use Exception;
  * Date: 23/06/2017
  * Time: 16:41
  */
-class SoupWaiter extends SitePersisted {
+class SoupWaiter extends SitePersistedSingleton {
 	const REGISTRY_USER = 'soup-kitchen-registry';
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS = 'OpenDoor';
@@ -39,8 +39,17 @@ class SoupWaiter extends SitePersisted {
 	 * @var string $kitchen_token The Token to identify us in the Kitchen
 	 */
 	protected $kitchen_token;
+    /**
+     * @var number $nextMOTD the next MOTD page to request
+     */
+    protected $nextMOTD;
+    /**
+     * @var number $nextMOTD the next MOTD page to request
+     */
+    protected $property_count;
 
-	/**
+
+    /**
 	 * Expose whether the Kitchen is up
 	 *
 	 * use as SoupWaiter::single()->connected?
@@ -78,12 +87,20 @@ class SoupWaiter extends SitePersisted {
 		return "{$this->kitchen_host}/{$this->social_api}";
 	}
 	/**
+	 * @return string
+	 */
+	protected function get_kitchen_api(){
+		return "{$this->kitchen_host}/{$this->kitchen_api}";
+	}
+	/**
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
 		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
+        $this->nextMOTD = 1;
+        $this->property_count = 0;
 	}
 
 	/**
@@ -118,9 +135,10 @@ class SoupWaiter extends SitePersisted {
 	public function init(){
 		if(!session_id()) session_start();
 
-		$user = wp_get_current_user();
-		$this->kitchen_user = $user->user_login.".api@".$_SERVER['SERVER_NAME'];
-
+        if (!$this->kitchen_user){
+            $user = wp_get_current_user();
+            $this->kitchen_user = $user->user_login.".api@".$_SERVER['SERVER_NAME'];
+        }
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
@@ -184,6 +202,13 @@ class SoupWaiter extends SitePersisted {
 			$this->kitchen_token = $_SESSION['soup-kitchen-token'] = $tokenResponse->token;
 		}
 		return $this->kitchen_token;
+	}
+	/**
+	 * To provide external access to it from __GET
+	 * @return string
+	 */
+	protected function get_kitchen_token(){
+		return $this->getSoupKitchenToken();
 	}
 
 	/**
@@ -360,20 +385,22 @@ class SoupWaiter extends SitePersisted {
 	 *
 	 */
 	public function transition_post_status( $newStatus, $oldStatus, \WP_Post $post ) {
-		try {
-			if ( 'publish' == $newStatus ){
-				if ($newStatus != $oldStatus){
-					// It's a new one
-					$this->syndicate_post($post);
-					$this->addNotice('info','Syndicated Post to VacationSoup');
-				} else {
-					// We need to update it
-					$this->syndicate_post( $post ); // TODO This needs to update instead giving the foreign ID of it
-					$this->addNotice('info','Updated Post on VacationSoup');
+		if ($post->type == 'post'){
+			try {
+				if ( 'publish' == $newStatus ){
+					if ($newStatus != $oldStatus){
+						// It's a new one
+						$this->syndicate_post($post);
+						$this->addNotice('info','Syndicated Post to VacationSoup');
+					} else {
+						// We need to update it
+						$this->syndicate_post( $post ); // TODO This needs to update instead giving the foreign ID of it
+						$this->addNotice('info','Updated Post on VacationSoup');
+					}
 				}
+			} catch (Exception $e) {
+				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
 			}
-		} catch (Exception $e) {
-			$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
 		}
 	}
 

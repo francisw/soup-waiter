@@ -1,13 +1,124 @@
 {% extends 'admin/vacation-soup.twig' %}
 {% block content %}
-<script>
+    <input type="hidden" id="nextMOTD" class="persist" name="SoupWaiter.nextMOTD" value="{{ soup.nextMOTD }}">
+
+    <script>
     // Global so they can be accessed when needed (including in pixabay-images)
-    var vs_topics = {{ trending_topics|json_encode|raw }};
-    vs_topics.push({"content":"","tags":[]});
+    var vs_topics = [];
+    var k_topics = []; // Kitchen retrieved topics
+    var k_tags = []; // Kitchen retrieved tags
     var vs_title;
     var vs_query;
     var motdClicked = false;
     var checkedTag='';
+
+    var getMOTD = function() {
+        jQuery('#motd').addClass("checking");
+
+        var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]').val();
+        jQuery.ajax({
+            type: "get",
+            dataType: "json",
+            context: this,
+            url: '{{ soup.kitchen_api~'/motd/' }}',
+            data: {
+                per_page: 1,
+                page: page
+            }
+        }).statusCode({
+            400: function(){ // This means we have gone past the end of the list
+                var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]');
+                if (page.val() !== 1){ // reset back to the start
+                    page.val(1);
+                    return getMOTD();
+                }
+            }
+        }).done(function (response) {
+            var motd = jQuery("#motd");
+            if (response.error) {
+                html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
+            } else {
+                var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]');
+                if (response.length) {
+                    page.val(parseInt(page.val()) + 1).change();
+                    var title = '<h1 id="title">'+response[0].title.rendered+'</h1>';
+                    motd.html(title+response[0].content.rendered);
+                }
+            }
+        }).always(function (response) {
+            jQuery("#motd").removeClass("checking");
+        });
+    }
+
+    var getTrendingTopics = function(){
+        jQuery('#trending-topics').addClass("checking").html('');
+        jQuery.ajax({
+            type: "get",
+            dataType: "json",
+            context: this,
+            url: '{{ soup.kitchen_api~'/topic/' }}',
+            data: {
+                exclude: {{ recent_topics|json_encode }}
+            }
+        }).always(function(jqXHR,status,error) {
+            jQuery("#trending-topics").removeClass("checking");
+        }).fail(function(jqXHR,status,error) {
+            alert('Error: Waiter failed to contact Kitchen\n'+error);
+        }).done(function(response) {
+            var html='';
+            if (response.error) {
+                html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
+            } else {
+                response.forEach(function(topic){
+                    k_topics.push(topic);
+                    topic.tags.forEach(function(tag){
+                        if(jQuery.inArray(tag, k_tags) === -1) k_tags.push(tag);
+                    });
+                });
+                jQuery.ajax({
+                    type: "get",
+                    dataType: "json",
+                    context: this,
+                    url: '{{ soup.kitchen_api~'/tags/' }}',
+                    data: {
+                        include: k_tags.sort(),
+                        per_page: 100
+                    }
+                }).always(function(jqXHR,status,error) {
+                    jQuery("#trending-topics").removeClass("checking");
+                }).fail(function(jqXHR,status,error) {
+                    alert('Error: Waiter failed to contact Kitchen\n'+error);
+                }).done(function(response) {
+                    var html='';
+                    k_tags = [];
+                    if (response.error) {
+                        html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
+                    } else {
+                        response.forEach(function(tag){
+                            k_tags[tag.id] = tag;
+                        });
+                    }
+                    var topicText = "I'll write my own";
+                    k_topics.push({"id":0,"tags":[],"title":{"rendered":topicText,"raw":topicText}});
+                    k_topics.forEach(function(topic,i){
+                        var location='';
+                        var elem = document.createElement('textarea');
+                        elem.innerHTML = topic.title.rendered;
+                        topic.title.raw = elem.value;
+                        $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
+                        if (topic.id !== 0){
+                            location = ' {{ admin.join }} {{ admin.destination }}';
+                        }
+                        $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
+                        jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
+                    });
+                    var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
+                    jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
+                    chooseTopic(randomTopic);
+                });
+            }
+        });
+    }
 
     var inputFromTag = function (tag, i) {
         var label = '<label for="tag_' + i + '">' + tag + '</label>';
@@ -19,29 +130,35 @@
     }
 
     var chooseTopic = function(topicId){
-        var html,tags;
+        var topic = k_topics[topicId];
+        var i = 0;
+        vs_query = [];
 
-        var topic = vs_topics[topicId];
-        // global the selected tags for pixabay and the subject
-        vs_query = topic.tags;
-        vs_title = topic.content + (topic.content? ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}':'');
+        if (topic.id) {
+            // global the selected tags for pixabay and the subject
+            vs_query = topic.tags.map(function (tag) {
+                return k_tags[tag].name
+            });
+            vs_title = topic.title.raw + ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}';
+            jQuery('#post_title').prop('autofocus',false).val(vs_title);
+            jQuery('INPUT[name="topic"]').val(topic.id);
+        } else {
+            // They'll write their own
+            jQuery('#post_title').prop('autofocus',true).focus().val("");
+        }
 
         // Build the complete tag list
-        tags = topic.tags.concat({{ tags|json_encode|raw }});
         var permTags = {{ permTags|json_encode|raw }};
-
-        html = '';
-        var i = 0;
-        tags.forEach(function (tag) {
-            html += inputFromTag(tag,++i);
+        var html = '';
+        vs_query.forEach(function (tag) {
+            html += inputFromTag(tag, ++i);
         });
-        checkedTag='checked';
+
+        checkedTag = 'checked';
         permTags.forEach(function (tag) {
-            html += inputFromTag(tag,++i);
+            html += inputFromTag(tag, ++i);
         });
-
-
-        jQuery('#post_title').val(vs_title);
+        checkedTag = '';
         jQuery('.tags-container').html(html);
     };
     var postDateElem,postStatusElem;
@@ -76,15 +193,14 @@
     };
 
     jQuery(function(){
-        var randomTopic = Math.floor((Math.random() * {{ trending_topics|length }}));
-        jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
-        chooseTopic(randomTopic);
+        getMOTD();
+        getTrendingTopics();
         jQuery( ".datepicker" ).datepicker({
             dateFormat : "yyyy-mm-dd"
         });
         jQuery('#motd').click(function(){
-            if (jQuery.find('IMG')) {
-                motdClicked = true;
+            if (jQuery('#featured_image').val()) { // if they clicked and we have an FI
+                motdClicked = true; // Then tell pixabay we are replacing, not adding
                 jQuery("#-add_media").click();
             }
         });
@@ -106,32 +222,12 @@
                 <div class="vs-panel row">
                     <div id="motd" class="col-sm-12">
                         <h1>Message of the day</h1>
-                        <h2>Idea 73: Turn your writing into a game</h2>
-                        <p>
-                            Instead of thinking of writing as work, imagine it to be a computer game. You have to succeed at various tasks before you’re admitted into the next level. For example, imagine you need to write 3 posts in 30 minutes. Go!
-                        </p>
                     </div>
                 </div>
             </div>
             <div class="col-sm-4 float-right">
                 <h2>Trending searches</h2>
-                <ul class="hoverable">
-                    {% for topic in trending_topics %}
-                        <li><input type="radio" name="trending_topics" id="topic_{{ loop.index0 }}" value="{{ loop.index0 }}" onchange="chooseTopic(jQuery(this).val())"/>
-                            <label for="topic_{{ loop.index0 }}">
-                                {{ topic.content }} {{ admin.join }} {{ admin.destination }}
-                            </label>
-                        </li>
-                        {% if loop.last %}
-                            <li><input type="radio" name="trending_topics" id="topic_{{ trending_topics|length }}" onchange="chooseTopic({{ trending_topics|length }});jQuery('#post_title').focus()"/>
-                                <label for="topic_{{ trending_topics|length }}">
-                                    I'll write my own Subject
-                                </label>
-                            </li>
-                    {% endif %}
-                    {% else %}
-                        <li>No search trends available</li>
-                    {% endfor %}
+                <ul id="trending-topics" class="hoverable">
                 </ul>
             </div>
             <div class="col-sm-12">
@@ -150,7 +246,7 @@
                 </div>
             </div>
             {#- Layout the tags in a centered column (lg) or on its own (sm) -#}
-            <div id="tagger" class="col-lg-4 col-sm-12">
+            <div id="tagger" class="col-lg-8 col-sm-12">
                 <h2>Tags</h2>
                 <ul class="tags-container checklist hoverable">
                     <li class="checklist-item">{# The contents are replaced by javascript #}
@@ -160,6 +256,8 @@
             </div>
             <div id="scheduler" class="col-lg-4 col-sm-12">
                 <h2><label for="when">Schedule</label></h2>
+                <input type="submit" name="post_status" id="save-post" value="draft" class="button button-secondary button-large">
+                <input type="submit" name="post_status" id="publish" class="button button-primary button-large" value="publish">
                 <div class="vs-field">
                     <select id="when" onchange="
                            setPostDateAndStatus();
@@ -182,11 +280,6 @@
                     <label for="datepicker">Post this on: </label>
                     <input type="text" class="datepicker" id="datepicker" onchange="setPostDateAndStatus()"/>
                 </div>
-            </div>
-            <div id="poster" class="col-lg-4 col-sm-12">
-                <h2>Post</h2>
-                <input type="submit" name="post_status" id="save-post" value="draft" class="button button-secondary button-large">
-                <input type="submit" name="post_status" id="publish" class="button button-primary button-large" value="publish">
             </div>
         </div>
     </div>

@@ -7,7 +7,7 @@ namespace Waiter;
  * Date: 13/09/2017
  * Time: 21:59
  */
-class Social extends SitePersisted {
+class Social extends SitePersistedSingleton {
 	protected $facebook_link;
 	protected $twitter_link;
 	protected $pinterest_link;

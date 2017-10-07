@@ -12,7 +12,7 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
  * Date: 03/07/2017
  * Time: 21:02
  */
-class SoupWaiterAdmin extends SitePersisted {
+class SoupWaiterAdmin extends SitePersistedSingleton {
 	/**
 	 * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
 	 */
@@ -29,7 +29,6 @@ class SoupWaiterAdmin extends SitePersisted {
 	 * @var string[] $pixabay_images_gallery_languages left this in when porting code from pixabay just in case
 	 */
 	protected $pixabay_images_gallery_languages;
-
 	/**
 	 * Called from the 'init' Wordpress action
 	 *
@@ -37,6 +36,7 @@ class SoupWaiterAdmin extends SitePersisted {
 	 * add action and filter hooks
 	 *
 	 */
+
 	public function init(){
 		$this->pixabay_images_gallery_languages = array('cs' => 'Čeština', 'da' => 'Dansk', 'de' => 'Deutsch', 'en' => 'English', 'es' => 'Español', 'fr' => 'Français', 'id' => 'Indonesia', 'it' => 'Italiano', 'hu' => 'Magyar', 'nl' => 'Nederlands', 'no' => 'Norsk', 'pl' => 'Polski', 'pt' => 'Português', 'ro' => 'Română', 'sk' => 'Slovenčina', 'fi' => 'Suomi', 'sv' => 'Svenska', 'tr' => 'Türkçe', 'vi' => 'Việt', 'th' => 'ไทย', 'bg' => 'Български', 'ru' => 'Русский', 'el' => 'Ελληνική', 'ja' => '日本語', 'ko' => '한국어', 'zh' => '简体中文');
 
@@ -53,31 +53,11 @@ class SoupWaiterAdmin extends SitePersisted {
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
-
-		$this->joins = [
-			'in','near','around','when visiting'
-		];
-		$this->destinations = [
-			'Utopia',
-			'Shangri la'
-		];
-	}
+    }
 	public function add_header_cors() {
 		header( 'Access-Control-Allow-Origin: *' );
 	}
-	/**
-	 * @return string The current main destination
-	 */
-	public function get_destination(){
-		return $this->destinations[0];
-	}
 
-	/**
-	 * @return string The currently selected joining word
-	 */
-	public function get_join(){
-		return $this->joins[0];
-	}
 
 	/**
 	 * Register our stylesheets.
@@ -115,19 +95,30 @@ class SoupWaiterAdmin extends SitePersisted {
 					if (!isset($_REQUEST['name']) || !isset($_REQUEST['value'])) {
 						throw new \Exception('missing parameters: name or value');
 					}
-					$key = $_REQUEST['name'];
+					$attr = $_REQUEST['name'];
 					$class = 'SoupWaiter'; // Default
-					$check = explode('.',$key);
+					$check = explode('.',$attr);
 					if (2 == count($check)){    // Then it's class.member
 							$class = $check[0];
-							$key = $check[1];
+							$attr = $check[1];
 					}
+                    preg_match('#\[(.*?)\]#', $class, $id);
+					if ($id){
+					    $id = $id[1]; // extract the id
+                    }
+					$class = substr($class,0,strcspn($class,"[]"));
 					$class = __NAMESPACE__ . '\\' . $class;
 					if (class_exists($class)){
-						if (method_exists($class,'single')){
-							$obj = $class::single();
-						} else throw new \Exception("Class '{$class}' must be a Singleton");
-						$obj->$key = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
+						if (null==$id){
+						    if (method_exists($class,'single')){
+                                $obj = $class::single();
+                            } else throw new \Exception("Class '{$class}' must be a Singleton, as no ID provided");
+                        } else {
+                            if (method_exists($class,'find')){
+                                $obj = $class::find($id);
+                            } else throw new \Exception("Class '{$class}' must be a Multiton, as ID provided");
+                        }
+						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
 					} else throw new \Exception("Class '{$class}' not found'");
 				}
@@ -218,7 +209,7 @@ class SoupWaiterAdmin extends SitePersisted {
 		wp_enqueue_style( 'vs-bootstrap' );
 		wp_enqueue_style( 'vacation-soup' );
 		wp_enqueue_script('jquery-ui-datepicker');
-		wp_enqueue_style('vs-admin-ui-css','http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
+		wp_enqueue_style('vs-admin-ui-css','https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
 		wp_enqueue_style('vs-font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
 	}
 
@@ -266,9 +257,9 @@ class SoupWaiterAdmin extends SitePersisted {
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
+			update_post_meta($postId,'topic',$_POST['topic']);
 		}
-
-		SoupWaiter::single()->addNotice( 'success', 'Posted: '.$_POST['post_title']);
+		$this->persist();
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	/**
@@ -286,6 +277,16 @@ class SoupWaiterAdmin extends SitePersisted {
 		return $context;
 	}
 
+    protected function get_join(){
+        return Property::find(0)->join;
+    }
+    protected function get_destination(){
+        $dest = Property::find(0)->destination;
+        if (empty($dest)){
+            $dest = "Somewhere";
+        }
+        return $dest;
+    }
 	/**
 	 * @returns mixed[] The context for this tab
 	 */
@@ -293,66 +294,16 @@ class SoupWaiterAdmin extends SitePersisted {
 		// Grab the basics
 		$context = $this->get_context('create');
 
-		// Trending Subjects
-		$context['trending_topics'] = [
-			[
-				'content' => 'Places to relax',
-				'tags' => [
-					'Spa',
-					'Swim',
-					'Walking'
-				]
-			],
-			[
-				'content' => "What's on",
-				'tags' => [
-					'Live Music',
-					'Theatre',
-					'Cinema',
-					'Exhibition'
-				]
-			],
-			[
-				'content' => 'Dog friendly places',
-				'tags' => [
-					'Pet',
-					'Dog',
-					'Animal',
-					'DogFriendly'
-				]
-			],
-			[
-				'content' => 'Favourite Beaches',
-				'tags' => [
-					'Beaches',
-					'Beach',
-					'Sea',
-					'Sand'
-				]
-			],
-			[
-				'content' => 'Best Nightspots',
-				'tags' => [
-					'Restaurant',
-					'Bar',
-					'Nightclub',
-					'Drinking'
-				]
-			],
-		];
-
 		// Available Tags for all posts
-		foreach ($this->destinations as $textDestination) {
-			// In case the destination is multiple words
-			$destination = '';
-			foreach (explode(' ',$textDestination) as $word){
-				$destination .= ucfirst($word);
-			}
-			$context['permTags'][] = $destination;
-			foreach (['Holiday','Vacation'] as $holiday){
-				$context['permTags'][] = $holiday.ucfirst($this->join).$destination;
-			}
-		}
+        // In case the destination is multiple words
+        $destination = '';
+        foreach (explode(' ',Property::find(0)->destination) as $word){
+            $destination .= ucfirst($word);
+        }
+        $context['permTags'] = ['VacationSoup',$destination];
+        foreach (['Holiday','Vacation'] as $holiday){
+            $context['permTags'][] = $holiday.ucfirst($this->join).$destination;
+        }
 
 		$args = array(
 			'numberposts' => 8,
@@ -370,6 +321,12 @@ class SoupWaiterAdmin extends SitePersisted {
 		);
 
 		$context['posts'] = Timber::get_posts( $args );
+		$context['recent_topics']=[];
+		foreach ($context['posts'] as $post){
+			if (isset($post->topic) && $post->topic > 0){
+				$context['recent_topics'][] = $post->topic;
+			}
+		}
 
 		return $context;
 	}
@@ -410,14 +367,21 @@ class SoupWaiterAdmin extends SitePersisted {
 		// Grab the basics
 		$context = $this->get_context('property');
 
-		$context['properties'] = [
-			[
-				'id'=>1,
-				'title'=>'Hostel California',
-				'destination'=>'Utopia',
-				'join'=>'in'
-			]
-		];
+		$newAllowed = 1;
+		$propertyCount = SoupWaiter::single()->property_count;
+		if ($propertyCount >= 10){
+		    $newAllowed = 0;
+        }
+        for ($i=0;$i<($propertyCount);$i++){
+            $property = Property::find($i);
+            if (empty($property->title)){ // Then this will be the 'New' property
+                $newAllowed = 0;
+            }
+            $context['properties'][] = $property;
+        }
+        if ($newAllowed){
+            $context['properties'][] = Property::find($i);
+        }
 
 		return $context;
 	}

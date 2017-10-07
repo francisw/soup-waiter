@@ -3,56 +3,106 @@
     {% embed 'admin/form.twig' %}
         {% block form_name %}dash{% endblock form_name %}
         {% block form_content %}
+            <script>
+                String.prototype.ToCamelCase = function() { // like toCamelCase but capitalises first char
+                    // remove all characters that should not be in a variable name
+                    // as well underscores an numbers from the beginning of the string
+                    var s = this.replace(/([^a-zA-Z0-9_\- ])|^[_0-9]+/g, "").trim().toLowerCase();
+                    // uppercase letters preceeded by a hyphen or a space
+                    s = s.replace(/([ -]+|^)([a-zA-Z0-9])/g, function(a,b,c) {
+                        return c.toUpperCase();
+                    });
+                    // uppercase letters following numbers
+                    s = s.replace(/([0-9]+)([a-zA-Z])/g, function(a,b,c) {
+                        return b + c.toUpperCase();
+                    });
+                    return s;
+                }
+                var handleChange = function(id){
+                    var title;
+                    var destVal = jQuery("#destination-"+id).val();
+                    var joinVal = jQuery("#join-"+id).val();
+                    var titleVal = title = jQuery("#title-"+id).val();
+                    if (!title){
+                        title = "New Property";
+                    }
+                    if (joinVal && destVal){
+                        title+=" "+joinVal+" "+destVal;
+                    }
+                    jQuery("#title-header-"+id).html("<h1>"+title+"</h1>");
+
+                    var target = jQuery("#examples-"+id);
+                    target.html('');
+                    destVal = destVal.ToCamelCase();
+                    joinVal = joinVal.ToCamelCase();
+                    titleVal = titleVal.ToCamelCase();
+                    if (destVal && joinVal && titleVal){
+                        target.html(
+                            "The following tags will be added to all posts:<br/>"+
+                            "#VacationSoup #"+destVal+" #Holiday"+joinVal+destVal+" #Vacation"+joinVal+destVal
+                        );
+                    } else {
+                        target.html("Please enter Title and Destination to see example tags.")
+                    }
+                }
+                jQuery(function(){
+                    var changeSet = jQuery(".handleChange");
+                    // Add the handler
+                    changeSet.change(function(){
+                        handleChange(jQuery(this).data('id'));
+                    });
+                    // And fire it on page load
+                    changeSet.each(function(){
+                        handleChange(jQuery(this).data('id'));
+                    })
+                });
+
+            </script>
             <div class="vs-content tab-property row">
                 {% for property in properties %}
                     <div class="col-lg-8 col-sm-12">
                         <div class="vs-panel row field-container">
-                            <div id="title" class="col-sm-12">
-                                <h1>{{ property.title }}</h1>
+                            <div id="title-header-{{ property.id }}" class="col-sm-12">
+                                <h1>{{ property.title? property.title: 'New Property' }}</h1>
                             </div>
-                            <script>
-                                var setExample{{ property.id }} = function(){
-                                    var destVal = jQuery("#prop{{ property.id }}-destination").val();
-                                    var joinVal = jQuery("#prop{{ property.id }}-join").val();
-                                    joinVal = joinVal.charAt(0).toUpperCase() + joinVal.substring(1);
-                                    jQuery("#examples").html(
-                                        "The following tags will be added to all posts:<br/>"+
-                                        "#"+destVal+" #holiday"+joinVal+destVal+" #vacation"+joinVal+destVal
-                                    );
-                                }
-                                jQuery(function(){
-                                    jQuery(".re-example").change(setExample{{ property.id }});
-                                    setExample{{ property.id }}();
-                                });
-                            </script>
-                            <div class="col-sm-4">
+                            <div class="col-sm-6">
                                 <div class="field">
-                                    <label for="prop{{ property.id }}-destination">
+                                    <label for="title-{{ property.id }}">
+                                        Title
+                                    </label>
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange"
+                                           placeholder="Property Title"
+                                           name="property[{{ property.id }}].title"
+                                           id="title-{{ property.id }}"
+                                           required value="{{ property.title }}"/>
+                                </div>
+                                <div class="field">
+                                    <label for="destination-{{ property.id }}">
                                         Destination
                                     </label>
-                                    <input type="text" class="nopersist re-example" name="property[{{ property.id }}].destination" id="prop{{ property.id }}-destination" value="{{ property.destination }}"/>
-                                </div>
-                                <div class="field">
-                                    <label for="prop{{ property.id }}-join">
-                                        Joining word
-                                    </label>
-                                    <input type="text" class="nopersist re-example" name="property[{{ property.id }}].join" id="prop{{ property.id }}-join" value="{{ property.join }}"/>
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange join-word"
+                                           title="Joining word" name="property[{{ property.id }}].join"
+                                           id="join-{{ property.id }}"
+                                           required value="{{ property.join }}"/>
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange"
+                                           placeholder="Destination Name"
+                                           name="property[{{ property.id }}].destination"
+                                           id="destination-{{ property.id }}"
+                                           required value="{{ property.destination }}"/>
                                 </div>
                             </div>
-                            <div id="examples" class="col-sm-6">
-                                No example available.
+                            <div id="examples-{{ property.id }}" class="col-sm-6">
+
                             </div>
                         </div>
                     </div>
                 {% endfor %}
-                <div class="col-lg-8 col-sm-12">
-                    <div class="vs-panel row">
-                        <div id="title" class="col-sm-12">
-                            <h1>New Property</h1>
-                        </div>
-
-                    </div>
-                </div>
             </div>
         {% endblock form_content %}
     {% endembed %}
