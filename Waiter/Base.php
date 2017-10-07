@@ -16,9 +16,9 @@ class Base {
 	/**
 	 * To be extended by inheritors if persistence needed, as in Singleton
 	 */
-	protected function persist(){
+	protected function persist($key=null){
 	}
-	static protected function getPersisted(){
+	static protected function getPersisted($key=null){
 		return null;
 	}
 

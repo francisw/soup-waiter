@@ -154,13 +154,16 @@ DIV.media-selector {
 .tags-container  INPUT {
     float: left;
 }
+#scheduler {
+    min-height: 220px;
+}
 #scheduler INPUT#days {
     width: 3em;
 }
 #scheduler DIV.vs-field {
     width: 100%;
 }
-#poster INPUT.button-large {
+#scheduler INPUT.button-large {
     width: 100px;
     display: block;
     clear: left;
@@ -282,6 +285,17 @@ DIV.field-container INPUT.persist[disabled]
 .social-container.currently-editing .field INPUT {
     display: inline-block;
 }
+.social-container .field INPUT[type='text']
+{
+    max-width: 5%;
+    min-width: 5%;
+}
+.social-container.currently-editing .field INPUT[type='text']
+{
+    max-width: 65%;
+    min-width: 65%;
+}
+
 DIV.social-container.currently-editing DIV.field-container INPUT
 {
     border-color: rgba(221, 221, 221, 1.0);
@@ -389,6 +403,16 @@ DIV.social-container.currently-editing DIV.field-container INPUT
 .nav-tab-row.nav-tab-wrapper {
     padding-top: 0;
 }
-#servicecheck.checking {
+.checking {
     background: url(../img/loading.svg) center no-repeat;
+}
+#trending-topics {
+    min-height: 50px;
+}
+.tab-property DIV.field INPUT[type="text"].join-word {
+    max-width: 30px;
+    min-width: 30px
+}
+.tab-property DIV.field LABEL {
+    display: block;
 }
