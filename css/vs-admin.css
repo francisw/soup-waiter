@@ -154,13 +154,16 @@ DIV.media-selector {
 .tags-container  INPUT {
     float: left;
 }
+#scheduler {
+    min-height: 220px;
+}
 #scheduler INPUT#days {
     width: 3em;
 }
 #scheduler DIV.vs-field {
     width: 100%;
 }
-#poster INPUT.button-large {
+#scheduler INPUT.button-large {
     width: 100px;
     display: block;
     clear: left;
@@ -405,4 +408,11 @@ DIV.social-container.currently-editing DIV.field-container INPUT
 }
 #trending-topics {
     min-height: 50px;
+}
+.tab-property DIV.field INPUT[type="text"].join-word {
+    max-width: 30px;
+    min-width: 30px
+}
+.tab-property DIV.field LABEL {
+    display: block;
 }

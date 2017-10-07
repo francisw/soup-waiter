@@ -10,7 +10,7 @@ use Exception;
  * Date: 23/06/2017
  * Time: 16:41
  */
-class SoupWaiter extends SitePersisted {
+class SoupWaiter extends SitePersistedSingleton {
 	const REGISTRY_USER = 'soup-kitchen-registry';
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS = 'OpenDoor';
@@ -43,8 +43,13 @@ class SoupWaiter extends SitePersisted {
      * @var number $nextMOTD the next MOTD page to request
      */
     protected $nextMOTD;
+    /**
+     * @var number $nextMOTD the next MOTD page to request
+     */
+    protected $property_count;
 
-	/**
+
+    /**
 	 * Expose whether the Kitchen is up
 	 *
 	 * use as SoupWaiter::single()->connected?
@@ -94,7 +99,8 @@ class SoupWaiter extends SitePersisted {
 		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
-		$this->nextMOTD = 1;
+        $this->nextMOTD = 1;
+        $this->property_count = 0;
 	}
 
 	/**
