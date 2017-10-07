@@ -1,6 +1,8 @@
 {% extends 'admin/vacation-soup.twig' %}
 {% block content %}
-<script>
+    <input type="hidden" id="nextMOTD" class="persist" name="SoupWaiter.nextMOTD" value="{{ soup.nextMOTD }}">
+
+    <script>
     // Global so they can be accessed when needed (including in pixabay-images)
     var vs_topics = [];
     var k_topics = []; // Kitchen retrieved topics
@@ -13,7 +15,7 @@
     var getMOTD = function() {
         jQuery('#motd').addClass("checking");
 
-        var page = jQuery('INPUT[name="nextMOTD"]').val();
+        var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]').val();
         jQuery.ajax({
             type: "get",
             dataType: "json",
@@ -23,25 +25,28 @@
                 per_page: 1,
                 page: page
             }
-        }).fail(function (jqXHR, status, error) {
-            jQuery("#trending-topics").removeClass("checking");
-            alert('Error: Waiter failed to contact Kitchen\n' + error);
-        }).done(function (response) {
-            if (response.error) {
-                jQuery("#trending-topics").removeClass("checking");
-                html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
-            } else {
-                if (response.length) {
-                    jQuery('INPUT[name="nextMOTD"]').val(page + 1);
-                    var title = '<h1 id="title">'+response[0].title.rendered+'</h1>';
-                    jQuery('#motd').html(title+response[0].content.rendered);
-                } else {
-                    if (this.page != 1){ // reset back to the start
-                        jQuery('INPUT[name="nextMOTD"]').val(1);
-                        getMOTD();
-                    }
+        }).statusCode({
+            400: function(){ // This means we have gone past the end of the list
+                var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]');
+                if (page.val() !== 1){ // reset back to the start
+                    page.val(1);
+                    return getMOTD();
                 }
             }
+        }).done(function (response) {
+            var motd = jQuery("#motd");
+            if (response.error) {
+                html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
+            } else {
+                var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]');
+                if (response.length) {
+                    page.val(parseInt(page.val()) + 1).change();
+                    var title = '<h1 id="title">'+response[0].title.rendered+'</h1>';
+                    motd.html(title+response[0].content.rendered);
+                }
+            }
+        }).always(function (response) {
+            jQuery("#motd").removeClass("checking");
         });
     }
 
@@ -55,13 +60,13 @@
             data: {
                 exclude: {{ recent_topics|json_encode }}
             }
-        }).fail(function(jqXHR,status,error) {
+        }).always(function(jqXHR,status,error) {
             jQuery("#trending-topics").removeClass("checking");
+        }).fail(function(jqXHR,status,error) {
             alert('Error: Waiter failed to contact Kitchen\n'+error);
         }).done(function(response) {
             var html='';
             if (response.error) {
-                jQuery("#trending-topics").removeClass("checking");
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
             } else {
                 response.forEach(function(topic){
@@ -79,15 +84,14 @@
                         include: k_tags.sort(),
                         per_page: 100
                     }
-                }).fail(function(jqXHR,status,error) {
+                }).always(function(jqXHR,status,error) {
                     jQuery("#trending-topics").removeClass("checking");
+                }).fail(function(jqXHR,status,error) {
                     alert('Error: Waiter failed to contact Kitchen\n'+error);
                 }).done(function(response) {
-                    var target = jQuery("#trending-topics");
                     var html='';
                     k_tags = [];
                     if (response.error) {
-                        target.removeClass("checking");
                         html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
                     } else {
                         response.forEach(function(tag){
@@ -102,13 +106,12 @@
                         elem.innerHTML = topic.title.rendered;
                         topic.title.raw = elem.value;
                         $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
-                        if (topic.id != 0){
+                        if (topic.id !== 0){
                             location = ' {{ admin.join }} {{ admin.destination }}';
                         }
                         $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
-                        target.append('<li>'+$input+$label+'</li>');
+                        jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
                     });
-                    target.removeClass("checking");
                     var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
                     jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
                     chooseTopic(randomTopic);

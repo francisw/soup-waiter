@@ -39,6 +39,10 @@ class SoupWaiter extends SitePersisted {
 	 * @var string $kitchen_token The Token to identify us in the Kitchen
 	 */
 	protected $kitchen_token;
+    /**
+     * @var number $nextMOTD the next MOTD page to request
+     */
+    protected $nextMOTD;
 
 	/**
 	 * Expose whether the Kitchen is up
@@ -90,6 +94,7 @@ class SoupWaiter extends SitePersisted {
 		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
+		$this->nextMOTD = 1;
 	}
 
 	/**

@@ -29,10 +29,6 @@ class SoupWaiterAdmin extends SitePersisted {
 	 * @var string[] $pixabay_images_gallery_languages left this in when porting code from pixabay just in case
 	 */
 	protected $pixabay_images_gallery_languages;
-    /**
-     * @var number $nextMOTD the bnext MOTD page to request
-     */
-    protected $nextMOTD;
 	/**
 	 * Called from the 'init' Wordpress action
 	 *
@@ -69,12 +65,6 @@ class SoupWaiterAdmin extends SitePersisted {
 	public function add_header_cors() {
 		header( 'Access-Control-Allow-Origin: *' );
 	}
-    public function get_nextMOTD(){
-        if (!$this->nextMOTD){
-            $this->nextMOTD = 1;
-        }
-        return $this->nextMOTD;
-    }
     /**
      * @return string The current main destination
      */
@@ -278,7 +268,6 @@ class SoupWaiterAdmin extends SitePersisted {
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 		}
-		$this->nextMOTD = $_POST['nextMOTD'];
 		$this->persist();
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
