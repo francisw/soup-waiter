@@ -11,13 +11,29 @@
                                 <h1>{{ property.title }}</h1>
                             </div>
                             <script>
+                                String.prototype.toCamelCase = function() {
+                                    // remove all characters that should not be in a variable name
+                                    // as well underscores an numbers from the beginning of the string
+                                    var s = this.replace(/([^a-zA-Z0-9_\- ])|^[_0-9]+/g, "").trim().toLowerCase();
+                                    // uppercase letters preceeded by a hyphen or a space
+                                    s = s.replace(/([ -]+|^)([a-zA-Z0-9])/g, function(a,b,c) {
+                                        return c.toUpperCase();
+                                    });
+                                    // uppercase letters following numbers
+                                    s = s.replace(/([0-9]+)([a-zA-Z])/g, function(a,b,c) {
+                                        return b + c.toUpperCase();
+                                    });
+                                    return s;
+                                }
+
+
                                 var setExample{{ property.id }} = function(){
-                                    var destVal = jQuery("#prop{{ property.id }}-destination").val();
+                                    var destVal = jQuery("#prop{{ property.id }}-destination").val().toCamelCase();
                                     var joinVal = jQuery("#prop{{ property.id }}-join").val();
                                     joinVal = joinVal.charAt(0).toUpperCase() + joinVal.substring(1);
                                     jQuery("#examples").html(
                                         "The following tags will be added to all posts:<br/>"+
-                                        "#"+destVal+" #holiday"+joinVal+destVal+" #vacation"+joinVal+destVal
+                                        "#VacationSoup #"+destVal+" #Holiday"+joinVal+destVal+" #Vacation"+joinVal+destVal
                                     );
                                 }
                                 jQuery(function(){
