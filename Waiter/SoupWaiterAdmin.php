@@ -206,14 +206,21 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
     }
 
+    /**
+     * Ajax call to check a particular service
+     *
+     * Initially designed as a framework to support replacing the values here with Kitchen supplied values
+     * if needed, so the kitchen can re-direct some services if needed.
+     *
+     */
     public function do_servicecheck(){
 		header("Content-type: application/json");
 		try {
-		    $service = $this->get_service($_REQUEST["service"]);
             $result = [
                 'success' => true,  // Default to ajax call success
                 'status' => 'nok'   // default to failed service test
 			];
+            $service = $this->get_service($_REQUEST["service"]);
             if (!$service){
                 throw new \Exception("Service unknown: {$_REQUEST["service"]}");
             }
@@ -224,16 +231,17 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                 case "func":
                     $method = $service["call"][1];
                     $object = $service["call"][0];
-                    $isRunning = $object->$method();
-                    if ($isRunning){
+                    if (!method_exists($object,$method)){
+                        throw new \Exception("Service check error: {$object}->{$method} not found");
+                    }
+                    if ($object->$method()){
                         $result["status"] = 'ok';
                     }
                     break;
                 case "prop":
                     $prop = $service["prop"][1];
                     $object = $service["prop"][0];
-                    $isRunning = $object->$prop;
-                    if ($isRunning){
+                    if ($object->$prop){
                         $result["status"] = 'ok';
                     }
                     break;
@@ -340,7 +348,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 		}
-		$this->persist();
+		// $this->persist(); // Don't know why we were persisting SoupWaiterAdmin, not needed, not here anyway
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	/**
@@ -378,7 +386,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Available Tags for all posts
         // In case the destination is multiple words
         $destination = '';
-        foreach (explode(' ',Property::find(0)->destination) as $word){
+        $rawdest = Property::find(0)->destination;
+        $rawdest = preg_replace('/[^a-z0-9]+/i', ' ', $rawdest);
+        foreach (explode(' ',$rawdest) as $word){
             $destination .= ucfirst($word);
         }
         $context['permTags'] = ['VacationSoup',$destination];
