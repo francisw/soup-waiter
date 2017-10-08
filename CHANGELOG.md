@@ -4,6 +4,7 @@
 
 * **Enhancements**:
   - Improved Service Check UI, and made it asynchronous
+  - Added destination selection to Create Post
 
 ## 1008.86 (2017-10-08)
 

@@ -14,14 +14,6 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
  */
 class SoupWaiterAdmin extends SitePersistedSingleton {
 	/**
-	 * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
-	 */
-	protected $joins;
-	/**
-	 * @var string[] $destinations the Joining words to use in topics (first is default), e.g. Best beaches on BORNHOLM
-	 */
-	protected $destinations;
-	/**
 	 * @var boolean $hasFeaturedImages
 	 */
 	protected $hasFeaturedImages;
@@ -114,8 +106,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                                 $obj = $class::single();
                             } else throw new \Exception("Class '{$class}' must be a Singleton, as no ID provided");
                         } else {
-                            if (method_exists($class,'find')){
-                                $obj = $class::find($id);
+                            if (method_exists($class,'findOne')){
+                                $obj = $class::findOne($id);
                             } else throw new \Exception("Class '{$class}' must be a Multiton, as ID provided");
                         }
 						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
@@ -366,16 +358,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		return $context;
 	}
 
-    protected function get_join(){
-        return Property::find(0)->join;
-    }
-    protected function get_destination(){
-        $dest = Property::find(0)->destination;
-        if (empty($dest)){
-            $dest = "Somewhere";
-        }
-        return $dest;
-    }
 	/**
 	 * @returns mixed[] The context for this tab
 	 */
@@ -385,15 +367,19 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		// Available Tags for all posts
         // In case the destination is multiple words
-        $destination = '';
-        $rawdest = Property::find(0)->destination;
-        $rawdest = preg_replace('/[^a-z0-9]+/i', ' ', $rawdest);
-        foreach (explode(' ',$rawdest) as $word){
-            $destination .= ucfirst($word);
+        $destination = SoupWaiter::single()->destination;
+        $render = '';
+        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
+            $render .= ucfirst($word);
         }
-        $context['permTags'] = ['VacationSoup',$destination];
+        $dest = '';
+        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
+            $dest .= ucfirst($word);
+        }
+
+        $context['permTags'] = ['VacationSoup',$dest];
         foreach (['Holiday','Vacation'] as $holiday){
-            $context['permTags'][] = $holiday.ucfirst($this->join).$destination;
+            $context['permTags'][] = $holiday.$render;
         }
 
 		$args = array(
@@ -451,27 +437,51 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		return $context;
 	}
+
+    /**
+     * @return array of Properties
+     * Also populates the SoupWaiter::single()->properties
+     */
+	private function get_properties(){
+        $propertyCount = SoupWaiter::single()->property_count;
+        $properties = [];
+        $destinations = []; // Might as well set these up too
+        $dCount = 0;
+
+        for ($i=0;$i<($propertyCount);$i++){
+            $property = Property::findOne($i);
+            $properties[] = $property;
+            if (isset($property->destination)){
+                $destinations[$dCount] = ['id'=>$dCount,'rendered'=>"{$property->join} {$property->destination}",'destination'=>"{$property->destination}"];
+                $dCount++;
+            }
+
+        }
+        sort(array_unique($destinations));
+        SoupWaiter::single()->destinations = $destinations;
+        return $properties;
+    }
+
 	/**
 	 * @returns mixed[] The context for this tab
 	 */
 	private function get_property_context(){
 		// Grab the basics
 		$context = $this->get_context('property');
-
+        $properties = $this->get_properties();
 		$newAllowed = 1;
-		$propertyCount = SoupWaiter::single()->property_count;
-		if ($propertyCount >= 10){
+		if (count($properties) >= 10){
 		    $newAllowed = 0;
         }
-        for ($i=0;$i<($propertyCount);$i++){
-            $property = Property::find($i);
+        for ($i=0;$i<(count($properties));$i++){
+            $property = $properties[$i];
             if (empty($property->title)){ // Then this will be the 'New' property
                 $newAllowed = 0;
             }
-            $context['properties'][] = $property;
         }
+        $context['properties'] = $properties;
         if ($newAllowed){
-            $context['properties'][] = Property::find($i);
+            $context['properties'][] = Property::findOne($i);
         }
 
 		return $context;

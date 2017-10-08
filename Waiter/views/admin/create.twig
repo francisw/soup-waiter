@@ -107,7 +107,7 @@
                         topic.title.raw = elem.value;
                         $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
                         if (topic.id !== 0){
-                            location = ' {{ admin.join }} {{ admin.destination }}';
+                            location = ' {{ soup.destination.rendered }}';
                         }
                         $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
                         jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
@@ -139,7 +139,7 @@
             vs_query = topic.tags.map(function (tag) {
                 return k_tags[tag].name
             });
-            vs_title = topic.title.raw + ' ' + '{{ admin.join }}' + ' ' + '{{ admin.destination }}';
+            vs_title = topic.title.raw + ' ' + '{{ soup.destination.rendered }}';
             jQuery('#post_title').prop('autofocus',false).val(vs_title);
             jQuery('INPUT[name="topic"]').val(topic.id);
         } else {
@@ -215,7 +215,15 @@
     <div class="col-xs-12 col-sm-6 col-lg-8">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
-                <h1>Create Post</h1>
+                <h1>Create Post
+                    <select title="Alternative destinations" id="alter-destination" onchange="
+                            window.location.search += '&destination_id='+this.options[this.selectedIndex].value
+                            ">
+                        {% for destination in soup.destinations %}
+                            <option value="{{ destination.id }}" {{ (destination.id == soup.current_destination)?'selected':'' }}>{{ destination.rendered }}</option>
+                        {% endfor %}
+                    </select>
+                </h1>
             </div>
             <div class="col-sm-8">
                 <p>Select one of the trending post subjects on the right, or create your own. Ideally post 3 <strong>trending searches</strong> a week to feed the search engines optimally.</p>

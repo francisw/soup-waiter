@@ -47,7 +47,25 @@ class SoupWaiter extends SitePersistedSingleton {
      * @var number $nextMOTD the next MOTD page to request
      */
     protected $property_count;
+    /**
+     * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
+     */
+    protected $joins;
+    /**
+     * @var string[] $destinations the Joining words to use in topics (first is default), e.g. Best beaches on BORNHOLM
+     */
+    protected $destinations;
 
+    protected function get_current_destination(){
+        $id=0; // Default
+        if (isset($_REQUEST['destination_id'])){
+            $id = $_REQUEST['destination_id'];
+        }
+        return $id;
+    }
+    protected function get_destination(){
+        return $this->destinations[$this->get_current_destination()];
+    }
 
     /**
 	 * Expose whether the Kitchen is up
