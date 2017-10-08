@@ -81,18 +81,6 @@ class SoupWaiter extends SitePersistedSingleton {
 		return $this->get_base_url('img');
 	}
 	/**
-	 * @return string
-	 */
-	protected function get_social_api(){
-		return "{$this->kitchen_host}/{$this->social_api}";
-	}
-	/**
-	 * @return string
-	 */
-	protected function get_kitchen_api(){
-		return "{$this->kitchen_host}/{$this->kitchen_api}";
-	}
-	/**
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){

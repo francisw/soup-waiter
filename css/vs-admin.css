@@ -416,3 +416,18 @@ DIV.social-container.currently-editing DIV.field-container INPUT
 .tab-property DIV.field LABEL {
     display: block;
 }
+.servicecheck.checking {
+    background-position: left;
+}
+
+.servicecheck I {
+    color: rgba(0, 0, 0, 0.2);
+    min-width: 35px;
+}
+.servicecheck.ok I {
+    color: rgba(0, 150, 0, 1.0);
+}
+.servicecheck.nok I {
+    color: rgba(200, 0, 0, 1.0);
+}
+

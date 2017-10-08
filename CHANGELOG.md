@@ -1,5 +1,15 @@
 # Changelog for Vacation Soup Waiter
 
+## 1013.80 target (2017-10-13)
+
+* **Enhancements**:
+  - Improved Service Check UI, and made it asynchronous
+
+## 1008.86 (2017-10-08)
+
+* **Bug fixes**:
+  - Fixed critical faults causing Waiter\property class not found, and PHP errors
+
 ## 1007.86 (2017-10-07)
 
 * **Bug fixes**:

@@ -138,29 +138,110 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		echo json_encode($response);
 		wp_die();
 	}
-	// debug function to hook into above
-	public function dont_connect_ajax(){
-		$obj = SoupWaiter::single();
-		$obj->debug = 'My Old Value';
-		$obj->persist();
-		return ['success'=>true];
-	}
 
-	public function do_servicecheck(){
+	protected function fail_service_stub(){
+	    return false;
+    }
+
+    protected function get_service($handle){
+	    $groupedServices = $this->get_services();
+	    foreach ($groupedServices as $group => $services){
+	        if (isset($services[$handle])){
+	            return $services[$handle];
+            }
+        }
+        return null;
+    }
+	protected function get_services(){
+	    return
+            [
+                "basic"=>[
+                    "auth" => [
+                        "type" =>   "prop",
+                        "title"=>   "Authorisation",
+                        "prop"=>    [SoupWaiter::single(),'connected']
+                    ],
+                    "post-kitchen" => [
+                        "type" =>   "func",
+                        "title"=>   "Soup Syndication",
+                        "call"=>    [$this,'fail_service_stub']
+                    ],
+                    "post-social" => [
+                        "type" =>   "func",
+                        "title"=>   "Social Posting",
+                        "call"=>    [$this,'fail_service_stub']
+                    ],
+                    "vacation-soup" => [
+                        "type" =>   "func",
+                        "title"=>   "Vacation Soup",
+                        "call"=>    [$this,'fail_service_stub']
+                    ],
+                    "community" => [
+                        "type" =>   "func",
+                        "title" =>   "Community",
+                        "url" => "https://community.vacationsoup.com",
+                        "call"=>    [$this,'fail_service_stub']
+                    ]
+                ],
+                "premium"=> [
+                    "soup-trade" => [
+                        "type" =>   "func",
+                        "title" =>   "Soup Sending Bookers",
+                        "call"=>    [$this,'fail_service_stub']
+                    ],
+                    "learn" => [
+                        "type" =>   "func",
+                        "title" =>   "Learning Centre",
+                        "url" => "https://learn.vacationsoup.com",
+                        "call"=>    [$this,'fail_service_stub']
+                    ],
+                    "full-publication" => [
+                        "type" =>   "func",
+                        "title" =>   "Soup Advertising",
+                        "url" => "https://community.vacationsoup.com",
+                        "call"=>    [$this,'fail_service_stub']
+                    ]
+                ]
+            ];
+
+    }
+
+    public function do_servicecheck(){
 		header("Content-type: application/json");
 		try {
-			$services['Authorisation'] = [ 'status'=> SoupWaiter::single()->connected ];
-			$services['Post Syndication'] = [ 'status'=> false ];
-			$services['Property Social Syndication'] = [ 'status'=> false ];
-			$services['Main Vacation Soup site'] = [ 'status'=> false ];
-			$services['Community'] = [ 'status'=> false ];
-			$premiumServices['Referral to your site'] = [ 'status'=> false ];
-			$premiumServices['Learning Centre'] = [ 'status'=> false ];
-			$premiumServices['Soup Social Syndication'] = [ 'status'=> false ];
-			echo json_encode([
-				'success' => true,
-				'html' => Timber::compile( array( "admin/servicecheck.twig" ), compact('services','premiumServices'))
-			]);
+		    $service = $this->get_service($_REQUEST["service"]);
+            $result = [
+                'success' => true,  // Default to ajax call success
+                'status' => 'nok'   // default to failed service test
+			];
+            if (!$service){
+                throw new \Exception("Service unknown: {$_REQUEST["service"]}");
+            }
+            switch($service["type"]){
+                case "group":
+                    $result["group"] = $service["group"];
+                    break;
+                case "func":
+                    $method = $service["call"][1];
+                    $object = $service["call"][0];
+                    $isRunning = $object->$method();
+                    if ($isRunning){
+                        $result["status"] = 'ok';
+                    }
+                    break;
+                case "prop":
+                    $prop = $service["prop"][1];
+                    $object = $service["prop"][0];
+                    $isRunning = $object->$prop;
+                    if ($isRunning){
+                        $result["status"] = 'ok';
+                    }
+                    break;
+            }
+            if (isset($service["url"])){
+                $result["url"] = $service["url"];
+            }
+			echo json_encode($result);
 		} catch (\Exception $e){
 			echo json_encode([
 				'success' => false,
