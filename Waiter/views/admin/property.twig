@@ -74,7 +74,7 @@
                                            data-id="{{ property.id }}"
                                            class="persist handleChange"
                                            placeholder="Property Title"
-                                           name="property[{{ property.id }}].title"
+                                           name="Property[{{ property.id }}].title"
                                            id="title-{{ property.id }}"
                                            required value="{{ property.title }}"/>
                                 </div>
@@ -85,14 +85,15 @@
                                     <input type="text"
                                            data-id="{{ property.id }}"
                                            class="persist handleChange join-word"
-                                           title="Joining word" name="property[{{ property.id }}].join"
+                                           title="Joining word"
+                                           name="Property[{{ property.id }}].join"
                                            id="join-{{ property.id }}"
                                            required value="{{ property.join }}"/>
                                     <input type="text"
                                            data-id="{{ property.id }}"
                                            class="persist handleChange"
                                            placeholder="Destination Name"
-                                           name="property[{{ property.id }}].destination"
+                                           name="Property[{{ property.id }}].destination"
                                            id="destination-{{ property.id }}"
                                            required value="{{ property.destination }}"/>
                                 </div>
