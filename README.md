@@ -4,7 +4,7 @@
 
 - **Lead Developer:**
 [Francis Wallinger](https://github.com/francisw)
-- **Version:** [1013.80 target](https://github.com/francisw/master)
+- **Version:** [1009.84](https://github.com/francisw/releases)
 - **Requires at least:** 4.7.1 
 - **Tested up to:** 4.8.2
 
@@ -33,8 +33,4 @@ See [our community](https://community.vacationsoup.com) for details on how to pa
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
-
-## Contributing to TGM Plugin Activation
-
-If you have a patch, or stumbled upon an issue with TGM Plugin Activation core, you can contribute this back to the code. Please read our [contributor guidelines](CONTRIBUTING.md) for more information how you can do this.
 

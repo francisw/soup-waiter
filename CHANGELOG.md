@@ -1,12 +1,13 @@
 # Changelog for Vacation Soup Waiter
 
-## 1013.80 target (2017-10-13)
+## 1009.84 (2017-10-09)
 
 * **Enhancements**:
   - Improved Service Check UI, and made it asynchronous
   - Added destination selection to Create Post
   - Added refresh button to Trending Searches to see more
   - Retain same topic list when changing destination on Create screen
+  - Cleaned up Create layout & made responsive
 
 ## 1008.86 (2017-10-08)
 
