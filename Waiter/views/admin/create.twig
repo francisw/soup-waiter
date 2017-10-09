@@ -16,7 +16,7 @@
     var getMOTD = function() {
         jQuery('#motd').addClass("checking");
 
-        var page = jQuery('#nextMOTD').val();
+        var offset = jQuery('#nextMOTD');
         jQuery.ajax({
             type: "get",
             dataType: "json",
@@ -24,13 +24,12 @@
             url: '{{ soup.kitchen_host~'/'~soup.kitchen_api~'/motd/' }}',
             data: {
                 per_page: 1,
-                page: page
+                offset: offset.val()
             }
         }).statusCode({
             400: function(){ // This means we have gone past the end of the list
-                var page = jQuery('INPUT[name="SoupWaiter.nextMOTD"]');
-                if (page.val() !== 1){ // reset back to the start
-                    page.val(1);
+                if (offset.val() !== 0){ // reset back to the start
+                    offset.val(0).change();
                     return getMOTD();
                 }
             }
@@ -39,11 +38,15 @@
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
             } else {
-                var page = jQuery('#nextMOTD');
                 if (response.length) {
-                    page.val(parseInt(page.val()) + 1).change();
+                    offset.val(parseInt(offset.val()) + 1).change();
                     var title = '<h1 id="title">'+response[0].title.rendered+'</h1>';
                     motd.html(title+response[0].content.rendered);
+                } else { // Must have gone past the end
+                    if (offset.val() !== 0){ // reset back to the start
+                        offset.val(0).change();
+                        return getMOTD();
+                    }
                 }
             }
         }).always(function (response) {
@@ -53,6 +56,7 @@
 
     const topicsPerPage = 5;
     var topicPageAdvanced = false;
+    var binEndTopics = []; // temprary storage of last few topics to recycle them
     var getTrendingTopics = function(){
         jQuery('#trending-topics').addClass("checking").html('');
         jQuery('#topic-refresh').addClass('active');
@@ -64,13 +68,13 @@
             url: '{{ soup.kitchen_host~'/'~soup.kitchen_api~'/topic/' }}',
             data: {
                 offset: offset.val(),
-                per_page: topicsPerPage,
+                per_page: topicsPerPage - binEndTopics.length,
                 exclude: {{ recent_topics|json_encode }}
             }
         }).statusCode({
-            400: function(){ // This means we have gone past the end of the list
+            400: function(){ // Bad Params: normally means we have gone past the end of the list
                 var offset = jQuery('#next_topic');
-                if (offset.val() !== 0){ // reset back to the start
+                if (offset.val() !== 0){ // reset back to the start, but only once
                     offset.val(0);
                     return getTrendingTopics();
                 }
@@ -82,18 +86,29 @@
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
             } else {
-                if (0 === response.length){
-                    if (offset.val() !== 0){ // reset back to the start
+                // Handle paging of topics from Kitchen
+                if (0 === response.length){ // Past the last page of topics
+                    if (parseInt(offset.val()) !== 0){ // reset back to the start
                         offset.val(0);
                         return getTrendingTopics();
                     } else return null;  // if offset was 0 and no recs returned.
                 } else {
-                    topicPageAdvanced = parseInt(offset.val());
-                    var next_topic = parseInt(offset.val())+topicsPerPage;
-                    if (topicsPerPage !== response.length){ // less than a full page
-                        next_topic = 0;
+                    // Only update pageAdvanced marker if we have a full page
+                    if (0===binEndTopics.length){
+                        topicPageAdvanced = parseInt(offset.val());
                     }
+                    // If less than a full page, and not first page
+                    if (topicsPerPage !== response.length && 0!==parseInt(offset.val())){ // less than a full page
+                        offset.val(0);
+                        binEndTopics = response; // These will be added to the next lot
+                        return getTrendingTopics();
+                    }
+                    var next_topic = parseInt(offset.val())+(topicsPerPage - binEndTopics.length);
                     offset.val(next_topic).change();
+                    if (binEndTopics.length){
+                        response = binEndTopics.concat(response);
+                        binEndTopics = [];
+                    }
                 }
                 k_topics=[];
                 k_tags=[];

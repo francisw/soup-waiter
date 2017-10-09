@@ -112,6 +112,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         }
 						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
+						$response[$_REQUEST['name']] = $obj->$attr;
 					} else throw new \Exception("Class '{$class}' not found'");
 				}
 			} catch (\Exception $e){
@@ -124,7 +125,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				];
 			}
 		} else {
-			$response['error'] = 'not for me';
+			$response['error'] = ['message'=>'not for me','code'=>0];
 		}
 		header("Content-type: application/json");
 		echo json_encode($response);

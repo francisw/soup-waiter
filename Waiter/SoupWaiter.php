@@ -109,7 +109,7 @@ class SoupWaiter extends SitePersistedSingleton {
 		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
-        $this->nextMOTD = 1;
+        $this->nextMOTD = 0;
         $this->next_topic = 0; // This is an offset, not a page number
         $this->property_count = 0;
 	}
