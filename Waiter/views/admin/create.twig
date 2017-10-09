@@ -52,6 +52,7 @@
 
     var getTrendingTopics = function(){
         jQuery('#trending-topics').addClass("checking").html('');
+        jQuery('#topic-refresh').addClass('active');
         jQuery.ajax({
             type: "get",
             dataType: "json",
@@ -61,7 +62,7 @@
                 exclude: {{ recent_topics|json_encode }}
             }
         }).always(function(jqXHR,status,error) {
-            jQuery("#trending-topics").removeClass("checking");
+            //jQuery("#trending-topics").removeClass("checking");
         }).fail(function(jqXHR,status,error) {
             alert('Error: Waiter failed to contact Kitchen\n'+error);
         }).done(function(response) {
@@ -69,6 +70,8 @@
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
             } else {
+                k_topics=[];
+                k_tags=[];
                 response.forEach(function(topic){
                     k_topics.push(topic);
                     topic.tags.forEach(function(tag){
@@ -86,6 +89,7 @@
                     }
                 }).always(function(jqXHR,status,error) {
                     jQuery("#trending-topics").removeClass("checking");
+                    jQuery('#topic-refresh').removeClass('active');
                 }).fail(function(jqXHR,status,error) {
                     alert('Error: Waiter failed to contact Kitchen\n'+error);
                 }).done(function(response) {
@@ -234,7 +238,7 @@
                 </div>
             </div>
             <div class="col-sm-4 float-right">
-                <h2>Trending searches</h2>
+                <h2>Trending searches <i id="topic-refresh" class="fa fa-refresh" onclick="getTrendingTopics()"></i></h2>
                 <ul id="trending-topics" class="hoverable">
                 </ul>
             </div>

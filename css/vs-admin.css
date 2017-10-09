@@ -438,3 +438,14 @@ DIV.social-container.currently-editing DIV.field-container INPUT
     vertical-align: inherit;
 }
 
+I.fa-refresh {
+    cursor: pointer;
+    color: rgba(0,0,0,0.4);
+    transition: transform 0.5s ease 0s;
+}
+I.fa-refresh:hover {
+    color: rgba(0,0,100,0.7);
+}
+I.fa-refresh.active {
+    transform: rotate(180deg);
+}
