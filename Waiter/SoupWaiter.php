@@ -44,7 +44,11 @@ class SoupWaiter extends SitePersistedSingleton {
      */
     protected $nextMOTD;
     /**
-     * @var number $nextMOTD the next MOTD page to request
+     * @var number $next_topic the next topic item (offset from 0)
+     */
+    protected $next_topic;
+    /**
+     * @var number $property_count The number of properties
      */
     protected $property_count;
     /**
@@ -106,6 +110,7 @@ class SoupWaiter extends SitePersistedSingleton {
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
         $this->nextMOTD = 1;
+        $this->next_topic = 0; // This is an offset, not a page number
         $this->property_count = 0;
 	}
 

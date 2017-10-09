@@ -6,6 +6,7 @@
   - Improved Service Check UI, and made it asynchronous
   - Added destination selection to Create Post
   - Added refresh button to Trending Searches to see more
+  - Retain same topic list when changing destination
 
 ## 1008.86 (2017-10-08)
 
