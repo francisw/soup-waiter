@@ -252,10 +252,30 @@
         });
         jQuery('#alter-destination').change(function(){
             if (false!==topicPageAdvanced){
-                var offset = jQuery('#next_topic');
-                offset.val(topicPageAdvanced).change();
+                // Then we need to rewind the topics so they stay as they are now
+                ajaxCall = {
+                    type: "post",
+                    async: false,   // Make sure it completes before we reload this page
+                    dataType: "json",
+                    context: this,
+                    url: ajaxurl,
+                    data: {
+                        action: "soup",
+                        tab: "{{ tab }}",
+                        _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
+                        name: jQuery('#next_topic').attr("name"),
+                        value: topicPageAdvanced,
+                        id: '#next_topic'
+                    }
+                };
+
+                jQuery.ajax(ajaxCall) // Not Asynchronous so the window.location waits for completion
+                    .fail(function(jqXHR,status,error) {
+                    console.log('fail (vacation-soup) '+status+' '+error);
+                    alert('Error: Could rewind topics\n'+status);
+                })
+                window.location.search += '&destination_id='+this.options[this.selectedIndex].value
             }
-            window.location.search += '&destination_id='+this.options[this.selectedIndex].value
         });
     });
 
