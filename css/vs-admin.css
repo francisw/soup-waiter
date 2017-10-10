@@ -24,12 +24,13 @@
     display: block;
     border-radius: 7px;
     margin-top: -12px;
-    padding-top: 12px;
+    padding-top: 8px;
     background-color: lightgray;
     padding-left: 10px;
-    padding-bottom: 13px;
+    padding-bottom: 9px;
     line-height: 1.2em;
     font-size: 1.6em;
+    font-weight: normal;
 }
 
 .vs-panel .vs-panel H1 {
