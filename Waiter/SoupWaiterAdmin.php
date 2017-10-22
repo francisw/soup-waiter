@@ -175,8 +175,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "url" => "https://community.vacationsoup.com",
                         "call"=>    [$this,'fail_service_stub']
                     ]
-                ],
-                "premium"=> [
+                 ],
+               "premium"=> [
                     "soup-trade" => [
                         "type" =>   "func",
                         "title" =>   "Soup Sending Bookers",
@@ -211,7 +211,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		try {
             $result = [
                 'success' => true,  // Default to ajax call success
-                'status' => 'nok'   // default to failed service test
+                'status' => 'nok',   // default to failed service test
+	            'message' => 'Service not live'
 			];
             $service = $this->get_service($_REQUEST["service"]);
             if (!$service){
@@ -228,7 +229,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         throw new \Exception("Service check error: {$object}->{$method} not found");
                     }
                     if ($object->$method()){
-                        $result["status"] = 'ok';
+	                    $result["status"] = 'ok';
+	                    $result["message"] = 'Service running';
                     }
                     break;
                 case "prop":
@@ -236,6 +238,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     $object = $service["prop"][0];
                     if ($object->$prop){
                         $result["status"] = 'ok';
+	                    $result["message"] = 'Service running';
                     }
                     break;
             }

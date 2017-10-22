@@ -253,7 +253,7 @@ i {
 }
 DIV.field-container INPUT.persist[disabled]
 {
-    color: rgba(50,200,50,0.5);
+    color: rgba(50,200,50,1.0);
 }
 .social-icons-container {
     margin-bottom: 25px;
@@ -425,13 +425,25 @@ DIV.field-container.currently-editing  INPUT
 
 .servicecheck I {
     color: rgba(0, 0, 0, 0.2);
-    min-width: 35px;
+    width: 35px;
+}
+.servicecheck.ok {
+    background: rgba(0, 255, 0, 0.05);
 }
 .servicecheck.ok I {
-    color: rgba(0, 150, 0, 1.0);
+    color: rgba(0, 180, 0, 1.0);
+}
+.servicecheck.nok {
+    background: rgba(0, 0, 0, 0.05);
 }
 .servicecheck.nok I {
-    color: rgba(200, 0, 0, 1.0);
+    color: rgba(0, 0, 0, 1.0);
+}
+.servicecheck.fail {
+    background: rgba(255, 0, 0, 0.05) !important;
+}
+.servicecheck.fail I {
+    color: rgba(255, 0, 0, 1.0) !important;
 }
 #alter-destination {
     font-size: inherit;
