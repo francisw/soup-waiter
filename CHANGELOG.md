@@ -1,11 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
-
-## 0.2.0 target (2017.10.25)
+## 1013.80 target (2017-10-09)
 
 * **Enhancements**:
-  - 
-
+  - Removed Dashboard Tab
+  - Reduced Card Title font-weight to normal (not bold, or 600)
+  - Fixed occasional error alert on create, caused by ajax and page refresh clashing
 
 ## 1009.84 (2017-10-09)
 
