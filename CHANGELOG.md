@@ -3,9 +3,8 @@
 ## 0.2.0 target (2017.10.25)
 
 * **Enhancements**:
-  - 
+  - Made connect responsive
 
-=======
 ## 1013.80 target (2017-10-09)
 
 * **Enhancements**:
