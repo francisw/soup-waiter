@@ -1,5 +1,12 @@
 # Changelog for Vacation Soup Waiter
 
+
+## 0.2.0 target (2017.10.25)
+
+* **Enhancements**:
+  - 
+
+
 ## 1009.84 (2017-10-09)
 
 * **Enhancements**:

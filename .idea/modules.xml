@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../soup-kitchen/.idea/soup-kitchen.iml" filepath="$PROJECT_DIR$/../soup-kitchen/.idea/soup-kitchen.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/soup-waiter.iml" filepath="$PROJECT_DIR$/.idea/soup-waiter.iml" />
     </modules>
   </component>
