@@ -10,14 +10,14 @@ namespace Waiter;
  * a function that starts the plugin.p
  *
  * @link              https://github.com/francisw/soup-waiter
- * @since             4.8.1
+ * @since             0.0.1
  * @package           soup_waiter
  *
  * @wordpress-plugin
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           1009.84
+ * Version:           0.2.0 target
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+

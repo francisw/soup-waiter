@@ -48,9 +48,9 @@
     </script>
 
     <div class="vs-content tab-connect row">
-    <div class="col-lg-8 col-sm-12">
+    <div class="col-xl-8 col-lg-6 col-md-6 col-xs-12 col-xs-push-12">
         <div class="vs-panel row">
-            <div id="title" class="col-sm-12">
+            <div id="title" class="col-xs-12">
                 <h1>Social Connections</h1>
                 <p>
                     Much of the power in your strategy comes in how widely you share your posts.
@@ -62,23 +62,32 @@
                                 jQuery(".social-container").click(function(){
                                     var j = jQuery(this);
                                     if (!j.hasClass("currently-editing")){
-                                        jQuery(".social-container").removeClass("currently-editing");
-                                        j.addClass("currently-editing").find("INPUT").first().focus();
+                                        jQuery(".currently-editing").removeClass("currently-editing");
+                                        j.addClass("currently-editing");
+                                        jQuery('#'+j.data('field-div')).addClass("currently-editing").find("INPUT").first().focus();
                                     }
                                 });
                             });
                         </script>
-                    <div class="col-sm-8">
-                        <div class="social-icons">
+                    <div class="col-sm-12">
+                        <div class="social-icons-container">
                             {% for key,soc in social %}
-                                    <div class="social-container">
-                                        <i class="fa fa-5x {{ soc.fa_name }}"></i>
-                                        <div class="field-container">
-                                            <div class="field-row">
-                                                {% include 'social/'~key~'.twig' %}
-                                            </div>
-                                        </div>
+                                <div class="social-container" data-field-div="field-{{ key }}">
+                                    <i class="fa fa-5x {{ soc.fa_name }}"></i>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="social-fields-container">
+                            {% for key,soc in social %}
+                                <div id="field-{{ key }}" class="field-container">
+                                    <div class="field-row">
+                                        {% include 'social/'~key~'.twig' %}
+                                        <input
+                                                type="button"
+                                                onclick="jQuery('.currently-editing').removeClass('currently-editing');"
+                                                value="done">
                                     </div>
+                                </div>
                             {% endfor %}
                         </div>
                      </div>
@@ -86,12 +95,12 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-4 col-sm-12">
+    <div class="col-xl-4 col-lg-6 col-md-6 col-xs-12 center-xs">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
                 <h1>Vacation Soup Status</h1>
             </div>
-            <div class="soup-icon hover col-sm-4">
+            <div class="soup-icon hover col-sm-4 col-xs-12">
                 <img title="Connect" src="{{ soup.image_url }}/vacation_soup_FB_logo_180sq.png"/>
             </div>
 
