@@ -125,7 +125,7 @@
                     url: '{{ soup.kitchen_host~'/'~soup.kitchen_api~'/tags/' }}',
                     data: {
                         include: k_tags.sort(),
-                        per_page: k_tags.length
+                        per_page: (k_tags.length)?k_tags.length:1
                     }
                 }).always(function(jqXHR,status,error) {
                     jQuery("#trending-topics").removeClass("checking");

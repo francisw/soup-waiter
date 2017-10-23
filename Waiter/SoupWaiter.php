@@ -396,7 +396,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 */
 	public function transition_post_status( $newStatus, $oldStatus, \WP_Post $post ) {
-		if ($post->type == 'post'){
+		if ($post->post_type == 'post'){
 			try {
 				if ( 'publish' == $newStatus ){
 					if ($newStatus != $oldStatus){

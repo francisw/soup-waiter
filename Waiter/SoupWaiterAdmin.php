@@ -184,21 +184,21 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "soup-trade" => [
                         "type" =>   "func",
                         "title" =>   "Soup Sending Bookers",
-                        "message"=> "Service is not live",
+                        "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "learn" => [
                         "type" =>   "func",
                         "title" =>   "Learning Centre",
                         "url" => "https://learn.vacationsoup.com",
-                        "message"=> "Service is not live",
+                        "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "full-publication" => [
                         "type" =>   "func",
                         "title" =>   "Soup Advertising",
                         "url" => "https://community.vacationsoup.com",
-                        "message"=> "Service is not live",
+                        "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'fail_service_stub']
                     ]
                 ]
