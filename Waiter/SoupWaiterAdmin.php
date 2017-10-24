@@ -354,6 +354,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 		}
+		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
 		// $this->persist(); // Don't know why we were persisting SoupWaiterAdmin, not needed, not here anyway
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}

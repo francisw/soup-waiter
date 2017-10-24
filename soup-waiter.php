@@ -67,4 +67,4 @@ function soup_waiter_register_required_plugins() {
 
 
 require_once("inc/autoloader.php");
-add_action ('init',array(SoupWaiter::single(),'init'));
+add_action ('plugins_loaded',array(SoupWaiter::single(),'init'));

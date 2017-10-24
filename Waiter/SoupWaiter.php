@@ -13,7 +13,9 @@ use Exception;
 class SoupWaiter extends SitePersistedSingleton {
 	const REGISTRY_USER = 'soup-kitchen-registry';
 	const REGISTRY_PASS = 'OpenDoor';
-	const APIUSER_PASS = 'OpenDoor';
+	const APIUSER_PASS  = 'OpenDoor';
+	const SSL_VERIFY    = false; // make true on production
+	const TIMEOUT       = 500; // ms
 
 	/**
 	 * @var string $kitchen_host Base URL of host providing SoupKitchen
@@ -157,7 +159,8 @@ class SoupWaiter extends SitePersistedSingleton {
 			// Override the following until we create the code to catch an expired token
 			$this->kitchen_token = $_SESSION['soup-kitchen-token'];
 		}
-		add_action( 'transition_post_status', [$this, 'transition_post_status'],10,3 );
+		// add_action( 'shutdown', [$this, 'wp_async_save_post'],10,2 );
+		// new SoupAsync(); // Asynchronous post saving
 
 		// Now install the admin screens if needed
 		if (is_admin()) {
@@ -231,7 +234,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 */
 	public function newRegistration(){
 
-		return $this->despatchToKitchen('/users',
+		return $this->postToKitchen('/users',
 			[
 				'username' => $this->kitchen_user,
 				'email' => wp_get_current_user()->user_email,
@@ -256,8 +259,8 @@ class SoupWaiter extends SitePersistedSingleton {
 				'username' => self::REGISTRY_USER,
 				'password' => self::REGISTRY_PASS
 			],
-			'timeout'=>500,
-			'sslverify'   => false
+			'timeout'      => self::TIMEOUT,
+			'sslverify'    => self::SSL_VERIFY
 		]);
 
 		if ($this->api_success($response)){
@@ -306,48 +309,106 @@ class SoupWaiter extends SitePersistedSingleton {
 	}
 
 	/**
-	 * Send an API request to the SoupKitchen, always returns a valid response
+	 * Send a POST JSON API request to the SoupKitchen, always returns a valid response
 	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
 	 *
 	 * @param string $rri Relative Resource Indicator
-	 * @param null|array $body Body to be sent, in array format
+	 * @param array $body Body to be sent, in array format
 	 * @param null|string $token if identifying as other (e.g. registrar) user
 	 *
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function despatchToKitchen($rri,$body=null,$token=null){
+	public function postToKitchen($rri,$body,$token=null){
 
 		if (null===$token){
 			$token = $this->getSoupKitchenToken();
 		}
 
-		if ($body){
-			$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
-				'headers' => [
-					'Authorization' => 'Bearer '.$token,
-					'Content-Type' => 'application/json'
-					],
-				'body' => json_encode($body),
-				'timeout'=>500,
-				'sslverify'   => false
+		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
+			'headers' => [
+				'Authorization' => 'Bearer '.$token,
+				'Content-Type' => 'application/json'
+			],
+			'body' => json_encode($body),
+			'timeout'   => self::TIMEOUT,
+			'sslverify' => self::SSL_VERIFY
 
-			]);
-		} else {
-			$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
-				'headers' => [
-					'Authorization' => 'Bearer '.$token
-				],
-				'timeout'=>500,
-				'sslverify'   => false
+		]);
 
-			]);
-		}
 		if (!$this->api_success($response)) {
-			throw new \Exception ("Kitchen: ".$this->api_error_message($response));
+			throw new \Exception ("postToKitchen({$rri}): ".$this->api_error_message($response));
 		}
 
-		return $response;
+		return json_decode( wp_remote_retrieve_body( $response ) );
+	}
+	/**
+	 * Send a GET API request to the SoupKitchen, always returns a valid response
+	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
+	 *
+	 * @param string $rri Relative Resource Indicator
+	 * @param null|string $token if identifying as other (e.g. registrar) user
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function getToKitchen($rri,$token=null){
+
+		if (null===$token){
+			$token = $this->getSoupKitchenToken();
+		}
+
+		$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
+			'headers' => [
+				'Authorization' => 'Bearer '.$token
+			],
+			'timeout'   => self::TIMEOUT,
+			'sslverify' => self::SSL_VERIFY
+
+		]);
+
+		if (!$this->api_success($response)) {
+			throw new \Exception ("getToKitchen({$rri}): ".$this->api_error_message($response));
+		}
+
+		return json_decode( wp_remote_retrieve_body( $response ) );
+	}
+	/**
+	 * Send an API request to the SoupKitchen, always returns a valid response
+	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
+	 *
+	 * @param string $rri Relative Resource Indicator
+	 * @param string $image to send
+	 * @param null|string $token if identifying as other (e.g. registrar) user
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function imagePostToKitchen($rri,$image,$token=null){
+
+		if (null===$token){
+			$token = $this->getSoupKitchenToken();
+		}
+
+		$image_info = pathinfo($image);
+
+		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
+			'headers' => [
+				'Authorization' => 'Bearer '.$token,
+				'Content-Type' => 'image/'.$image_info['extension'],
+				'Content-disposition' => 'attachment; filename='.$image_info['basename']
+			],
+			'body' => file_get_contents($image),
+			'timeout'   => self::TIMEOUT,
+			'sslverify' => self::SSL_VERIFY
+
+		]);
+
+		if (!$this->api_success($response)) {
+			throw new \Exception ("imagePostToKitchen({$rri}): ".$this->api_error_message($response));
+		}
+
+		return json_decode( wp_remote_retrieve_body( $response ) );
 	}
 	/*
 	 * EXTERNAL ENTRY  POINTS FROM HERE
@@ -388,27 +449,20 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 * Syndicate Post on publish and update
 	 *
-	 * Action transition_post_status entry point
+	 * Action wp_async_save_post entry point
 	 *
-	 * @param $newStatus string
-	 * @param $oldStatus string
+	 * @param $id
 	 * @param $post \WP_Post The post
 	 *
+	 * @internal param string $newStatus
+	 * @internal param string $oldStatus
 	 */
-	public function transition_post_status( $newStatus, $oldStatus, \WP_Post $post ) {
+	public function wp_async_save_post( $id, \WP_Post $post ) {
 		if ($post->post_type == 'post'){
 			try {
-				if ( 'publish' == $newStatus ){
-					if ($newStatus != $oldStatus){
-						// It's a new one
-						$this->syndicate_post($post);
-						$this->addNotice('info','Syndicated Post to VacationSoup');
-					} else {
-						// We need to update it
-						$this->syndicate_post( $post ); // TODO This needs to update instead giving the foreign ID of it
-						$this->addNotice('info','Updated Post on VacationSoup');
-					}
-				}
+					update_user_meta(get_current_user_id(),"A:VacationSoup",date("D M j G:i:s T Y"));
+					$this->syndicate_post($post);
+					$this->addNotice('info','Syndicated Post to VacationSoup');
 			} catch (Exception $e) {
 				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
 			}
@@ -420,28 +474,48 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * Send post to SoupKitchen
 	 *
 	 * @param WP_Post $post
-	 * @param null|string $id
 	 *
-	 * @return array
+	 *
 	 */
-	private function syndicate_post(WP_Post $post, $id=null){
-		$rri = '/posts';
-		if ($id) {
-			$rri .= "/{$id}";
+	private function syndicate_post(WP_Post $post){
+		$featured_image = get_post_thumbnail_id($post->ID);
+
+		$kitchen = 			[
+			'date_gmt' => $post->post_date_gmt,
+			'slug'     => $post->post_name,
+			'status'   => $post->post_status,
+			'title'    => $post->post_title,
+			'content'  => $post->post_content,
+			'excerpt'  => $post->post_excerpt,
+		];
+
+		if ($featured_image){
+			// Has it changed
+			$kitchen_featured_image = get_post_meta($post->ID,'kitchen_local_image_id',true);
+			if ($featured_image !== $kitchen_featured_image){
+				update_post_meta($post->ID,'kitchen_local_image_id',$featured_image);
+
+				$rri = '/media';
+				$kitchen_media = $this->imagePostToKitchen($rri,get_attached_file($featured_image));
+				update_post_meta($post->ID,'kitchen_image_id',$kitchen_media->id);
+
+				$kitchen_image = 			[
+					'date_gmt' => $post->post_date_gmt,
+					'slug'     => $post->post_name,
+					'status'   => $post->post_status,
+					'title'    => get_the_title($featured_image),
+				];
+				$this->postToKitchen( $rri.'/'.$kitchen_media->id,$kitchen_image );
+			}
+			$kitchen['featured_media'] = $kitchen_media->id;
 		}
 
-		return $this->despatchToKitchen( $rri,
-			[
-				'date'     => $post->post_date,
-				'date_gmt' => $post->post_date_gmt,
-				'slug'     => $post->post_name,
-				'status'   => 'publish', // By definition as we are a publisher
-				'title'    => $post->post_title,
-				'content'  => $post->post_content,
-				'excerpt'  => $post->post_excerpt,
-				//'featured_media' => get_the_post_thumbnail $post->post // TODO Implement featured media
-			]
-		);
+		$id = get_post_meta($post->ID,'kitchen_id',true);
+		$rri = '/posts';
+		$rri .= ($id)?"/{$id}":'';
+
+		$kitchen_post = $this->postToKitchen( $rri,$kitchen );
+		update_post_meta($post->ID,'kitchen_id',$kitchen_post->id);
 	}
 
 }
