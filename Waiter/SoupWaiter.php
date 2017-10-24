@@ -73,14 +73,28 @@ class SoupWaiter extends SitePersistedSingleton {
         return $this->destinations[$this->get_current_destination()];
     }
 
-    /**
+	/**
+	 * Expose whether the Kitchen is up
+	 *
+	 * use as SoupWaiter::single()->connected?
+	 * @return bool
+	 */
+	protected function is_connected_auth(){
+		return ($this->getSoupKitchenToken(TRUE)?true:false);
+	}
+	/**
 	 * Expose whether the Kitchen is up
 	 *
 	 * use as SoupWaiter::single()->connected?
 	 * @return bool
 	 */
 	protected function is_connected(){
-		return ($this->getSoupKitchenToken(TRUE)?true:false);
+		try {
+			$this->getToKitchen('');
+			return true;
+		} catch (Exception $e){
+			return false;
+		}
 	}
 	/**
 	 * @param $folder

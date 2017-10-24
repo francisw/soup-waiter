@@ -152,13 +152,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "auth" => [
                         "type" =>   "prop",
                         "title"=>   "Authorisation",
-                        "prop"=>    [SoupWaiter::single(),'connected']
+                        "prop"=>    [SoupWaiter::single(),'connected_auth']
                     ],
                     "post-kitchen" => [
-                        "type" =>   "func",
+                        "type" =>   "prop",
                         "title"=>   "Soup Syndication",
-	                    "message"=> "Service is not live",
-                        "call"=>    [$this,'fail_service_stub']
+                        "prop"=>    [SoupWaiter::single(),'connected']
                     ],
                     "post-social" => [
                         "type" =>   "func",
