@@ -1,10 +1,14 @@
 # Changelog for Vacation Soup Waiter
 
 
-## 0.2.0 target (2017.10.25)
+## 0.2.0 (2017.10.25)
+
+* **Bug fixes**:
+  - Fixed several errors related to handling a new (or empty) Kitchen
 
 * **Enhancements**:
   - Made connect responsive
+  - Syndicating Featured Image
   
 ## 1013.80 target (2017-10-09)
 
