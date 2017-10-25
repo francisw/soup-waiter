@@ -8,7 +8,7 @@
             var doAllServiceChecks = function(){
                 jQuery(".servicecheck").each(function () {
 
-                    jQuery(this).addClass("checking").removeClass("ok nok")
+                    jQuery(this).addClass("checking").removeClass("ok nok fail")
                         .find('I')
                         .removeClass('fa-check fa-chain-broken fa-question');
                     var ServiceAjaxCall = {
@@ -31,11 +31,20 @@
                                 .addClass('fa-chain-broken');
                         })
                         .done(function (response) {
-                            faIcon = (response.status=='ok')?'fa-check':'fa-chain-broken';
-                            jQuery(this).addClass(response.status)
+                            var status,title;
+                            if (response.success){
+                                status = response.status;
+                                title = response.message;
+                            } else {
+                                status = 'nok fail';
+                                title = (response.error)?response.error.message:'Error connecting';
+                            }
+                            faIcon = (status==='ok')?'fa-check':'fa-chain-broken';
+                            jQuery(this).addClass(status)
                                 .find('I')
                                 .removeClass('fa-question')
-                                .addClass(faIcon);
+                                .addClass(faIcon)
+                                .parent().prop('title',title);
                         })
                         .always(function(){
                             jQuery(this).removeClass("checking");

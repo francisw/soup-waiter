@@ -152,46 +152,52 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "auth" => [
                         "type" =>   "prop",
                         "title"=>   "Authorisation",
-                        "prop"=>    [SoupWaiter::single(),'connected']
+                        "prop"=>    [SoupWaiter::single(),'connected_auth']
                     ],
                     "post-kitchen" => [
-                        "type" =>   "func",
+                        "type" =>   "prop",
                         "title"=>   "Soup Syndication",
-                        "call"=>    [$this,'fail_service_stub']
+                        "prop"=>    [SoupWaiter::single(),'connected']
                     ],
                     "post-social" => [
                         "type" =>   "func",
                         "title"=>   "Social Posting",
+                        "message"=> "Service is not live",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "vacation-soup" => [
                         "type" =>   "func",
                         "title"=>   "Vacation Soup",
+                        "message"=> "Service is not live",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "community" => [
                         "type" =>   "func",
                         "title" =>   "Community",
                         "url" => "https://community.vacationsoup.com",
+                        "message"=> "Service is not live",
                         "call"=>    [$this,'fail_service_stub']
                     ]
-                ],
-                "premium"=> [
+                 ],
+               "premium"=> [
                     "soup-trade" => [
                         "type" =>   "func",
                         "title" =>   "Soup Sending Bookers",
+                        "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "learn" => [
                         "type" =>   "func",
                         "title" =>   "Learning Centre",
                         "url" => "https://learn.vacationsoup.com",
+                        "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "full-publication" => [
                         "type" =>   "func",
                         "title" =>   "Soup Advertising",
                         "url" => "https://community.vacationsoup.com",
+                        "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'fail_service_stub']
                     ]
                 ]
@@ -211,12 +217,16 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		try {
             $result = [
                 'success' => true,  // Default to ajax call success
-                'status' => 'nok'   // default to failed service test
+                'status' => 'nok',   // default to failed service test
+	            'message' => 'Unknown Error'
 			];
             $service = $this->get_service($_REQUEST["service"]);
             if (!$service){
                 throw new \Exception("Service unknown: {$_REQUEST["service"]}");
             }
+			if (isset($service["message"])){
+				$result['message'] = $service["message"];
+			}
             switch($service["type"]){
                 case "group":
                     $result["group"] = $service["group"];
@@ -228,7 +238,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         throw new \Exception("Service check error: {$object}->{$method} not found");
                     }
                     if ($object->$method()){
-                        $result["status"] = 'ok';
+	                    $result["status"] = 'ok';
+	                    $result["message"] = 'Service connected & up';
                     }
                     break;
                 case "prop":
@@ -236,6 +247,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     $object = $service["prop"][0];
                     if ($object->$prop){
                         $result["status"] = 'ok';
+	                    $result["message"] = 'Service connected & up';
                     }
                     break;
             }
@@ -341,6 +353,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 		}
+		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
 		// $this->persist(); // Don't know why we were persisting SoupWaiterAdmin, not needed, not here anyway
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
