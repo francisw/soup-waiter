@@ -321,6 +321,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	private function sanitisedTab($tab=null){
 		$default =  'create';
+		$tabs = ['create','owner','property','connect'];
 
 		if (!$tab) {
 			if (isset($_REQUEST['tab'])){
@@ -329,9 +330,13 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				$tab = $default;
 			}
 		}
-		if (!in_array($tab,['create','dash','list','owner','property','connect'])){
+		if (!in_array($tab,$tabs)){
 			$tab = $default;
 		}
+		$w = SoupWaiter::single();
+		if (empty($w->owner_name)) $tab = 'owner';
+		elseif (0==$w->property_count) $tab = 'property';
+		elseif (!$w->connected) $tab = 'connect';
 		return $tab;
 	}
 	/**
@@ -352,7 +357,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	public function process_create_data( ){
 		$error_obj = false;
 
-		$postId = wp_insert_post($_POST,$error_obj);
+		$newpost = $_POST;
+		$newpost['post_content'] .= "<p>Created by ".SoupWaiter::single()->owner_name."</p>";
+
+		$postId = wp_insert_post($newpost,$error_obj);
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
