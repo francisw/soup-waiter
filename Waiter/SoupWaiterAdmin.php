@@ -112,7 +112,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         }
 						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
-						$response[$_REQUEST['name']] = $obj->$attr;
+						try {
+							$response[$_REQUEST['name']] = $obj->$attr;
+						} catch (\Exception $e){
+							$response[$_REQUEST['name']] = null; // Allowed for write-only attributes like password
+						}
 					} else throw new \Exception("Class '{$class}' not found'");
 				}
 			} catch (\Exception $e){
@@ -152,7 +156,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "auth" => [
                         "type" =>   "prop",
                         "title"=>   "Authorisation",
-                        "prop"=>    [SoupWaiter::single(),'connected_auth']
+                        "message"=> "Vacation Soup user or password needs setting",
+                        "prop"=>    [SoupWaiter::single(),'authorised']
                     ],
                     "post-kitchen" => [
                         "type" =>   "prop",
@@ -316,6 +321,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	private function sanitisedTab($tab=null){
 		$default =  'create';
+		$tabs = ['create','owner','property','connect'];
 
 		if (!$tab) {
 			if (isset($_REQUEST['tab'])){
@@ -324,9 +330,13 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				$tab = $default;
 			}
 		}
-		if (!in_array($tab,['create','dash','list','owner','property','connect'])){
+		if (!in_array($tab,$tabs)){
 			$tab = $default;
 		}
+		$w = SoupWaiter::single();
+		if (empty($w->owner_name)) $tab = 'owner';
+		elseif (0==$w->property_count) $tab = 'property';
+		elseif (!$w->connected) $tab = 'connect';
 		return $tab;
 	}
 	/**
@@ -347,7 +357,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	public function process_create_data( ){
 		$error_obj = false;
 
-		$postId = wp_insert_post($_POST,$error_obj);
+		$newpost = $_POST;
+		$newpost['post_content'] .= "<p>Created by ".SoupWaiter::single()->owner_name."</p>";
+
+		$postId = wp_insert_post($newpost,$error_obj);
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
@@ -381,19 +394,22 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		// Available Tags for all posts
         // In case the destination is multiple words
-        $destination = SoupWaiter::single()->destination;
-        $render = '';
-        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
-            $render .= ucfirst($word);
-        }
-        $dest = '';
-        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
-            $dest .= ucfirst($word);
-        }
 
-        $context['permTags'] = ['VacationSoup',$dest];
-        foreach (['Holiday','Vacation'] as $holiday){
-            $context['permTags'][] = $holiday.$render;
+		$context['permTags'][] = 'VacationSoup';
+        foreach (SoupWaiter::single()->destinations_for_property as $destination) {
+	        $render = '';
+	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
+		        $render .= ucfirst($word);
+	        }
+	        $dest = '';
+	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
+		        $dest .= ucfirst($word);
+	        }
+
+	        $context['permTags'][] = $dest;
+	        foreach (['Holiday','Vacation'] as $holiday){
+		        $context['permTags'][] = $holiday.$render;
+	        }
         }
 
 		$args = array(
@@ -456,7 +472,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
      * @return array of Properties
      * Also populates the SoupWaiter::single()->properties
      */
-	private function get_properties(){
+	public function get_properties(){
         $propertyCount = SoupWaiter::single()->property_count;
         $properties = [];
         $destinations = []; // Might as well set these up too
@@ -465,17 +481,25 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
         for ($i=0;$i<($propertyCount);$i++){
             $property = Property::findOne($i);
             $properties[] = $property;
-            if (isset($property->destination)){
-                $destinations[$dCount] = ['id'=>$dCount,'rendered'=>"{$property->join} {$property->destination}",'destination'=>"{$property->destination}"];
-                $dCount++;
-            }
+
+	        if (!empty($property->destination)){
+		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join} {$property->destination}",'destination'=>"{$property->destination}"];
+		        $dCount++;
+	        }
+	        if (!empty($property->destination2)){
+		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join2} {$property->destination2}",'destination'=>"{$property->destination2}"];
+		        $dCount++;
+	        }
+	        if (!empty($property->destination3)){
+		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join3} {$property->destination3}",'destination'=>"{$property->destination3}"];
+		        $dCount++;
+	        }
 
         }
         sort(array_unique($destinations));
         SoupWaiter::single()->destinations = $destinations;
         return $properties;
     }
-
 	/**
 	 * @returns mixed[] The context for this tab
 	 */

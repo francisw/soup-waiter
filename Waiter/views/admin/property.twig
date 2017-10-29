@@ -100,12 +100,54 @@
                                            id="destination-{{ property.id }}"
                                            required value="{{ property.destination }}"/>
                                 </div>
+                                <div class="field">
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange join-word"
+                                           title="Joining word"
+                                           name="Property[{{ property.id }}].join2"
+                                           id="join-{{ property.id }}-2"
+                                           required value="{{ property.join2 }}"/>
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange"
+                                           placeholder="Alternate Name (City?)"
+                                           name="Property[{{ property.id }}].destination2"
+                                           id="destination-{{ property.id }}-2"
+                                           required value="{{ property.destination2 }}" />
+                                </div>
+                                <div class="field">
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange join-word"
+                                           title="Joining word"
+                                           name="Property[{{ property.id }}].join3"
+                                           id="join-{{ property.id }}-3"
+                                           required value="{{ property.join3 }}"/>
+                                    <input type="text"
+                                           data-id="{{ property.id }}"
+                                           class="persist handleChange"
+                                           placeholder="Alternate Name (State?)"
+                                           name="Property[{{ property.id }}].destination3"
+                                           id="destination-{{ property.id }}-3"
+                                           required value="{{ property.destination3 }}"/>
+                                </div>
                             </div>
                             <div id="examples-{{ property.id }}" class="col-sm-6">
 
                             </div>
                         </div>
                     </div>
+                    {% if loop.first %}
+                    <div class="col-md-4 col-sm-12">
+                        <div class="vs-panel row">
+                            <div id="title" class="col-sm-12">
+                                <h1>Information</h1>
+                            </div>
+                            <p>We will ask you more property details in a future release before Vacation Soup is launched.</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         {% endblock form_content %}

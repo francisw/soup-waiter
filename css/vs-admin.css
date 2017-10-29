@@ -199,7 +199,8 @@ DIV.social.field INPUT[type="text"] {
     margin-bottom: 20px;
 }
 
-DIV.field INPUT[type='text']{
+DIV.field INPUT[type='text'],
+DIV.field INPUT[type='password'] {
     min-width: 65%;
 }
 

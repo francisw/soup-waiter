@@ -12,12 +12,21 @@ namespace Waiter;
 class Property extends SitePersistedMultiton
 {
     protected $title;
-    protected $join;
-    protected $destination;
+	protected $join;
+	protected $destination;
+	protected $join2;
+	protected $destination2;
+	protected $join3;
+	protected $destination3;
 
     public function __construct()
     {
         $this->join = 'in';
+    }
+
+    public function __set($name,$value){
+    	parent::__set($name,$value);
+    	SoupWaiterAdmin::single()->get_properties(); // This loads property summaries into Waiter
     }
 
     public function onCreate($key){

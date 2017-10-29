@@ -41,7 +41,11 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @var string $kitchen_token The Token to identify us in the Kitchen
 	 */
 	protected $kitchen_token;
-    /**
+	/**
+	 * @var string $owner_name to show on posts
+	 */
+	protected $owner_name;
+	/**
      * @var number $nextMOTD the next MOTD page to request
      */
     protected $nextMOTD;
@@ -69,18 +73,73 @@ class SoupWaiter extends SitePersistedSingleton {
         }
         return $id;
     }
-    protected function get_destination(){
-        return $this->destinations[$this->get_current_destination()];
-    }
+	protected function get_destination(){
+		return $this->destinations[$this->get_current_destination()];
+	}
+
+	protected function get_destinations_for_property(){
+		$main = $this->get_current_destination();
+		$mainDest = $this->destinations[$main];
+		$destinations = [];
+		foreach ($this->destinations as $destination){
+			if ($destination['property'] == $mainDest['property']){
+				$destinations[] = $destination;
+			}
+		}
+		return $destinations;
+	}
+
+	protected function set_kitchen_user($user){
+		$this->kitchen_user = $user;
+		$this->kitchen_token = null;
+		$this->persist();
+	}
+
+	/**
+	 * @param $host string The base url, including scheme, which must be https
+	 *
+	 * @return $this
+	 * @throws \Exception if not SSL
+	 */
+	public function set_kitchen_host($host){
+		if (0==strncasecmp($host,'https://',8)){
+			$this->kitchen_host = $host;
+		} else {
+			throw new \Exception("SoupKitchen location must begin https://, but got ".$host);
+		}
+		return $this; // By convention
+	}
+	/**
+	 * To provide external access to it from __GET
+	 * @return string
+	 */
+	protected function get_kitchen_token(){
+		return $this->getSoupKitchenToken();
+	}
+
+	/**
+	 * Get the access token from a password
+	 * @param string $password the password to set
+	 * @return $this
+	 */
+	protected function set_kitchen_password($password){
+		$this->getSoupKitchenToken($password);
+		return $this; // by convention
+	}
 
 	/**
 	 * Expose whether the Kitchen is up
 	 *
-	 * use as SoupWaiter::single()->connected?
+	 * use as SoupWaiter::single()->authorised?
 	 * @return bool
 	 */
-	protected function is_connected_auth(){
-		return ($this->getSoupKitchenToken(TRUE)?true:false);
+	protected function is_authorised(){
+		try {
+			$this->getSoupKitchenToken();
+			return true;
+		} catch (\Exception $e){
+			return false;
+		}
 	}
 	/**
 	 * Expose whether the Kitchen is up
@@ -130,18 +189,6 @@ class SoupWaiter extends SitePersistedSingleton {
         $this->property_count = 0;
 	}
 
-	/**
-	 * @param $host string The base url, including scheme, which must be https
-	 *
-	 * @throws \Exception if not SSL
-	 */
-	public function set_kitchen_host($host){
-		if (0==strncasecmp($host,'https://',8)){
-			$this->kitchen_host = $host;
-		} else {
-			throw new \Exception("SoupKitchen location must begin https://, but got ".$host);
-		}
-	}
 
 	/**
 	 * @param $level string error, warning, success, info
@@ -162,16 +209,8 @@ class SoupWaiter extends SitePersistedSingleton {
 	public function init(){
 		if(!session_id()) session_start();
 
-        if (!$this->kitchen_user){
-            $user = wp_get_current_user();
-            $this->kitchen_user = $user->user_login.".api@".$_SERVER['SERVER_NAME'];
-        }
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];
-		}
-		if (isset($_SESSION['soup-kitchen-token'])){
-			// Override the following until we create the code to catch an expired token
-			$this->kitchen_token = $_SESSION['soup-kitchen-token'];
 		}
 		// add_action( 'shutdown', [$this, 'wp_async_save_post'],10,2 );
 		// new SoupAsync(); // Asynchronous post saving
@@ -194,96 +233,39 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * caching the token in $_SESSION.
 	 *
 	 * Admin NOTICE on Creating the account (should be once only)
-	 * @param $refresh boolean get a new token anyway
+	 * @param $password string|null The password
 	 * @return string the Token
 	 * @throws \Exception On Requesting Token from Kitchen
 	 */
-	private function getSoupKitchenToken($refresh=FALSE){
-		if (null==$this->kitchen_token || $refresh) {
+	private function getSoupKitchenToken($password=null){
+		if ($password) {
+			// Clear the existing token
+			$this->kitchen_token = null;
+			$this->persist();
+
 			# Identify ourselves to our Chef du Jour
 			$request = [
 				'body' => [
-					'username' => $this->kitchen_user,
-					'password' => self::APIUSER_PASS // TODO secure this OpenDoor
+					'username'  => $this->kitchen_user,
+					'password'  => $password
 				],
-				'timeout'=>500,
-				'sslverify'   => false
+				'timeout'   => self::TIMEOUT,
+				'sslverify' => self::SSL_VERIFY
 			];
 			$auth = $this->kitchen_host.'/'.$this->kitchen_jwt_api.'/token';
 			$response = wp_remote_post($auth, $request);
 
-			// If that failed, try creating user firstr
 			if (!$this->api_success($response)) {
-				$response = $this->newRegistration(); // throws any errors
-
-				// Tell admin we have connected first time
-				$registerResponse = json_decode( wp_remote_retrieve_body( $response ) );
-				$this->addNotice('success','Created VacationSoup account',$registerResponse->user_name);
-
-				// And re-request the token from the Kitchen
-				$response = wp_remote_post($auth, $request);
-				if (!$this->api_success($response)) {
-					throw new \Exception ('Sign-in '.$this->api_error_message($response));
-				}
+				throw new \Exception($this->api_error_message($response));
 			}
 			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
-			$this->kitchen_token = $_SESSION['soup-kitchen-token'] = $tokenResponse->token;
+			$this->kitchen_token = $tokenResponse->token;
+			$this->persist();
+		}
+		if (!$this->kitchen_token){
+			throw new \Exception("No token available for access to Kitchen");
 		}
 		return $this->kitchen_token;
-	}
-	/**
-	 * To provide external access to it from __GET
-	 * @return string
-	 */
-	protected function get_kitchen_token(){
-		return $this->getSoupKitchenToken();
-	}
-
-	/**
-	 *
-	 * Request a new registration for the current user
-	 * Always returns a valid new user, throws on any failure
-	 *
-	 * @return array|\WP_Error
-	 */
-	public function newRegistration(){
-
-		return $this->postToKitchen('/users',
-			[
-				'username' => $this->kitchen_user,
-				'email' => wp_get_current_user()->user_email,
-				'url' => get_site_url(),
-				'roles' =>['author'],
-				'password' => self::APIUSER_PASS
-			],
-			$this->getSoupKitchenRegistryToken()
-		);
-	}
-
-	/**
-	 * Get the access token connecting us to the SoupKitchen's Registry account
-	 * Always returns a valid key, throws on error
-	 *
-	 * @return string The token
-	 * @throws \Exception On Requesting the token
-	 */
-	private function getSoupKitchenRegistryToken(){
-		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_jwt_api.'/token', [
-			'body' => [
-				'username' => self::REGISTRY_USER,
-				'password' => self::REGISTRY_PASS
-			],
-			'timeout'      => self::TIMEOUT,
-			'sslverify'    => self::SSL_VERIFY
-		]);
-
-		if ($this->api_success($response)){
-			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
-			$token = $tokenResponse->token;
-		} else {
-			throw new \Exception ("Soup Kitchen Registration: ".$this->api_error_message($response));
-		}
-		return $token;
 	}
 
 	/**
@@ -322,36 +304,37 @@ class SoupWaiter extends SitePersistedSingleton {
 		}
 	}
 
+	private function std_options($body = null){
+		$options =  [
+			'headers' => [
+				'Authorization' => 'Bearer '.$this->getSoupKitchenToken(),
+				'Content-Type' => 'application/json'
+			],
+			'timeout'   => self::TIMEOUT,
+			'sslverify' => self::SSL_VERIFY
+		];
+		if ($body){
+			$options['body'] = $body;
+		}
+	}
+
 	/**
 	 * Send a POST JSON API request to the SoupKitchen, always returns a valid response
 	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
 	 *
 	 * @param string $rri Relative Resource Indicator
 	 * @param array $body Body to be sent, in array format
-	 * @param null|string $token if identifying as other (e.g. registrar) user
 	 *
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function postToKitchen($rri,$body,$token=null){
-
-		if (null===$token){
-			$token = $this->getSoupKitchenToken();
-		}
-
-		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
-			'headers' => [
-				'Authorization' => 'Bearer '.$token,
-				'Content-Type' => 'application/json'
-			],
-			'body' => json_encode($body),
-			'timeout'   => self::TIMEOUT,
-			'sslverify' => self::SSL_VERIFY
-
-		]);
+	public function postToKitchen($rri,$body){
+		$options = $this->std_options($body);
+		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
-			throw new \Exception ("postToKitchen({$rri}): ".$this->api_error_message($response));
+			throw new \Exception ("postToKitchen({$rri}): ".
+			                      $this->api_error_message($response));
 		}
 
 		return json_decode( wp_remote_retrieve_body( $response ) );
@@ -361,25 +344,14 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
 	 *
 	 * @param string $rri Relative Resource Indicator
-	 * @param null|string $token if identifying as other (e.g. registrar) user
 	 *
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function getToKitchen($rri,$token=null){
+	public function getToKitchen($rri){
 
-		if (null===$token){
-			$token = $this->getSoupKitchenToken();
-		}
-
-		$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
-			'headers' => [
-				'Authorization' => 'Bearer '.$token
-			],
-			'timeout'   => self::TIMEOUT,
-			'sslverify' => self::SSL_VERIFY
-
-		]);
+		$options = $this->std_options();
+		$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
 			throw new \Exception ("getToKitchen({$rri}): ".$this->api_error_message($response));
@@ -400,23 +372,11 @@ class SoupWaiter extends SitePersistedSingleton {
 	 */
 	public function imagePostToKitchen($rri,$image,$token=null){
 
-		if (null===$token){
-			$token = $this->getSoupKitchenToken();
-		}
-
+		$options = $this->std_options(file_get_contents($image));
 		$image_info = pathinfo($image);
-
-		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,[
-			'headers' => [
-				'Authorization' => 'Bearer '.$token,
-				'Content-Type' => 'image/'.$image_info['extension'],
-				'Content-disposition' => 'attachment; filename='.$image_info['basename']
-			],
-			'body' => file_get_contents($image),
-			'timeout'   => self::TIMEOUT,
-			'sslverify' => self::SSL_VERIFY
-
-		]);
+		$options['headers']['Content-Type'] = 'image/'.$image_info['extension'];
+		$options['headers']['Content-disposition'] = 'attachment; filename='.$image_info['basename'];
+		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
 			throw new \Exception ("imagePostToKitchen({$rri}): ".$this->api_error_message($response));
@@ -474,7 +434,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	public function wp_async_save_post( $id, \WP_Post $post ) {
 		if ($post->post_type == 'post'){
 			try {
-					update_user_meta(get_current_user_id(),"A:VacationSoup",date("D M j G:i:s T Y"));
+					update_user_meta(get_current_user_id(),"VacationSoup",date("D M j G:i:s T Y"));
 					$this->syndicate_post($post);
 					$this->addNotice('info','Syndicated Post to VacationSoup');
 			} catch (Exception $e) {

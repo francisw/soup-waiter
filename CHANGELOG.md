@@ -1,5 +1,9 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.1 (2017.10.27)
+
+* **Enhancements**:
+  - Removed Social Connectors
 
 ## 0.2.0 (2017.10.25)
 
