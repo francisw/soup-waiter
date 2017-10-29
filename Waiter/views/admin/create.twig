@@ -56,7 +56,7 @@
 
     const topicsPerPage = 5;
     var topicPageAdvanced = false;
-    var binEndTopics = []; // temprary storage of last few topics to recycle them
+    var binEndTopics = []; // temporary storage of last few topics when cycling back to start
     var getTrendingTopics = function(){
         jQuery('#trending-topics').addClass("checking").html('');
         jQuery('#topic-refresh').addClass('active');
@@ -174,10 +174,12 @@
                     checkedTag + '/>';
         return '<li class="checklist-item">' + label + input + '</li>';
     }
+    var inputForNewTag = function () {
+        return '<li class="checklist-item"><input type="text" id="new-tag" onchange="newTag(this)" placeholder="New Tag"></li>';
+    }
 
-    var chooseTopic = function(topicId){
+    var chooseTopic = function(topicId) {
         var topic = k_topics[topicId];
-        var i = 0;
         vs_query = [];
 
         if (topic.id) {
@@ -192,9 +194,14 @@
             // They'll write their own
             jQuery('#post_title').prop('autofocus',true).focus().val("");
         }
-
+        showTags();
+    }
+    var newTags = [];
+    var showTags = function(){
+        var i = 0;
         // Build the complete tag list
-        var permTags = {{ permTags|json_encode|raw }};
+        permTags = newTags.concat({{ permTags|json_encode|raw }});
+
         var html = '';
         vs_query.forEach(function (tag) {
             html += inputFromTag(tag, ++i);
@@ -205,8 +212,25 @@
             html += inputFromTag(tag, ++i);
         });
         checkedTag = '';
+        html += inputForNewTag();
         jQuery('.tags-container').html(html);
+        // Prevent spaces in tags
+        jQuery('#new-tag').on({
+            keydown: function(e) {
+                if (e.which === 32)
+                    return false;
+            },
+            change: function() {
+                this.value = this.value.replace(/\s/g, "");
+            }
+        });
     };
+
+    var newTag = function(elem){
+        newTags.push(jQuery(elem).val());
+        showTags();
+    }
+
     var postDateElem,postStatusElem;
     var setPostDateAndStatus = function(){
         var postDate, postStatus;
