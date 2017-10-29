@@ -386,19 +386,22 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		// Available Tags for all posts
         // In case the destination is multiple words
-        $destination = SoupWaiter::single()->destination;
-        $render = '';
-        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
-            $render .= ucfirst($word);
-        }
-        $dest = '';
-        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
-            $dest .= ucfirst($word);
-        }
 
-        $context['permTags'] = ['VacationSoup',$dest];
-        foreach (['Holiday','Vacation'] as $holiday){
-            $context['permTags'][] = $holiday.$render;
+		$context['permTags'][] = 'VacationSoup';
+        foreach (SoupWaiter::single()->destinations_for_property as $destination) {
+	        $render = '';
+	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
+		        $render .= ucfirst($word);
+	        }
+	        $dest = '';
+	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
+		        $dest .= ucfirst($word);
+	        }
+
+	        $context['permTags'][] = $dest;
+	        foreach (['Holiday','Vacation'] as $holiday){
+		        $context['permTags'][] = $holiday.$render;
+	        }
         }
 
 		$args = array(
@@ -461,7 +464,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
      * @return array of Properties
      * Also populates the SoupWaiter::single()->properties
      */
-	private function get_properties(){
+	public function get_properties(){
         $propertyCount = SoupWaiter::single()->property_count;
         $properties = [];
         $destinations = []; // Might as well set these up too
@@ -470,17 +473,25 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
         for ($i=0;$i<($propertyCount);$i++){
             $property = Property::findOne($i);
             $properties[] = $property;
-            if (isset($property->destination)){
-                $destinations[$dCount] = ['id'=>$dCount,'rendered'=>"{$property->join} {$property->destination}",'destination'=>"{$property->destination}"];
-                $dCount++;
-            }
+
+	        if (!empty($property->destination)){
+		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join} {$property->destination}",'destination'=>"{$property->destination}"];
+		        $dCount++;
+	        }
+	        if (!empty($property->destination2)){
+		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join2} {$property->destination2}",'destination'=>"{$property->destination2}"];
+		        $dCount++;
+	        }
+	        if (!empty($property->destination3)){
+		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join3} {$property->destination3}",'destination'=>"{$property->destination3}"];
+		        $dCount++;
+	        }
 
         }
         sort(array_unique($destinations));
         SoupWaiter::single()->destinations = $destinations;
         return $properties;
     }
-
 	/**
 	 * @returns mixed[] The context for this tab
 	 */

@@ -28,12 +28,14 @@
             }
         }).statusCode({
             400: function(){ // This means we have gone past the end of the list
+                if (unloading) return;
                 if (offset.val() !== 0){ // reset back to the start
                     offset.val(0).change();
                     return getMOTD();
                 }
             }
         }).done(function (response) {
+            if (unloading) return;
             var motd = jQuery("#motd");
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
@@ -50,6 +52,7 @@
                 }
             }
         }).always(function (response) {
+            if (unloading) return;
             jQuery("#motd").removeClass("checking");
         });
     }
@@ -73,6 +76,7 @@
             }
         }).statusCode({
             400: function(){ // Bad Params: normally means we have gone past the end of the list
+                if (unloading) return;
                 var offset = jQuery('#next_topic');
                 if (offset.val() !== 0){ // reset back to the start, but only once
                     offset.val(0);
@@ -80,8 +84,10 @@
                 }
             }
         }).fail(function(jqXHR,status,error) {
+            if (unloading) return;
             alert('Error: Waiter failed to contact Kitchen\n'+error);
         }).done(function(response) {
+            if (unloading) return;
             var html='';
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
@@ -128,11 +134,14 @@
                         per_page: (k_tags.length)?k_tags.length:1
                     }
                 }).always(function(jqXHR,status,error) {
+                    if (unloading) return;
                     jQuery("#trending-topics").removeClass("checking");
                     jQuery('#topic-refresh').removeClass('active');
                 }).fail(function(jqXHR,status,error) {
+                    if (unloading) return;
                     alert('Error: Waiter failed to contact Kitchen\n'+error);
                 }).done(function(response) {
+                    if (unloading) return;
                     var html='';
                     k_tags = [];
                     if (response.error) {
@@ -295,9 +304,10 @@
 
                 jQuery.ajax(ajaxCall) // Not Asynchronous so the window.location waits for completion
                     .fail(function(jqXHR,status,error) {
-                    console.log('fail (vacation-soup) '+status+' '+error);
-                    alert('Error: Could rewind topics\n'+status);
-                })
+                        if (unloading) return;
+                        console.log('fail (vacation-soup) '+status+' '+error);
+                        alert('Error: Could rewind topics\n'+status);
+                    });
                 window.location.search += '&destination_id='+this.options[this.selectedIndex].value
             }
         });

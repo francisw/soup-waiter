@@ -73,9 +73,22 @@ class SoupWaiter extends SitePersistedSingleton {
         }
         return $id;
     }
-    protected function get_destination(){
-        return $this->destinations[$this->get_current_destination()];
-    }
+	protected function get_destination(){
+		return $this->destinations[$this->get_current_destination()];
+	}
+
+	protected function get_destinations_for_property(){
+		$main = $this->get_current_destination();
+		$mainDest = $this->destinations[$main];
+		$destinations = [];
+		foreach ($this->destinations as $destination){
+			if ($destination['property'] == $mainDest['property']){
+				$destinations[] = $destination;
+			}
+		}
+		return $destinations;
+	}
+
 	protected function set_kitchen_user($user){
 		$this->kitchen_user = $user;
 		$this->kitchen_token = null;
