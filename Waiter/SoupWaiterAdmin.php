@@ -112,7 +112,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         }
 						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
-						$response[$_REQUEST['name']] = $obj->$attr;
+						try {
+							$response[$_REQUEST['name']] = $obj->$attr;
+						} catch (\Exception $e){
+							$response[$_REQUEST['name']] = null; // Allowed for write-only attributes like password
+						}
 					} else throw new \Exception("Class '{$class}' not found'");
 				}
 			} catch (\Exception $e){
@@ -152,7 +156,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "auth" => [
                         "type" =>   "prop",
                         "title"=>   "Authorisation",
-                        "prop"=>    [SoupWaiter::single(),'connected_auth']
+                        "message"=> "Vacation Soup user or password needs setting",
+                        "prop"=>    [SoupWaiter::single(),'authorised']
                     ],
                     "post-kitchen" => [
                         "type" =>   "prop",

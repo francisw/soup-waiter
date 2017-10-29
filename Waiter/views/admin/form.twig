@@ -17,7 +17,7 @@
             // If SoupWaiter or SoupWaiterAdmin send as current
             // Else send to Kitchen, using new API
 
-            if (true || "SoupWaiter"==type || "SoupWaiterAdmin"==type){
+            if (true || "SoupWaiter"===type || "SoupWaiterAdmin"===type){
 
                 ajaxCall = {
                     type: "post",
@@ -46,15 +46,27 @@
                 };
             }
 
-            jQuery.ajax(ajaxCall).fail(function(jqXHR,status,error) {
-                console.log('fail (vacation-soup) '+status+' '+error);
-                alert('Error: Could not save change, refreshing page may help\n'+status);
-            }).done(function(response) {
-                this.disabled=false;
-                if (response.error) {
-                    alert('Error: could not save change,\n'+response.error.message)
-                }
-            });
+            jQuery.ajax(ajaxCall)
+                .fail(function(jqXHR,status,error) {
+                    console.log('fail (vacation-soup) '+status+' '+error);
+                    alert('Error: Could not save change, refreshing page may help\n'+status);
+                })
+                .done(function(response) {
+                    var msg = 'Not connected to Kitchen';
+                    this.disabled=false;
+                    if (!response || response.error && !jQuery(this).hasClass('quiet')) {
+                        if (response && response.error) {
+                            msg = response.error.message;
+                        }
+                        alert('Error: could not save change,\n'+jQuery(jQuery.parseHTML(msg)).text());
+                    }
+                })
+                .always(function(response){
+                    var thenDo = jQuery(this).data('persist-action');
+                    if (thenDo){
+                        eval(thenDo);
+                    }
+                });
         })
     });
 </script>
