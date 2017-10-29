@@ -41,7 +41,11 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @var string $kitchen_token The Token to identify us in the Kitchen
 	 */
 	protected $kitchen_token;
-    /**
+	/**
+	 * @var string $owner_name to show on posts
+	 */
+	protected $owner_name;
+	/**
      * @var number $nextMOTD the next MOTD page to request
      */
     protected $nextMOTD;

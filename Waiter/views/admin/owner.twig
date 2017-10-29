@@ -4,11 +4,32 @@
         {% block form_name %}dash{% endblock form_name %}
         {% block form_content %}
             <div class="vs-content tab-owner row">
-                <div class="col-lg-8 col-sm-12">
+                <div class="col-md-8 col-sm-12">
                     <div class="vs-panel row">
                         <div id="title" class="col-sm-12">
                             <h1>Owner Details</h1>
+                            <div class="col-sm-6">
+                                <div class="field">
+                                    <label for="owner_name">
+                                        Friendly Name (shown on posts as author)
+                                    </label>
+                                    <input type="text"
+                                           class="persist"
+                                           placeholder="Name"
+                                           name="SoupWaiter.owner_name"
+                                           id="owner_name"
+                                           required value="{{ SoupWaiter.owner_name}}"/>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <div class="vs-panel row">
+                        <div id="title" class="col-sm-12">
+                            <h1>Information</h1>
+                        </div>
+                        <p>We will ask you more owner details in a future release before Vacation Soup is launched.</p>
                     </div>
                 </div>
             </div>

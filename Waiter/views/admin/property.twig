@@ -106,6 +106,16 @@
                             </div>
                         </div>
                     </div>
+                    {% if loop.first %}
+                    <div class="col-md-4 col-sm-12">
+                        <div class="vs-panel row">
+                            <div id="title" class="col-sm-12">
+                                <h1>Information</h1>
+                            </div>
+                            <p>We will ask you more property details in a future release before Vacation Soup is launched.</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         {% endblock form_content %}
