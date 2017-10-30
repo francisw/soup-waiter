@@ -8,19 +8,20 @@
                     <div class="vs-panel row">
                         <div id="title" class="col-sm-12">
                             <h1>Owner Details</h1>
-                            <div class="col-sm-6">
-                                <div class="field">
-                                    <label for="owner_name">
-                                        Friendly Name (shown on posts as author)
-                                    </label>
-                                    <input type="text"
-                                           class="persist"
-                                           placeholder="Name"
-                                           name="SoupWaiter.owner_name"
-                                           id="owner_name"
-                                           required value="{{ SoupWaiter.owner_name}}"/>
-                                </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="field">
+                                <label for="owner_name">
+                                    Friendly Name (shown on posts as author) <span class="required">*</span>
+                                </label>
+                                <input type="text"
+                                       class="persist"
+                                       placeholder="Name"
+                                       name="SoupWaiter.owner_name"
+                                       id="owner_name"
+                                       required value="{{ soup.owner_name}}"/>
                             </div>
+                            <input type="submit" class="unload" value="done" onClick="if (document.getElementById('owner_name').validity.valid) window.location.reload()">
                         </div>
                     </div>
                 </div>

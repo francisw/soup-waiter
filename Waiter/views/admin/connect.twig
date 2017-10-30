@@ -3,63 +3,106 @@
 {% embed 'admin/form.twig' %}
 {% block form_name %}connect{% endblock form_name %}
 {% block form_content %}
-    <script>
-        jQuery(function() {
-            var doAllServiceChecks = function(){
-                jQuery(".servicecheck").each(function () {
+<script>
+    jQuery(function() {
+        window.doAllServiceChecks = function(){
+            jQuery(".servicecheck").each(function () {
 
-                    jQuery(this).addClass("checking").removeClass("ok nok fail")
-                        .find('I')
-                        .removeClass('fa-check fa-chain-broken fa-question');
-                    var ServiceAjaxCall = {
-                        type: "post",
-                        dataType: "json",
-                        context: this,
-                        url: ajaxurl,
-                        data: {
-                            action: "servicecheck",
-                            _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
-                            service: jQuery(this).data('service')
+                jQuery(this).addClass("checking").removeClass("ok nok fail")
+                    .find('I')
+                    .removeClass('fa-check fa-chain-broken fa-question');
+                var ServiceAjaxCall = {
+                    type: "post",
+                    dataType: "json",
+                    context: this,
+                    url: ajaxurl,
+                    data: {
+                        action: "servicecheck",
+                        _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
+                        service: jQuery(this).data('service')
+                    }
+                };
+                jQuery.ajax(ServiceAjaxCall)
+                    .fail(function (jqXHR, status, error) {
+                        if (unloading) return;
+                        console.log('fail (vacation-soup) ' + status + ' ' + error);
+                        jQuery(this).addClass('nok')
+                            .find('I')
+                            .removeClass('fa-question')
+                            .addClass('fa-chain-broken');
+                    })
+                    .done(function (response) {
+                        if (unloading) return;
+                        var status,title;
+                        if (response.success){
+                            status = response.status;
+                            title = response.message;
+                        } else {
+                            status = 'nok fail';
+                            title = (response.error)?response.error.message:'Error connecting';
                         }
-                    };
-                    jQuery.ajax(ServiceAjaxCall)
-                        .fail(function (jqXHR, status, error) {
-                            if (unloading) return;
-                            console.log('fail (vacation-soup) ' + status + ' ' + error);
-                            jQuery(this).addClass('nok')
-                                .find('I')
-                                .removeClass('fa-question')
-                                .addClass('fa-chain-broken');
-                        })
-                        .done(function (response) {
-                            if (unloading) return;
-                            var status,title;
-                            if (response.success){
-                                status = response.status;
-                                title = response.message;
-                            } else {
-                                status = 'nok fail';
-                                title = (response.error)?response.error.message:'Error connecting';
-                            }
-                            faIcon = (status==='ok')?'fa-check':'fa-chain-broken';
-                            jQuery(this).addClass(status)
-                                .find('I')
-                                .removeClass('fa-question')
-                                .addClass(faIcon)
-                                .parent().prop('title',title);
-                        })
-                        .always(function(){
-                            if (unloading) return;
-                            jQuery(this).removeClass("checking");
-                        });
-                });
-            }
-            jQuery('.soup-icon').click(doAllServiceChecks);
-            doAllServiceChecks();
-        });
-    </script>
+                        faIcon = (status==='ok')?'fa-check':'fa-chain-broken';
+                        jQuery(this).addClass(status)
+                            .find('I')
+                            .removeClass('fa-question')
+                            .addClass(faIcon)
+                            .parent().prop('title',title);
+                    })
+                    .always(function(){
+                        if (unloading) return;
+                        jQuery(this).removeClass("checking");
+                    });
+            });
+        }
+        jQuery('.soup-icon').click(doAllServiceChecks);
+        doAllServiceChecks();
+    });
+</script>
 
-    <div class="vs-content tab-connect row">
+<div class="vs-content tab-connect row">
+    <div class="col-lg-6 col-md-6 col-xs-12 center-xs">
+        <div id="connect-params" class="vs-panel row field-container">
+            <div id="title" class="col-sm-12">
+                <h1>The Soup Settings</h1>
+                <p>Please enter the username (email) and password you registered with Vacation Soup. Once set, you cannot change your username. </p>
+                <div class="field">
+                    <label for="kitchen_user">
+                        Username <span class="required">*</span>
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_user" id="kitchen_user" value="{{ soup.kitchen_user }}"/>
+                </div>
+                <div class="field required">
+                    <label for="kitchen_password">
+                        Password <span class="required">*</span>
+                    </label>
+                    <input type="password" class="persist" name="SoupWaiter.kitchen_password" id="kitchen_password" value=""
+                    data-persist-action="doAllServiceChecks()"/>
+                </div>
+                <div class="label-indent">
+                    <input type="submit" value="done" class="unload" onClick="if (!document.getElementById('kitchen_password').disabled) window.location.reload()">
+                </div>
+                <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
+                <div class="field">
+                    <label for="kitchen_host">
+                        Kitchen
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_auth_api">
+                        Auth API
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_api">
+                        Kitchen API
+                    </label>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="col-lg-6 col-md-6 col-xs-12 center-xs">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
@@ -85,38 +128,6 @@
                         {{ service['url']? "</a>":"" }}
                     </div>
                 {% endfor %}
-            </div>
-        </div>
-    </div>
-        <div class="col-lg-6 col-md-6 col-xs-12 center-xs">
-        <div id="connect-params" class="vs-panel row field-container">
-            <div id="title" class="col-sm-12">
-                <h1>The Soup Settings</h1>
-                <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
-                <div class="field">
-                    <label for="kitchen_host">
-                        Kitchen
-                    </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
-                </div>
-                <div class="field">
-                    <label for="kitchen_user">
-                        Username
-                    </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_user" id="kitchen_user" value="{{ soup.kitchen_user }}"/>
-                </div>
-                <div class="field">
-                    <label for="kitchen_auth_api">
-                        Auth API
-                    </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
-                </div>
-                <div class="field">
-                    <label for="kitchen_api">
-                        Kitchen API
-                    </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
-                </div>
             </div>
         </div>
     </div>

@@ -45,7 +45,7 @@
                             "#VacationSoup #"+destVal+" #Holiday"+joinVal+destVal+" #Vacation"+joinVal+destVal
                         );
                     } else {
-                        target.html("Please enter Title and Destination to see example tags.")
+                        target.html("Please enter Title and at least one Destination to see example tags.")
                     }
                 }
                 jQuery(function(){
@@ -71,7 +71,7 @@
                             <div class="col-sm-6">
                                 <div class="field">
                                     <label for="title-{{ property.id }}">
-                                        Title
+                                        Title <span class="required">*</span>
                                     </label>
                                     <input type="text"
                                            data-id="{{ property.id }}"
@@ -81,9 +81,9 @@
                                            id="title-{{ property.id }}"
                                            required value="{{ property.title }}"/>
                                 </div>
-                                <div class="field">
+                                <div class="field required">
                                     <label for="destination-{{ property.id }}">
-                                        Destination
+                                        Destination <span class="required">*</span>
                                     </label>
                                     <input type="text"
                                            data-id="{{ property.id }}"
@@ -132,6 +132,7 @@
                                            id="destination-{{ property.id }}-3"
                                            required value="{{ property.destination3 }}"/>
                                 </div>
+                                <input type="submit" class="unload" value="done" onClick="if (document.getElementById('title-{{ property.id }}').validity.valid) window.location.reload()">
                             </div>
                             <div id="examples-{{ property.id }}" class="col-sm-6">
 

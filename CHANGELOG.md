@@ -1,9 +1,22 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.2 (2017.10.30)
+
+* **Enhancements**:
+  - Added Done button to most tabs, to improve flow
+  - Force validation when clicking done
+  - Added required* on necessary fields
+
+* **Bug fixes**
+  - Corrected auto-navigation of tabs on setup
+  - Not displaying owners name on owners tab correctly
+  - Re-added password field on connect screen
+
 ## 0.2.1 (2017.10.27)
 
 * **Enhancements**:
   - Removed Social Connectors
+  - Added alternate destination names
 
 ## 0.2.0 (2017.10.25)
 
