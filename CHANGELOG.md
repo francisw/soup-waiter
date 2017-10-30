@@ -3,7 +3,9 @@
 ## 0.2.2 (2017.10.30)
 
 * **Enhancements**:
-  - 
+  - Added Done button to most tabs, to improve flow
+  - Force validation when clicking done
+  - Added required* on necessary fields
 
 * **Bug fixes**
   - Corrected auto-navigation of tabs on setup
@@ -14,6 +16,7 @@
 
 * **Enhancements**:
   - Removed Social Connectors
+  - Added alternate destination names
 
 ## 0.2.0 (2017.10.25)
 

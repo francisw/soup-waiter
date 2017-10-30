@@ -22,6 +22,14 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	protected $pixabay_images_gallery_languages;
 	/**
+	 * @var string|null $tab_message For messages at the top of a tab, such as why we are here
+	 */
+	protected $tab_message;
+	/**
+	 * @var string|null $requested_tab Only set if the tab is overridden in sanitise_tab
+	 */
+	protected $requested_tab;
+	/**
 	 * Called from the 'init' Wordpress action
 	 *
 	 * Retrieve Session variables
@@ -76,7 +84,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		if (!empty($_REQUEST) &&
 		    !empty($_REQUEST['_vs_nonce'])) {
 			$tab = $this->sanitisedTab();
-			check_admin_referer( 'vacation-soup-'.$tab,'_vs_nonce' );
+			check_admin_referer( 'vacation-soup','_vs_nonce' );
 
 			$controller = "do_{$tab}_ajax";
 			try {
@@ -279,8 +287,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		if (is_admin() &&
 		    !empty($_POST) &&
 		    !empty($_POST['_vs_nonce'])) {
-			$tab = $this->sanitisedTab();
-			check_admin_referer( 'vacation-soup-'.$tab,'_vs_nonce' );
+			$tab = $this->sanitisedSrcTab();
+			check_admin_referer( 'vacation-soup','_vs_nonce' );
 
 			$controller = "process_{$tab}_data";
 			return ($this->$controller());
@@ -322,9 +330,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	private function sanitisedTab($tab=null){
 		$default =  'create';
 		$tabs = ['create','owner','property','connect'];
+		$this->tab_message = '';
 
 		if (!$tab) {
-			if (isset($_REQUEST['tab'])){
+			if (isset($_REQUEST['requested-tab'])){
+				$tab = $_REQUEST['requested-tab'];
+			} elseif (isset($_REQUEST['tab'])){
 				$tab = $_REQUEST['tab'];
 			} else {
 				$tab = $default;
@@ -338,9 +349,20 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			$w = SoupWaiter::single();
 			if (empty($w->owner_name)) $tab = 'owner';
 			else {
-				if (0==$w->property_count || empty($w->current_destination['destination'])) $tab = 'property';
+				if (0==$w->property_count) $tab = 'property';
 				elseif (!$w->connected) $tab = 'connect';
 			}
+			if ('create'!=$tab) {
+				$this->requested_tab = 'create';
+				$this->tab_message = "You have been redirected here, more information is needed.";
+			}
+		}
+		return $tab;
+	}
+	public function sanitisedSrcTab(){
+		$tab = $this->sanitisedTab();
+		if (isset($_REQUEST['requested-tab']) && isset($_REQUEST['tab'])){
+			$tab = $_REQUEST['tab']; // Use the one the data came from
 		}
 		return $tab;
 	}
@@ -376,6 +398,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// $this->persist(); // Don't know why we were persisting SoupWaiterAdmin, not needed, not here anyway
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
+	public function process_owner_data(){}
+	public function process_connect_data(){}
+	public function process_property_data(){}
 	/**
 	 * get base context
 	 *
@@ -436,7 +461,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$context['posts'] = Timber::get_posts( $args );
 		$context['recent_topics']=[];
 		foreach ($context['posts'] as $post){
-			if (isset($post->topic) && $post->topic > 0){
+			if (isset($post->topic) && $post->topic > 0 && !is_array($post->topic)){
 				$context['recent_topics'][] = $post->topic;
 			}
 		}

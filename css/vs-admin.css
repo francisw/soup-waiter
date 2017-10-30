@@ -189,6 +189,9 @@ DIV.field LABEL{
     min-width: 20%;
     display: inline-block;
 }
+.label-indent {
+    padding-left: 20%;
+}
 .field-row INPUT[type="button"] {
     margin: 10px 0 0 20%;
 }
@@ -450,7 +453,7 @@ DIV.field-container.currently-editing  INPUT
     font-size: inherit;
     height: inherit;
     background: inherit;
-    background-color: rgba(255,255,255,0.3);
+    background-color: rgba(255,255,255,0.5);
     vertical-align: inherit;
     margin-top: -1px;
     margin-bottom: -1px;
@@ -467,4 +470,35 @@ I.fa-refresh:hover {
 }
 I.fa-refresh.active {
     transform: rotate(180deg);
+}
+.vs-content input[type="submit"].unload {
+    color: #fff;
+    background-color: #6496c8;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 5px #27496d;
+    margin-top: 10px;
+}
+
+.vs-content input[type="submit"]:hover.unload {
+    background-color: #417cb8
+}
+
+.vs-content input[type="submit"]:active.unload {
+    background-color: #417cb8;
+    box-shadow: 0 1px #27496d;
+    transform: translateY(4px);
+}
+.error.vs {
+    margin-top: 15px;
+}
+
+.tab-owner.requested-tab-create SPAN.required,
+.tab-property.requested-tab-create SPAN.required,
+.tab-connect.requested-tab-create SPAN.required
+{
+    /* color: red;  is already defined elsewhere for all SPA.requireds */
+}
+SPAN.required{
+    vertical-align: super;
 }
