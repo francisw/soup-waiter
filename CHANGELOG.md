@@ -8,6 +8,7 @@
 * **Bug fixes**
   - Corrected auto-navigation of tabs on setup
   - Not displaying owners name on owners tab correctly
+  - Re-added password field on connect screen
 
 ## 0.2.1 (2017.10.27)
 

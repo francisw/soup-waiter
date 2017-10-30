@@ -333,12 +333,18 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		if (!in_array($tab,$tabs)){
 			$tab = $default;
 		}
-		$w = SoupWaiter::single();
-		if (empty($w->owner_name)) $tab = 'owner';
-		elseif (0==$w->property_count) $tab = 'property';
-		elseif (!$w->connected) $tab = 'connect';
+		// Now lets see if that tab is allowed
+		if ('create'==$tab){ // create needs everything else to be completed
+			$w = SoupWaiter::single();
+			if (empty($w->owner_name)) $tab = 'owner';
+			else {
+				if (0==$w->property_count || empty($w->current_destination['destination'])) $tab = 'property';
+				elseif (!$w->connected) $tab = 'connect';
+			}
+		}
 		return $tab;
 	}
+
 	/**
 	 * Admin page callback
 	 * Set default tab and pass to twig with appropriate context
