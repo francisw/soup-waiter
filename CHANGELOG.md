@@ -1,5 +1,14 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.2 (2017.10.30)
+
+* **Enhancements**:
+  - 
+
+* **Bug fixes**
+  - Corrected auto-navigation of tabs on setup
+  - Not displaying owners name on owners tab correctly
+
 ## 0.2.1 (2017.10.27)
 
 * **Enhancements**:
