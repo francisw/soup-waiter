@@ -1,5 +1,10 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.3 (2017.11.31)
+
+* **Enhancements**:
+  - Added hyperlink to registration in connect
+  
 ## 0.2.2 (2017.10.30)
 
 * **Enhancements**:
