@@ -5,8 +5,8 @@
 - **Lead Developer:**
 [Francis Wallinger](https://github.com/francisw)
 - **Version:** [0.2.3](https://github.com/francisw/soup-waiter/releases)
-- **Requires at least:** 4.7.1 
-- **Tested up to:** 4.8.2
+- **Requires at least:** 4.7.0 
+- **Tested up to:** 4.8.3
 
 ## Description
 
