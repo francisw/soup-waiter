@@ -1,6 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
-## 0.2.3 (2017.11.31)
+## 0.2.4 (2017.11.04)
+
+* **Enhancements**:
+  - Wordpress Directory additions
+  
+## 0.2.3 (2017.11.02)
 
 * **Enhancements**:
   - Added hyperlink to registration in connect
