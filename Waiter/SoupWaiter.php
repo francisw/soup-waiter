@@ -69,7 +69,7 @@ class SoupWaiter extends SitePersistedSingleton {
     protected function get_current_destination(){
         $id=0; // Default
         if (isset($_REQUEST['destination_id'])){
-            $id = $_REQUEST['destination_id'];
+            $id = intval($_REQUEST['destination_id']);
         }
         return $id;
     }

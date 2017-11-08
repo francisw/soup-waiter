@@ -1,5 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.5 (2017.11.04)
+
+* **Bug fixes**:
+  - Improved Sanitisation, issues identified by WordPress team
+  - Improved namespace polution, identified by WordPress team
+  
 ## 0.2.4 (2017.11.04)
 
 * **Enhancements**:

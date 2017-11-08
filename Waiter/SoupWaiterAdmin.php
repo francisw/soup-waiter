@@ -1,6 +1,6 @@
 <?php
 namespace Waiter;
-require_once (plugin_dir_path( __FILE__ )."../pixabay-images.php");
+require_once (plugin_dir_path( __FILE__ )."../soup-pixabay-images.php");
 
 use Timber\Timber;
 
@@ -71,9 +71,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	/**
 	 * Process AJAX data
 	 * If there is a do_{tab}_ajax function, call it, otherwise do the default
-	 * which is, assuming an input of name=Class.Member, value=NewValue
+	 * which is update name with value, where name is Class.property for Singleton, or Class[id].property
+	 * for Multiton
 	 *
-	 * Set the Member to NewValue, on the Singleton class Class
+	 * Set the property to NewValue, on the Singleton or Multiton class Class
 	 * It is up to the class to decide if to persist
 	 *
 	 * @internal Singleton::class $single
@@ -104,7 +105,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					}
                     preg_match('#\[(.*?)\]#', $class, $id);
 					if ($id){
-					    $id = $id[1]; // extract the id
+					    $id = intval($id[1]); // extract the numeric id
                     }
 					$class = substr($class,0,strcspn($class,"[]"));
 					$class = __NAMESPACE__ . '\\' . $class;
@@ -123,7 +124,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 						try {
 							$response[$_REQUEST['name']] = $obj->$attr;
 						} catch (\Exception $e){
-							$response[$_REQUEST['name']] = null; // Allowed for write-only attributes like password
+							$response[$_REQUEST['name']] = null; // Allowed for write-only attributes (like password)
 						}
 					} else throw new \Exception("Class '{$class}' not found'");
 				}
@@ -235,10 +236,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			];
             $service = $this->get_service($_REQUEST["service"]);
             if (!$service){
-                throw new \Exception("Service unknown: {$_REQUEST["service"]}");
+            	$message = esc_html($_REQUEST["service"]);
+                throw new \Exception("Service unknown: {$message}");
             }
 			if (isset($service["message"])){
-				$result['message'] = $service["message"];
+				$result['message'] = $service["message"]; // Default failure message
 			}
             switch($service["type"]){
                 case "group":
@@ -362,7 +364,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	public function sanitisedSrcTab(){
 		$tab = $this->sanitisedTab();
 		if (isset($_REQUEST['requested-tab']) && isset($_REQUEST['tab'])){
-			$tab = $_REQUEST['tab']; // Use the one the data came from
+			$tab = esc_html($_REQUEST['tab']); // Use the one the data came from
 		}
 		return $tab;
 	}
