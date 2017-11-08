@@ -106,7 +106,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     preg_match('#\[(.*?)\]#', $class, $id);
 					if ($id){
 					    $id = intval($id[1]); // extract the numeric id
-                    }
+                    } else {
+						$id = null;
+					}
 					$class = substr($class,0,strcspn($class,"[]"));
 					$class = __NAMESPACE__ . '\\' . $class;
 					if (class_exists($class)){

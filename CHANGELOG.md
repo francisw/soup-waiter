@@ -1,9 +1,9 @@
 # Changelog for Vacation Soup Waiter
 
-## 0.2.6 (2017.11.04)
+## 0.2.7 (2017.11.04)
 
 * **Bug fixes**:
-  - Type coercion error
+  - Type coercion errors fixed
   
 ## 0.2.5 (2017.11.04)
 
