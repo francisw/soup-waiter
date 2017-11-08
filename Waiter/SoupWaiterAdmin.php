@@ -110,7 +110,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$class = substr($class,0,strcspn($class,"[]"));
 					$class = __NAMESPACE__ . '\\' . $class;
 					if (class_exists($class)){
-						if (null==$id){
+						if (null===$id){
 						    if (method_exists($class,'single')){
                                 $obj = $class::single();
                             } else throw new \Exception("Class '{$class}' must be a Singleton, as no ID provided");
