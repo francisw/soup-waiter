@@ -1,6 +1,6 @@
 <?php
 namespace Waiter;
-require_once (plugin_dir_path( __FILE__ )."../soup-pixabay-images.php");
+require_once (SOUP_PATH . "soup-pixabay-images.php");
 
 use Timber\Timber;
 
@@ -40,7 +40,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	public function init(){
 		$this->pixabay_images_gallery_languages = array('cs' => 'Čeština', 'da' => 'Dansk', 'de' => 'Deutsch', 'en' => 'English', 'es' => 'Español', 'fr' => 'Français', 'id' => 'Indonesia', 'it' => 'Italiano', 'hu' => 'Magyar', 'nl' => 'Nederlands', 'no' => 'Norsk', 'pl' => 'Polski', 'pt' => 'Português', 'ro' => 'Română', 'sk' => 'Slovenčina', 'fi' => 'Suomi', 'sv' => 'Svenska', 'tr' => 'Türkçe', 'vi' => 'Việt', 'th' => 'ไทย', 'bg' => 'Български', 'ru' => 'Русский', 'el' => 'Ελληνική', 'ja' => '日本語', 'ko' => '한국어', 'zh' => '简体中文');
 
-		Timber::$locations = ABSPATH.'/wp-content/plugins/soup-waiter';
+		Timber::$locations = untrailingslashit(SOUP_PATH );
 
 		// enables auto featuring image on post create
 		$this->hasFeaturedImages = get_theme_support( 'post-thumbnails' );
@@ -63,8 +63,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 * Register our stylesheets.
 	 */
 	public function register_styles() {
-		wp_register_style( 'vs-bootstrap', plugins_url( '../css/bootstrap-grid.min.css',__FILE__) );
-		wp_register_style( 'vacation-soup', plugins_url( '../css/vs-admin.css',__FILE__) );
+		wp_register_style( 'vs-bootstrap', SOUP_URL . 'css/bootstrap-grid.min.css' );
+		wp_register_style( 'vacation-soup', SOUP_URL . 'css/vs-admin.css' );
 	}
 
 
@@ -291,9 +291,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		if (is_admin() &&
 		    !empty($_POST) &&
 		    !empty($_POST['_vs_nonce'])) {
-			$tab = $this->sanitisedSrcTab();
+
 			check_admin_referer( 'vacation-soup','_vs_nonce' );
 
+			$tab = $this->sanitisedSrcTab();
 			$controller = "process_{$tab}_data";
 			return ($this->$controller());
 		}
@@ -387,6 +388,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 * Create a post using the admin/VS/create page
 	 */
 	public function process_create_data( ){
+		if (!isset($_POST['post_status']) || ('publish'!=$_POST['post_status'] && 'draft'!=$_POST['post_status'])){
+			return null;
+		}
 		$error_obj = false;
 
 		$newpost = $_POST;
@@ -400,6 +404,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		}
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
 		// $this->persist(); // Don't know why we were persisting SoupWaiterAdmin, not needed, not here anyway
+		unset($_POST['post_status']);
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	public function process_owner_data(){}
