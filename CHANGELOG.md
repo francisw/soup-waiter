@@ -4,6 +4,9 @@
 
 * **Bug fixes**:
   - Fixed posting fault labelled get_extra_permastruct
+  - Fixed Syndication
+  - Fixed erroneous path/url assumptions
+  - Fixed erroneous saving of posts
   
 ## 0.2.7 (2017.11.04)
 

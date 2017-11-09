@@ -304,7 +304,10 @@ class SoupWaiter extends SitePersistedSingleton {
 		}
 	}
 
-	private function std_options($body = null){
+	/**
+	 * @return string[] Options needed
+	 */
+	private function std_options(){
 		$options =  [
 			'headers' => [
 				'Authorization' => 'Bearer '.$this->getSoupKitchenToken(),
@@ -313,9 +316,7 @@ class SoupWaiter extends SitePersistedSingleton {
 			'timeout'   => self::TIMEOUT,
 			'sslverify' => self::SSL_VERIFY
 		];
-		if ($body){
-			$options['body'] = $body;
-		}
+		return $options;
 	}
 
 	/**
@@ -329,7 +330,8 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws \Exception
 	 */
 	public function postToKitchen($rri,$body){
-		$options = $this->std_options($body);
+		$options = $this->std_options();
+		$options['body'] = json_encode($body);
 		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
@@ -372,10 +374,11 @@ class SoupWaiter extends SitePersistedSingleton {
 	 */
 	public function imagePostToKitchen($rri,$image,$token=null){
 
-		$options = $this->std_options(file_get_contents($image));
+		$options = $this->std_options();
 		$image_info = pathinfo($image);
 		$options['headers']['Content-Type'] = 'image/'.$image_info['extension'];
 		$options['headers']['Content-disposition'] = 'attachment; filename='.$image_info['basename'];
+		$options['body'] = file_get_contents($image);
 		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
