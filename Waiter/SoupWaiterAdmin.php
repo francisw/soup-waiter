@@ -47,8 +47,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		// Tried attaching this to send_headers hook but it didn't fire
 		$this->add_header_cors();
-		if (!defined( 'DOING_AJAX' )) $this->process_post_data();
 
+		add_action( 'admin_init', [$this,'process_post_data']);
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );

@@ -1,5 +1,10 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.8 (2017.11.05)
+
+* **Bug fixes**:
+  - Fixed posting fault labelled get_extra_permastruct
+  
 ## 0.2.7 (2017.11.04)
 
 * **Bug fixes**:
