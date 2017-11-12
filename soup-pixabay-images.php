@@ -324,7 +324,7 @@ function media_soup_pixabay_images_tab() {
         }
 
         var motdClicked = parent.motdClicked;
-        parent.motdClicked = false;
+        //parent.motdClicked = false;
 
         var handleLightbox = function () {
             jQuery(document).off('click', '.upload');

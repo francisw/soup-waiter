@@ -223,6 +223,7 @@
         checkedTag = '';
         html += inputForNewTag();
         jQuery('.tags-container').html(html);
+
         // Prevent spaces in tags
         jQuery('#new-tag').on({
             keydown: function(e) {
@@ -313,7 +314,28 @@
         });
     });
 
+    var setFeaturedImage = function(ed){
+            var fi = jQuery('#featured_image');
+            if (!fi.val() || motdClicked){
+                var st,st_cap;
 
+                var elem = ed.getContent();
+                if (-1 !== (st = elem.indexOf('<img'))){
+                    var image_id = parseInt(elem.substr(9 + elem.indexOf('wp-image-',st)));
+                    var imglen = 1 + elem.indexOf('>',st) - st;
+                    fi.val(image_id);
+                    jQuery('#motd').html(
+                        '<h1>Featured Image</h1>'+elem.substr(st,imglen)
+                    );
+                    if(-1 !== (st_cap = elem.indexOf('[caption')) && st_cap < st){
+                        imglen = 10 + elem.indexOf('[/caption]') - st_cap;
+                        st = st_cap;
+                    }
+
+                    ed.setContent(elem.substr(0,st)+elem.substr(st+imglen));
+                }
+            }
+    }
 </script>
 
 {% embed 'admin/post-form.twig' %}{% block form_content %}
@@ -324,7 +346,9 @@
                 <h1>Create Post
                     <select title="Alternative destinations" id="alter-destination">
                         {% for destination in soup.destinations %}
-                            <option value="{{ destination.id }}" {{ (destination.id == soup.current_destination)?'selected':'' }}>{{ destination.rendered }}</option>
+                            <option value="{{ destination.id }}" {{ (destination.id == soup.current_destination)?'selected':'' }}>
+                                {{ destination.rendered }}
+                            </option>
                         {% endfor %}
                     </select>
                 </h1>
