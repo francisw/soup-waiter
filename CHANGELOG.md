@@ -1,5 +1,10 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.9 (2017.11.14)
+
+* **Bug fixes**:
+  - Fixed featured images from non-pixabay sources
+  
 ## 0.2.8 (2017.11.05)
 
 * **Bug fixes**:
