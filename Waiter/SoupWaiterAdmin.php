@@ -451,6 +451,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		        $context['permTags'][] = $holiday.$render;
 	        }
         }
+		add_filter('tiny_mce_before_init', [$this,'mce_autosave_mod']);
 
 		$args = array(
 			'numberposts' => 8,
@@ -476,6 +477,15 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		}
 
 		return $context;
+	}
+	public function mce_autosave_mod( $init ) {
+		$init['setup'] = "function(ed){ ed.on( 'NodeChange', function(e){ setFeaturedImage(ed) } ) }";
+		/* $init['setup'] = "function(ed){
+			ed.on('NodeChange', function(e){
+				console.log('the content ' + ed.getContent());
+			});
+		}"; */
+		return $init;
 	}
 
 	/**
