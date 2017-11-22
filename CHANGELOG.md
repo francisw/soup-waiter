@@ -1,5 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.10 (2017.11.22)
+
+* **Bug fixes**:
+  - Tags syndicating to Soup Kitchen correctly
+  - Scheduled posting error fixed for exact dates
+
 ## 0.2.9 (2017.11.14)
 
 * **Bug fixes**:
