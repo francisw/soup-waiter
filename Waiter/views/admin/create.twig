@@ -259,7 +259,7 @@
                 postDate = new Date(new Date().getTime() + (futureDays * dayInMsec));
                 postDateElem.val(postDate.toISOString().split('T')[0]);
                 break;
-            case 'on':
+            case 'date':
                 postDateElem.val(jQuery('#datepicker').val());
                 postStatusElem.val('future'); // postDateElem already set
                 break;
@@ -271,12 +271,14 @@
         }
 
     };
-
+    /*
+        Setup the page once it's loaded
+     */
     jQuery(function(){
         getMOTD();
         getTrendingTopics();
         jQuery( ".datepicker" ).datepicker({
-            dateFormat : "yyyy-mm-dd"
+            dateFormat : "yy-mm-dd"
         });
         jQuery('#motd').click(function(){
             if (jQuery('#featured_image').val()) { // if they clicked and we have an FI
@@ -313,7 +315,10 @@
             }
         });
     });
-
+    /*
+        If there is no featured image (FI) or if FI was clicked (i.e. to replace it)
+        Find the first <img>, make it the featured image, and remove it (along with it's [caption])
+     */
     var setFeaturedImage = function(ed){
             var fi = jQuery('#featured_image');
             if (!fi.val() || motdClicked){
