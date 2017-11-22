@@ -5,6 +5,7 @@
 * **Bug fixes**:
   - Tags syndicating to Soup Kitchen correctly
   - Scheduled posting error fixed for exact dates
+  - Improved links between kitchen and waiter
 
 ## 0.2.9 (2017.11.14)
 

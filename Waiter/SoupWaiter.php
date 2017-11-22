@@ -497,9 +497,14 @@ class SoupWaiter extends SitePersistedSingleton {
 			$tags[] = $postTag->name;
 		}
 		$kitchen['tags_list'] = $tags;
+		$kitchen['waiter_url'] = get_post_permalink($post);
+		$kitchen['waiter_id'] = $post->ID;
+		$kitchen['topic'] = get_post_meta($post->ID,'topic');
+
 		$kitchen_post = $this->postToKitchen( $rri,$kitchen );
 
 		update_post_meta($post->ID,'kitchen_id',$kitchen_post->id);
+		update_post_meta($post->ID,'kitchen_url',$kitchen_post->link);
 	}
 
 }
