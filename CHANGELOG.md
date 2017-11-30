@@ -1,5 +1,13 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.11 (2017.12.01)
+
+* **Bug fixes**:
+  - Fixed fault that incorrectly handled quotes in house names (etc), as in Life O'Reilly coming thru as Life O\'Reilly
+  - Fixed fault with Destinations not handling non-latin characters (as in Olhāo)
+
+* **Enhancements**:
+
 ## 0.2.10 (2017.11.22)
 
 * **Bug fixes**:

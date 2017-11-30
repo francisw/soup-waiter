@@ -121,7 +121,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                                 $obj = $class::findOne($id);
                             } else throw new \Exception("Class '{$class}' must be a Multiton, as ID provided");
                         }
-						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
+						$obj->$attr = stripslashes($_REQUEST['value']);  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
 						try {
 							$response[$_REQUEST['name']] = $obj->$attr;
@@ -438,11 +438,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$context['permTags'][] = 'VacationSoup';
         foreach (SoupWaiter::single()->destinations_for_property as $destination) {
 	        $render = '';
-	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
+	        foreach (explode(' ',preg_replace('/[^\w]+/ui', ' ', $destination['rendered'])) as $word){
 		        $render .= ucfirst($word);
 	        }
 	        $dest = '';
-	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
+	        foreach (explode(' ',preg_replace('/[^\w]+/ui', ' ', $destination['destination'])) as $word){
 		        $dest .= ucfirst($word);
 	        }
 
@@ -480,11 +480,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	}
 	public function mce_autosave_mod( $init ) {
 		$init['setup'] = "function(ed){ ed.on( 'NodeChange', function(e){ setFeaturedImage(ed) } ) }";
-		/* $init['setup'] = "function(ed){
-			ed.on('NodeChange', function(e){
-				console.log('the content ' + ed.getContent());
-			});
-		}"; */
 		return $init;
 	}
 
