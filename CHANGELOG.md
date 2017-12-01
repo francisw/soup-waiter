@@ -5,6 +5,7 @@
 * **Bug fixes**:
   - Fixed fault that incorrectly handled quotes in house names (etc), as in Life O'Reilly coming thru as Life O\'Reilly
   - Fixed fault with Destinations not handling non-latin characters (as in Olhāo)
+  - Fixed validation error when adding a second property
 
 * **Enhancements**:
 
