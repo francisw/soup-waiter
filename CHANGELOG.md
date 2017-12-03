@@ -1,14 +1,14 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.11 (2017.12.01)
+
 * **Enhancements**:
   - Added Category selector to new posts
   - Added multiple category select on create
 
-## 0.2.11 (2017.12.01)
-
 * **Bug fixes**:
-  - Fixed fault that incorrectly handled quotes in house names (etc), as in Life O'Reilly coming thru as Life O\'Reilly
-  - Fixed fault with Destinations not handling non-latin characters (as in Olhāo)
+  - Fixed fault that incorrectly handled quotes in house names (etc), as in Life O'Reilly
+  - Fixed fault with Destinations not handling non-latin characters (as in São Paulo)
   - Fixed validation error when adding a second property
   - Corrected registration link on connect page
 

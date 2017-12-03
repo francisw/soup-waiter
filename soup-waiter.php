@@ -56,8 +56,8 @@ function soup_waiter_register_required_plugins() {
 		'parent_slug'  => 'plugins.php',            // Parent menu slug.
 		'capability'   => 'manage_options',    // Capability needed to view plugin install page, should be a capability associated with the parent menu used.
 		'has_notices'  => true,                    // Show admin notices or not.
-		'dismissable'  => false,                    // If false, a user cannot dismiss the nag message.
-		'dismiss_msg'  => 'Vacation Soup for VR Owners plugin cannot start without some additional plugins.',                      // If 'dismissable' is false, this message will be output at top of nag.
+		//'dismissable'  => false,                    // If false, a user cannot dismiss the nag message.
+		//'dismiss_msg'  => 'Vacation Soup for VR Owners plugin cannot start without some additional plugins.',                      // If 'dismissable' is false, this message will be output at top of nag.
 		'is_automatic' => true,                   // Automatically activate plugins after installation or not.
 		'message'      => ''                      // Message to output right before the plugins table.
 	];
