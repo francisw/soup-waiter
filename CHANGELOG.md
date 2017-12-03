@@ -1,10 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
-## 0.2.11 (2017.12.01)
+## 0.2.11 (2017.12.03)
 
 * **Enhancements**:
   - Added Category selector to new posts
   - Added multiple category select on create
+  - Prefill password field effect
 
 * **Bug fixes**:
   - Fixed fault that incorrectly handled quotes in house names (etc), as in Life O'Reilly

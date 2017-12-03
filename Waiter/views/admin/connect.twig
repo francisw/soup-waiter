@@ -69,13 +69,13 @@
                     <label for="kitchen_user">
                         Username <span class="required">*</span>
                     </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_user" id="kitchen_user" value="{{ soup.kitchen_user }}"/>
+                    <input type="text" class="persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="off" value="{{ soup.kitchen_user }}"/>
                 </div>
                 <div class="field required">
                     <label for="kitchen_password">
                         Password <span class="required">*</span>
                     </label>
-                    <input type="password" class="persist" name="SoupWaiter.kitchen_password" id="kitchen_password" value=""
+                    <input type="password" class="persist" name="SoupWaiter.kitchen_password" id="kitchen_password" {{ (soup.connected)?'placeholder="************"' }} autocomplete="off" value=""
                     data-persist-action="doAllServiceChecks()"/>
                 </div>
                 <div class="label-indent">
