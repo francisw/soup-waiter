@@ -362,7 +362,7 @@ DIV.field-container.currently-editing  INPUT
     transition: all ease-in-out 150ms;
 }
 .soup-status {
-    min-height: 160px;
+    min-height: 220px;
 }
 .soup-status .active {
     font-weight: bold;

@@ -390,7 +390,9 @@
                     </li>
                 </ul>
             </div>
-            <div id="scheduler" class="col-lg-4 col-sm-12">
+            <div id="scheduler" class="col-md-4 col-sm-12">
+                <h2>Categories</h2>
+                {{ function('wp_dropdown_categories','show_count=1&hierarchical=1&echo=0&hide_empty=0&name=cats[]&multiple=1') }}
                 <h2><label for="when">Schedule</label></h2>
                 <input type="submit" name="post_status" id="save-post" value="draft" class="button button-secondary button-large">
                 <input type="submit" name="post_status" id="publish" class="button button-primary button-large" value="publish">
