@@ -79,7 +79,8 @@
                                            placeholder="Property Title"
                                            name="Property[{{ property.id }}].title"
                                            id="title-{{ property.id }}"
-                                           required value="{{ property.title }}"/>
+                                           {{ (loop.last)?'':'required' }}
+                                           value="{{ property.title }}"/>
                                 </div>
                                 <div class="field required">
                                     <label for="destination-{{ property.id }}">
@@ -91,14 +92,16 @@
                                            title="Joining word"
                                            name="Property[{{ property.id }}].join"
                                            id="join-{{ property.id }}"
-                                           required value="{{ property.join }}"/>
+                                            {{ (loop.last)?'':'required' }}
+                                           value="{{ property.join }}"/>
                                     <input type="text"
                                            data-id="{{ property.id }}"
                                            class="persist handleChange"
                                            placeholder="Destination Name"
                                            name="Property[{{ property.id }}].destination"
                                            id="destination-{{ property.id }}"
-                                           required value="{{ property.destination }}"/>
+                                            {{ (loop.last)?'':'required' }}
+                                           value="{{ property.destination }}"/>
                                 </div>
                                 <div class="field">
                                     <input type="text"
@@ -107,14 +110,16 @@
                                            title="Joining word"
                                            name="Property[{{ property.id }}].join2"
                                            id="join-{{ property.id }}-2"
-                                           required value="{{ property.join2 }}"/>
+                                            {{ (loop.last)?'':'required' }}
+                                           value="{{ property.join2 }}"/>
                                     <input type="text"
                                            data-id="{{ property.id }}"
                                            class="persist handleChange"
                                            placeholder="Alternate Name (City?)"
                                            name="Property[{{ property.id }}].destination2"
                                            id="destination-{{ property.id }}-2"
-                                           required value="{{ property.destination2 }}" />
+                                            {{ (loop.last)?'':'required' }}
+                                           value="{{ property.destination2 }}" />
                                 </div>
                                 <div class="field">
                                     <input type="text"
@@ -123,14 +128,16 @@
                                            title="Joining word"
                                            name="Property[{{ property.id }}].join3"
                                            id="join-{{ property.id }}-3"
-                                           required value="{{ property.join3 }}"/>
+                                            {{ (loop.last)?'':'required' }}
+                                           value="{{ property.join3 }}"/>
                                     <input type="text"
                                            data-id="{{ property.id }}"
                                            class="persist handleChange"
                                            placeholder="Alternate Name (State?)"
                                            name="Property[{{ property.id }}].destination3"
                                            id="destination-{{ property.id }}-3"
-                                           required value="{{ property.destination3 }}"/>
+                                            {{ (loop.last)?'':'required' }}
+                                           value="{{ property.destination3 }}"/>
                                 </div>
                                 <input type="submit" class="unload" value="done" onClick="if (document.getElementById('title-{{ property.id }}').validity.valid) window.location.reload()">
                             </div>

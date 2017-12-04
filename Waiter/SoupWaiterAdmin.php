@@ -3,6 +3,7 @@ namespace Waiter;
 require_once (SOUP_PATH . "soup-pixabay-images.php");
 
 use Timber\Timber;
+use Timber\Term as TimberTerm;
 
 require_once( ABSPATH . 'wp-includes/pluggable.php' );
 
@@ -121,7 +122,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                                 $obj = $class::findOne($id);
                             } else throw new \Exception("Class '{$class}' must be a Multiton, as ID provided");
                         }
-						$obj->$attr = $_REQUEST['value'];  // Objects can throw, e.g. if $key or value invalid
+						$obj->$attr = stripslashes($_REQUEST['value']);  // Objects can throw, e.g. if $key or value invalid
 						$response['success'] = true;
 						try {
 							$response[$_REQUEST['name']] = $obj->$attr;
@@ -399,6 +400,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$postId = wp_insert_post($newpost,$error_obj);
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
+			wp_set_post_categories( $postId, $_POST['cats']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 		}
@@ -438,11 +440,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$context['permTags'][] = 'VacationSoup';
         foreach (SoupWaiter::single()->destinations_for_property as $destination) {
 	        $render = '';
-	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['rendered'])) as $word){
+	        foreach (explode(' ',preg_replace('/[^\w]+/ui', ' ', $destination['rendered'])) as $word){
 		        $render .= ucfirst($word);
 	        }
 	        $dest = '';
-	        foreach (explode(' ',preg_replace('/[^a-z0-9]+/i', ' ', $destination['destination'])) as $word){
+	        foreach (explode(' ',preg_replace('/[^\w]+/ui', ' ', $destination['destination'])) as $word){
 		        $dest .= ucfirst($word);
 	        }
 
@@ -452,7 +454,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	        }
         }
 		add_filter('tiny_mce_before_init', [$this,'mce_autosave_mod']);
-
+		add_filter('wp_dropdown_cats',[$this,'make_select_multiple'],10,2);
 		$args = array(
 			'numberposts' => 8,
 			'offset' => 0,
@@ -467,7 +469,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			'post_status' => 'draft, publish, future',
 			'suppress_filters' => true
 		);
-
 		$context['posts'] = Timber::get_posts( $args );
 		$context['recent_topics']=[];
 		foreach ($context['posts'] as $post){
@@ -480,12 +481,13 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	}
 	public function mce_autosave_mod( $init ) {
 		$init['setup'] = "function(ed){ ed.on( 'NodeChange', function(e){ setFeaturedImage(ed) } ) }";
-		/* $init['setup'] = "function(ed){
-			ed.on('NodeChange', function(e){
-				console.log('the content ' + ed.getContent());
-			});
-		}"; */
 		return $init;
+	}
+	public function make_select_multiple( $select, $args ) {
+		if (isset($args['multiple']) && $args['multiple']){
+			$select = str_ireplace('<select ','<select multiple ',$select );
+		}
+		return $select;
 	}
 
 	/**

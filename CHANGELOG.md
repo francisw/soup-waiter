@@ -1,5 +1,26 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.11 (2017.12.03)
+
+* **Enhancements**:
+  - Added Category selector to new posts
+  - Added multiple category select on create
+  - Prefill password field effect
+
+* **Bug fixes**:
+  - Fixed fault that incorrectly handled quotes in house names (etc), as in Life O'Reilly
+  - Fixed fault with Destinations not handling non-latin characters (as in São Paulo)
+  - Fixed validation error when adding a second property
+  - Corrected registration link on connect page
+  - Fixed error in adding 3rd image as featured
+
+## 0.2.10 (2017.11.22)
+
+* **Bug fixes**:
+  - Tags syndicating to Soup Kitchen correctly
+  - Scheduled posting error fixed for exact dates
+  - Improved links between kitchen and waiter
+
 ## 0.2.9 (2017.11.14)
 
 * **Bug fixes**:

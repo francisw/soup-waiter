@@ -17,7 +17,7 @@ namespace Waiter;
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           0.2.9
+ * Version:           0.2.11
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+
@@ -56,8 +56,8 @@ function soup_waiter_register_required_plugins() {
 		'parent_slug'  => 'plugins.php',            // Parent menu slug.
 		'capability'   => 'manage_options',    // Capability needed to view plugin install page, should be a capability associated with the parent menu used.
 		'has_notices'  => true,                    // Show admin notices or not.
-		'dismissable'  => false,                    // If false, a user cannot dismiss the nag message.
-		'dismiss_msg'  => 'Vacation Soup for VR Owners plugin cannot start without some additional plugins.',                      // If 'dismissable' is false, this message will be output at top of nag.
+		//'dismissable'  => false,                    // If false, a user cannot dismiss the nag message.
+		//'dismiss_msg'  => 'Vacation Soup for VR Owners plugin cannot start without some additional plugins.',                      // If 'dismissable' is false, this message will be output at top of nag.
 		'is_automatic' => true,                   // Automatically activate plugins after installation or not.
 		'message'      => ''                      // Message to output right before the plugins table.
 	];

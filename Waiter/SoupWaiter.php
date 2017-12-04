@@ -468,9 +468,9 @@ class SoupWaiter extends SitePersistedSingleton {
 
 		if ($featured_image){
 			// Has it changed
-			$kitchen_featured_image = get_post_meta($post->ID,'kitchen_local_image_id',true);
+			$kitchen_featured_image = get_post_meta($post->ID,'soup_local_image_id',true);
 			if ($featured_image !== $kitchen_featured_image){
-				update_post_meta($post->ID,'kitchen_local_image_id',$featured_image);
+				update_post_meta($post->ID,'soup_local_image_id',$featured_image);
 
 				$rri = '/media';
 				$kitchen_media = $this->imagePostToKitchen($rri,get_attached_file($featured_image));
@@ -491,8 +491,20 @@ class SoupWaiter extends SitePersistedSingleton {
 		$rri = '/posts';
 		$rri .= ($id)?"/{$id}":'';
 
+		$postTags = wp_get_post_tags($post->ID);
+		$tags = [];
+		foreach ($postTags as $postTag){
+			$tags[] = $postTag->name;
+		}
+		$kitchen['tags_list'] = $tags;
+		$kitchen['waiter_url'] = get_post_permalink($post);
+		$kitchen['waiter_id'] = $post->ID;
+		$kitchen['topic'] = get_post_meta($post->ID,'topic');
+
 		$kitchen_post = $this->postToKitchen( $rri,$kitchen );
+
 		update_post_meta($post->ID,'kitchen_id',$kitchen_post->id);
+		update_post_meta($post->ID,'kitchen_url',$kitchen_post->link);
 	}
 
 }

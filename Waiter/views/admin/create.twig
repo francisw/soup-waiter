@@ -259,7 +259,7 @@
                 postDate = new Date(new Date().getTime() + (futureDays * dayInMsec));
                 postDateElem.val(postDate.toISOString().split('T')[0]);
                 break;
-            case 'on':
+            case 'date':
                 postDateElem.val(jQuery('#datepicker').val());
                 postStatusElem.val('future'); // postDateElem already set
                 break;
@@ -271,12 +271,14 @@
         }
 
     };
-
+    /*
+        Setup the page once it's loaded
+     */
     jQuery(function(){
         getMOTD();
         getTrendingTopics();
         jQuery( ".datepicker" ).datepicker({
-            dateFormat : "yyyy-mm-dd"
+            dateFormat : "yy-mm-dd"
         });
         jQuery('#motd').click(function(){
             if (jQuery('#featured_image').val()) { // if they clicked and we have an FI
@@ -313,13 +315,17 @@
             }
         });
     });
-
+    /*
+        If there is no featured image (FI) or if FI was clicked (i.e. to replace it)
+        Find the first <img>, make it the featured image, and remove it (along with it's [caption])
+     */
     var setFeaturedImage = function(ed){
             var fi = jQuery('#featured_image');
             if (!fi.val() || motdClicked){
                 var st,st_cap;
 
                 var elem = ed.getContent();
+                motdClicked = false;
                 if (-1 !== (st = elem.indexOf('<img'))){
                     var image_id = parseInt(elem.substr(9 + elem.indexOf('wp-image-',st)));
                     var imglen = 1 + elem.indexOf('>',st) - st;
@@ -385,7 +391,9 @@
                     </li>
                 </ul>
             </div>
-            <div id="scheduler" class="col-lg-4 col-sm-12">
+            <div id="scheduler" class="col-md-4 col-sm-12">
+                <h2>Categories</h2>
+                {{ function('wp_dropdown_categories','show_count=1&hierarchical=1&echo=0&hide_empty=0&name=cats[]&multiple=1') }}
                 <h2><label for="when">Schedule</label></h2>
                 <input type="submit" name="post_status" id="save-post" value="draft" class="button button-secondary button-large">
                 <input type="submit" name="post_status" id="publish" class="button button-primary button-large" value="publish">
