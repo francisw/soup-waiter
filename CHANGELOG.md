@@ -12,6 +12,7 @@
   - Fixed fault with Destinations not handling non-latin characters (as in São Paulo)
   - Fixed validation error when adding a second property
   - Corrected registration link on connect page
+  - Fixed error in adding 3rd image as featured
 
 ## 0.2.10 (2017.11.22)
 

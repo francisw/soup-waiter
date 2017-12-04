@@ -325,6 +325,7 @@
                 var st,st_cap;
 
                 var elem = ed.getContent();
+                motdClicked = false;
                 if (-1 !== (st = elem.indexOf('<img'))){
                     var image_id = parseInt(elem.substr(9 + elem.indexOf('wp-image-',st)));
                     var imglen = 1 + elem.indexOf('>',st) - st;
