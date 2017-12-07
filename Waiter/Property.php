@@ -18,6 +18,8 @@ class Property extends SitePersistedMultiton
 	protected $destination2;
 	protected $join3;
 	protected $destination3;
+	protected $latitude;
+	protected $longitude;
 
     public function __construct()
     {

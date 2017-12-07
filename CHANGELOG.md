@@ -1,5 +1,13 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.12 (2017.12.08)
+
+* **Enhancements**:
+  - Added Latitude & Longitude to Destinations and Posts
+
+* **Bug fixes**:
+  - Removed duplicate destinations from Create screen caused by multiple properties at destination
+
 ## 0.2.11 (2017.12.03)
 
 * **Enhancements**:

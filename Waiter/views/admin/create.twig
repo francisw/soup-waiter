@@ -345,16 +345,21 @@
 </script>
 
 {% embed 'admin/post-form.twig' %}{% block form_content %}
-<div class="vs-content tab-create row">
+    <input type="hidden" id="latitude" name="latitude" value="{{ destination.latitude }}">
+    <input type="hidden" id="longitude" name="longitude" value="{{ destination.longitude }}">
+    <input type="hidden" id="destination_id" name="destination_id" value="{{ destination.id }}">
+
+    <div class="vs-content tab-create row">
     <div class="col-xs-12 col-sm-6 col-lg-8">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
                 <h1>Create Post
                     <select title="Alternative destinations" id="alter-destination">
-                        {% for destination in soup.destinations %}
-                            <option value="{{ destination.id }}" {{ (destination.id == soup.current_destination)?'selected':'' }}>
-                                {{ destination.rendered }}
+                        {% for dest in soup.destinations %}
+                            <option value="{{ dest.id }}" {{ (dest.id == soup.current_destination)?'selected':'' }}>
+                                {{ dest.rendered }}
                             </option>
+                            <!-- {{ fn('print_r',dest,1) }} -->
                         {% endfor %}
                     </select>
                 </h1>
