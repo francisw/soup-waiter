@@ -68,7 +68,7 @@
                             <div id="title-header-{{ property.id }}" class="col-sm-12">
                                 <h1>{{ property.title? property.title: 'New Property' }}</h1>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-xs-12 col-sm-6">
                                 <div class="field">
                                     <label for="title-{{ property.id }}">
                                         Title <span class="required">*</span>
@@ -90,6 +90,7 @@
                                            data-id="{{ property.id }}"
                                            class="persist handleChange join-word"
                                            title="Joining word"
+                                           placeholder="in/on/near"
                                            name="Property[{{ property.id }}].join"
                                            id="join-{{ property.id }}"
                                             {{ (loop.last)?'':'required' }}
@@ -108,6 +109,7 @@
                                            data-id="{{ property.id }}"
                                            class="persist handleChange join-word"
                                            title="Joining word"
+                                           placeholder="in/on/near"
                                            name="Property[{{ property.id }}].join2"
                                            id="join-{{ property.id }}-2"
                                             {{ (loop.last)?'':'required' }}
@@ -126,6 +128,7 @@
                                            data-id="{{ property.id }}"
                                            class="persist handleChange join-word"
                                            title="Joining word"
+                                           placeholder="in/on/near"
                                            name="Property[{{ property.id }}].join3"
                                            id="join-{{ property.id }}-3"
                                             {{ (loop.last)?'':'required' }}
@@ -139,6 +142,13 @@
                                             {{ (loop.last)?'':'required' }}
                                            value="{{ property.destination3 }}"/>
                                 </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-6">
+                                <div id="examples-{{ property.id }}">
+
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xs-12">
                                 <div class="field">
                                     <label for="latitude-{{ property.id }}">
                                         Latitude <span class="required">*</span>
@@ -165,10 +175,14 @@
                                 </div>
                                 <input type="submit" class="unload" value="done" onClick="if (document.getElementById('title-{{ property.id }}').validity.valid) window.location.reload()">
                             </div>
-                            <div id="examples-{{ property.id }}" class="col-sm-6">
-
+                            <div class="col-sm-6 col-xs-12">
+                                <p>
+                                    To find the Latitiude and Longitude for your property, go to <a href="https://maps.google.com" target="_blank">Google maps</a>
+                                    and locate your property. Right-click on it (or 2-fingers on a Mac) and the latitude and longitude are shown.
+                                </p>
                             </div>
                         </div>
+
                     </div>
                     {% if loop.first %}
                     <div class="col-md-4 col-sm-12">

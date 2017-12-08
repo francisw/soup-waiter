@@ -19,4 +19,13 @@
 </div>
 {% if admin.tab_message %}
     <div class="error vs">{{ admin.tab_message }}</div>
+    {% if admin.required %}
+        <script>
+            jQuery(function(){
+        {% for req in admin.required %}
+            jQuery('#{{ req }}').addClass('required');
+        {% endfor %}
+            });
+        </script>
+    {% endif %}
 {% endif %}

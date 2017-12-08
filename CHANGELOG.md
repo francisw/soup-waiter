@@ -4,6 +4,7 @@
 
 * **Enhancements**:
   - Added Latitude & Longitude to Destinations and Posts
+  - Coloured required fields when being redirected for user input
 
 * **Bug fixes**:
   - Removed duplicate destinations from Create screen caused by multiple properties at destination

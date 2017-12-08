@@ -417,8 +417,8 @@ DIV.field-container.currently-editing  INPUT
     margin-left: 5%;
 }
 .tab-property DIV.field INPUT[type="text"].join-word {
-    max-width: 30px;
-    min-width: 30px
+    max-width: 100px;
+    min-width: 100px
 }
 .tab-property DIV.field LABEL {
     display: block;
@@ -501,4 +501,7 @@ I.fa-refresh.active {
 }
 SPAN.required{
     vertical-align: super;
+}
+INPUT.required {
+    border: 1px solid red;
 }
