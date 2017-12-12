@@ -160,7 +160,7 @@
                         topic.title.raw = elem.value;
                         $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
                         if (topic.id !== 0){
-                            location = ' {{ soup.destination.rendered }}';
+                            location = " {{ soup.destination.rendered }}";
                         }
                         $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
                         jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
@@ -196,7 +196,7 @@
             vs_query = topic.tags.map(function (tag) {
                 return k_tags[tag].name
             });
-            vs_title = topic.title.raw + ' ' + '{{ soup.destination.rendered }}';
+            vs_title = topic.title.raw + ' ' + "{{ soup.destination.rendered }}";
             jQuery('#post_title').prop('autofocus',false).val(vs_title);
             jQuery('INPUT[name="topic"]').val(topic.id);
         } else {
@@ -342,7 +342,8 @@
                 }
             }
     }
-</script>
+
+    </script>
 
 {% embed 'admin/post-form.twig' %}{% block form_content %}
     <input type="hidden" id="latitude" name="latitude" value="{{ destination.latitude }}">
@@ -359,7 +360,6 @@
                             <option value="{{ dest.id }}" {{ (dest.id == soup.current_destination)?'selected':'' }}>
                                 {{ dest.rendered }}
                             </option>
-                            <!-- {{ fn('print_r',dest,1) }} -->
                         {% endfor %}
                     </select>
                 </h1>

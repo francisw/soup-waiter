@@ -8,6 +8,8 @@
 
 * **Bug fixes**:
   - Removed duplicate destinations from Create screen caused by multiple properties at destination
+  - Fixed UI fault when topics used up
+  - Added Southern latitudes to Geography
 
 ## 0.2.11 (2017.12.03)
 
