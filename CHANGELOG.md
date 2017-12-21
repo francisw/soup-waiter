@@ -1,5 +1,16 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.12 (2017.12.08)
+
+* **Enhancements**:
+  - Added Latitude & Longitude to Destinations and Posts
+  - Coloured required fields when being redirected for user input
+
+* **Bug fixes**:
+  - Removed duplicate destinations from Create screen caused by multiple properties at destination
+  - Fixed UI fault when topics used up
+  - Added Southern latitudes to Geography
+
 ## 0.2.11 (2017.12.03)
 
 * **Enhancements**:

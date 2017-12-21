@@ -27,6 +27,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	protected $tab_message;
 	/**
+	 * @var array of INPUT IDs that need the required CLASS
+	 */
+	protected $required;
+	/**
 	 * @var string|null $requested_tab Only set if the tab is overridden in sanitise_tab
 	 */
 	protected $requested_tab;
@@ -337,6 +341,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$default =  'create';
 		$tabs = ['create','owner','property','connect'];
 		$this->tab_message = '';
+		$required = [];
 
 		if (!$tab) {
 			if (isset($_REQUEST['requested-tab'])){
@@ -353,14 +358,32 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Now lets see if that tab is allowed
 		if ('create'==$tab){ // create needs everything else to be completed
 			$w = SoupWaiter::single();
-			if (empty($w->owner_name)) $tab = 'owner';
+			if (empty($w->owner_name)) {
+				$tab = 'owner';
+				$required = ['owner_name'];
+				$msg = "the Owner's name is needed for posts";
+			}
 			else {
-				if (0==$w->property_count) $tab = 'property';
-				elseif (!$w->connected) $tab = 'connect';
+				if (0==$w->property_count) {
+					$tab = 'property';
+					$msg = "at least one property must be created";
+					$required = ['title-0','join-0','destination-0','latitude-0','longitude-0'];
+				}
+				elseif (empty($this->get_properties()[0]->latitude)) {
+					$tab = 'property';
+					$required = ['latitude-0','longitude-0'];
+					$msg = "the location (latitude/longitude) of the property is needed";
+				}
+				elseif (!$w->connected) {
+					$tab = 'connect';
+					$required = ['kitchen_user','kitchen_password'];
+					$msg = "you need to enter your Vacation Soup credentials";
+				}
 			}
 			if ('create'!=$tab) {
 				$this->requested_tab = 'create';
-				$this->tab_message = "You have been redirected here, more information is needed.";
+				$this->required = $required;
+				$this->tab_message = "You have been redirected here because {$msg}.";
 			}
 		}
 		return $tab;
@@ -395,7 +418,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$error_obj = false;
 
 		$newpost = $_POST;
-		$newpost['post_content'] .= "<p>Created by ".SoupWaiter::single()->owner_name."</p>";
+		$newpost['post_content'] .= "<p class='autocreated byline'>Created by ".SoupWaiter::single()->owner_name."</p>";
 
 		$postId = wp_insert_post($newpost,$error_obj);
 		if (!$error_obj){
@@ -403,9 +426,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			wp_set_post_categories( $postId, $_POST['cats']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
+			update_post_meta($postId,'latitude',$_POST['latitude']);
+			update_post_meta($postId,'longitude',$_POST['longitude']);
+			update_post_meta($postId,'destination_id',$_POST['destination_id']);
 		}
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
-		// $this->persist(); // Don't know why we were persisting SoupWaiterAdmin, not needed, not here anyway
+
 		unset($_POST['post_status']);
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
@@ -438,6 +464,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
         // In case the destination is multiple words
 
 		$context['permTags'][] = 'VacationSoup';
+		// Allows rendering the lat/long
+		$context['destination'] = SoupWaiter::single()->get_destination();
         foreach (SoupWaiter::single()->destinations_for_property as $destination) {
 	        $render = '';
 	        foreach (explode(' ',preg_replace('/[^\w]+/ui', ' ', $destination['rendered'])) as $word){
@@ -526,30 +554,54 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
      */
 	public function get_properties(){
         $propertyCount = SoupWaiter::single()->property_count;
-        $properties = [];
+        static $properties = [];
         $destinations = []; // Might as well set these up too
+		$deduped = [];
         $dCount = 0;
 
-        for ($i=0;$i<($propertyCount);$i++){
-            $property = Property::findOne($i);
-            $properties[] = $property;
+        if (empty ($properties)) {
+	        for ( $i = 0; $i < ( $propertyCount ); $i ++ ) {
+		        $property     = Property::findOne( $i );
+		        $properties[] = $property;
 
-	        if (!empty($property->destination)){
-		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join} {$property->destination}",'destination'=>"{$property->destination}"];
-		        $dCount++;
-	        }
-	        if (!empty($property->destination2)){
-		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join2} {$property->destination2}",'destination'=>"{$property->destination2}"];
-		        $dCount++;
-	        }
-	        if (!empty($property->destination3)){
-		        $destinations[$dCount] = ['id'=>$dCount,'property'=>$i,'rendered'=>"{$property->join3} {$property->destination3}",'destination'=>"{$property->destination3}"];
-		        $dCount++;
-	        }
+		        if ( ! empty( $property->destination ) && !isset($deduped[$property->destination])) {
+			        $deduped[$property->destination] = $destinations[ $dCount ] = [
+				        'id'          => $dCount,
+				        'property'    => $i,
+				        'latitude'    => "{$property->latitude}",
+				        'longitude'   => "{$property->longitude}",
+				        'rendered'    => "{$property->join} {$property->destination}",
+				        'destination' => "{$property->destination}"
+			        ];
+			        $dCount ++;
+		        }
+		        if ( ! empty( $property->destination2 )  && !isset($deduped[$property->destination2])) {
+			        $deduped[$property->destination] = $destinations[ $dCount ] = [
+				        'id'          => $dCount,
+				        'property'    => $i,
+				        'latitude'    => "{$property->latitude}",
+				        'longitude'   => "{$property->longitude}",
+				        'rendered'    => "{$property->join2} {$property->destination2}",
+				        'destination' => "{$property->destination2}"
+			        ];
+			        $dCount ++;
+		        }
+		        if ( ! empty( $property->destination3 )  && !isset($deduped[$property->destination3])) {
+			        $deduped[$property->destination] = $destinations[ $dCount ] = [
+				        'id'          => $dCount,
+				        'property'    => $i,
+				        'latitude'    => "{$property->latitude}",
+				        'longitude'   => "{$property->longitude}",
+				        'rendered'    => "{$property->join3} {$property->destination3}",
+				        'destination' => "{$property->destination3}"
+			        ];
+			        $dCount ++;
+		        }
 
+	        }
+	        sort($destinations);
+	        SoupWaiter::single()->destinations = $destinations;
         }
-        sort(array_unique($destinations));
-        SoupWaiter::single()->destinations = $destinations;
         return $properties;
     }
 	/**

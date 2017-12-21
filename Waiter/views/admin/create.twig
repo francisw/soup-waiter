@@ -160,7 +160,7 @@
                         topic.title.raw = elem.value;
                         $input = '<input type="radio" name="trending_topics" id="topic_'+i+'" value="'+i+'" onchange="chooseTopic(jQuery(this).val())"/>';
                         if (topic.id !== 0){
-                            location = ' {{ soup.destination.rendered }}';
+                            location = " {{ soup.destination.rendered }}";
                         }
                         $label = '<label for="topic_'+i+'">'+topic.title.rendered+location+'</label>';
                         jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
@@ -196,7 +196,7 @@
             vs_query = topic.tags.map(function (tag) {
                 return k_tags[tag].name
             });
-            vs_title = topic.title.raw + ' ' + '{{ soup.destination.rendered }}';
+            vs_title = topic.title.raw + ' ' + "{{ soup.destination.rendered }}";
             jQuery('#post_title').prop('autofocus',false).val(vs_title);
             jQuery('INPUT[name="topic"]').val(topic.id);
         } else {
@@ -342,18 +342,23 @@
                 }
             }
     }
-</script>
+
+    </script>
 
 {% embed 'admin/post-form.twig' %}{% block form_content %}
-<div class="vs-content tab-create row">
+    <input type="hidden" id="latitude" name="latitude" value="{{ destination.latitude }}">
+    <input type="hidden" id="longitude" name="longitude" value="{{ destination.longitude }}">
+    <input type="hidden" id="destination_id" name="destination_id" value="{{ destination.id }}">
+
+    <div class="vs-content tab-create row">
     <div class="col-xs-12 col-sm-6 col-lg-8">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
                 <h1>Create Post
                     <select title="Alternative destinations" id="alter-destination">
-                        {% for destination in soup.destinations %}
-                            <option value="{{ destination.id }}" {{ (destination.id == soup.current_destination)?'selected':'' }}>
-                                {{ destination.rendered }}
+                        {% for dest in soup.destinations %}
+                            <option value="{{ dest.id }}" {{ (dest.id == soup.current_destination)?'selected':'' }}>
+                                {{ dest.rendered }}
                             </option>
                         {% endfor %}
                     </select>

@@ -70,6 +70,7 @@
                 })
                 .always(function(response){
                     if (unloading) return;
+                    jQuery(this).removeClass('required');
                     var thenDo = jQuery(this).data('persist-action');
                     if (thenDo){
                         eval(thenDo);

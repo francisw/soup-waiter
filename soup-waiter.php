@@ -17,7 +17,7 @@ namespace Waiter;
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           0.2.11
+ * Version:           0.2.12
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+
@@ -47,6 +47,13 @@ function soup_waiter_register_required_plugins() {
 			'required'  => true,
 			'version'            => '1.4.1', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
+		],
+		[
+			'name'      => 'WP Google Maps',
+			'slug'      => 'wp-google-maps',
+			'required'  => true,
+			'version'            => '6.4.0', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
+			'force_activation'   => true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
 		]
 	];
 	$config = [
@@ -56,7 +63,7 @@ function soup_waiter_register_required_plugins() {
 		'parent_slug'  => 'plugins.php',            // Parent menu slug.
 		'capability'   => 'manage_options',    // Capability needed to view plugin install page, should be a capability associated with the parent menu used.
 		'has_notices'  => true,                    // Show admin notices or not.
-		//'dismissable'  => false,                    // If false, a user cannot dismiss the nag message.
+		'dismissable'  => false,                   // If false, a user cannot dismiss the nag message.
 		//'dismiss_msg'  => 'Vacation Soup for VR Owners plugin cannot start without some additional plugins.',                      // If 'dismissable' is false, this message will be output at top of nag.
 		'is_automatic' => true,                   // Automatically activate plugins after installation or not.
 		'message'      => ''                      // Message to output right before the plugins table.

@@ -62,7 +62,7 @@ class SoupWaiter extends SitePersistedSingleton {
      */
     protected $joins;
     /**
-     * @var string[] $destinations the Joining words to use in topics (first is default), e.g. Best beaches on BORNHOLM
+     * @var string[] $destinations the Destinations to use in topics (first is default), e.g. Best beaches on BORNHOLM
      */
     protected $destinations;
 
@@ -73,7 +73,7 @@ class SoupWaiter extends SitePersistedSingleton {
         }
         return $id;
     }
-	protected function get_destination(){
+	public function get_destination(){
 		return $this->destinations[$this->get_current_destination()];
 	}
 
@@ -499,7 +499,10 @@ class SoupWaiter extends SitePersistedSingleton {
 		$kitchen['tags_list'] = $tags;
 		$kitchen['waiter_url'] = get_post_permalink($post);
 		$kitchen['waiter_id'] = $post->ID;
-		$kitchen['topic'] = get_post_meta($post->ID,'topic');
+		$kitchen['topic'] = get_post_meta($post->ID,'topic')[0];
+		$kitchen['latitude'] = get_post_meta($post->ID,'latitude')[0];
+		$kitchen['longitude'] = get_post_meta($post->ID,'longitude')[0];
+		$kitchen['waiter_destination_id'] = get_post_meta($post->ID,'destination_id')[0];
 
 		$kitchen_post = $this->postToKitchen( $rri,$kitchen );
 
