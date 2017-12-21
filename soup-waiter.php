@@ -17,7 +17,7 @@ namespace Waiter;
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           0.2.12
+ * Version:           0.2.13
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+
@@ -48,14 +48,14 @@ function soup_waiter_register_required_plugins() {
 			'version'            => '1.4.1', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
 		],
-		[
+/*		[
 			'name'      => 'WP Google Maps',
 			'slug'      => 'wp-google-maps',
 			'required'  => true,
 			'version'            => '6.4.0', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
 		]
-	];
+*/	];
 	$config = [
 		'id'           => 'soup-waiter',                 // Unique ID for hashing notices for multiple instances of TGMPA.
 		'default_path' => __FILE__.'/..',                      // Default absolute path to bundled plugins.
