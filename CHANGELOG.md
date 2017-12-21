@@ -1,6 +1,12 @@
 # Changelog for Vacation Soup Waiter
 
-## 0.2.12 (2017.12.08)
+## 0.2.13 (2017.12.21)
+
+* **Enhancements**:
+  - Removed Google Maps dependency
+
+
+## 0.2.12 (2017.12.20)
 
 * **Enhancements**:
   - Added Latitude & Longitude to Destinations and Posts
