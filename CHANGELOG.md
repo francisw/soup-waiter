@@ -1,5 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
+## 0.2.13.1 (2017.12.21)
+
+* **Bug Fixes**:
+  - Corrected instructions
+
+
 ## 0.2.13 (2017.12.21)
 
 * **Enhancements**:
