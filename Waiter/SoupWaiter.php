@@ -452,9 +452,11 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 * @param WP_Post $post
 	 *
+	 * @param bool|string $force Force recreating post & image
 	 *
+	 * @throws Exception
 	 */
-	private function syndicate_post(WP_Post $post){
+	public function syndicate_post(WP_Post $post, $force=false){
 		$featured_image = get_post_thumbnail_id($post->ID);
 
 		$kitchen = 			[
@@ -469,7 +471,9 @@ class SoupWaiter extends SitePersistedSingleton {
 		if ($featured_image){
 			// Has it changed
 			$kitchen_featured_image = get_post_meta($post->ID,'soup_local_image_id',true);
-			if ($featured_image !== $kitchen_featured_image){
+			if ( !$kitchen_featured_image ||                        // if there is no image in soup yet
+			     ($force && 'image'===$force ) ||                   // or we are doing a forced re-send
+			     $featured_image !== $kitchen_featured_image){      // or the featured image has changed
 				update_post_meta($post->ID,'soup_local_image_id',$featured_image);
 
 				$rri = '/media';
@@ -487,7 +491,12 @@ class SoupWaiter extends SitePersistedSingleton {
 			$kitchen['featured_media'] = $kitchen_media->id;
 		}
 
-		$id = get_post_meta($post->ID,'kitchen_id',true);
+		if ($force) {
+			$id = false;
+		} else {
+			$id = get_post_meta($post->ID,'kitchen_id',true);
+		}
+
 		$rri = '/posts';
 		$rri .= ($id)?"/{$id}":'';
 
@@ -510,5 +519,58 @@ class SoupWaiter extends SitePersistedSingleton {
 		update_post_meta($post->ID,'kitchen_url',$kitchen_post->link);
 	}
 
+	/**
+	 * @param bool $force
+	 *
+	 * @return int number of posts sent
+	 * @throws Exception
+	 */
+	public function syndicate_all_posts($force=true) {
+		update_option('vs-resynch-progress',[
+			'total'=>0,
+			'processed'=>0,
+			'progress'=>0
+		],true);
+
+		$default = Property::findOne(0);
+
+		$args     = [
+			'post_status' => 'publish',
+			'post_type'   => 'post',
+			'orderby'     => 'date',
+			'order'       => 'DESC'
+		];
+		$allposts = new \WP_Query( $args );
+
+		$total = count($allposts->posts);
+		$processed = 0;
+		$reported = 0;
+
+		update_option('vs-resynch-progress',[
+			'total'=>$total,
+			'processed'=>0,
+			'progress'=>0
+		],true);
+
+		foreach ( $allposts->posts as $post ) {
+			$latitude = get_post_meta($post->ID,'latitude',true);
+			$longitude = get_post_meta($post->ID,'longitude',true);
+			if (!$latitude || !$longitude){
+				update_post_meta($post->ID,'latitude',$default->latitude);
+				update_post_meta($post->ID,'longitude',$default->longitude);
+			}
+			$this->syndicate_post( $post, $force );
+			$progress=intval(++$processed*100/$total);
+			if ($reported < $progress){
+				$reported = $progress;
+				update_option('vs-resynch-progress',[
+					'total'=>$total,
+					'processed'=>$processed,
+					'progress'=>$progress
+				],true);
+			}
+		}
+		return $total;
+	}
 }
 

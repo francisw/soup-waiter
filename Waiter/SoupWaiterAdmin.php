@@ -56,6 +56,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		add_action( 'admin_init', [$this,'process_post_data']);
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
+		add_action( 'wp_ajax_soup_resynch', [ $this, 'do_priv_soup_resynch' ] );
+		add_action( 'wp_ajax_nopriv_soup_resynch', [ $this, 'do_nopriv_soup_resynch' ] );
+		add_action( 'wp_ajax_soup_resynch_progress', [ $this, 'do_soup_resynch_progress' ] );
+		add_action( 'wp_ajax_nopriv_soup_resynch_progress', [ $this, 'do_soup_resynch_progress' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
     }
@@ -477,8 +481,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	        }
 
 	        $context['permTags'][] = $dest;
-	        foreach (['Holiday','Vacation'] as $holiday){
-		        $context['permTags'][] = $holiday.$render;
+
+	        if ($context['destination'] == $destination['destination']){
+		        foreach (['Holiday','Vacation'] as $holiday){
+			        $context['permTags'][] = $holiday.$render;
+		        }
 	        }
         }
 		add_filter('tiny_mce_before_init', [$this,'mce_autosave_mod']);
@@ -652,5 +659,49 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		 * weixin (wechat)
 		 */
 		return $context;
+	}
+
+	public function do_nopriv_soup_resynch(){
+		// Apply a key check from kitchen TODO
+		$this->do_soup_resynch();
+	}
+	public function do_priv_soup_resynch(){
+		check_admin_referer( 'vacation-soup','_vs_nonce' );
+		$this->do_soup_resynch();
+	}
+
+	private function do_soup_resynch(){
+		// All this ajax to be called by the kitchen to trigger it
+		session_write_close(); // prevent locking
+		try {
+			$quant = SoupWaiter::single()->syndicate_all_posts('image');
+			update_option('vs-resynch',"Sent $quant posts, ".date("D M j G:i:s T Y"),false);
+			$response = [
+				'success' => true,
+				'updated' => $quant
+			];
+		} catch (\Exception $e){
+			update_option('vs-resynch',"Failed ".date("D M j G:i:s T Y"),false);
+			update_option('vs-resynch-error',$e,false);
+			$response = [
+				'success' => false,
+				'error' => [
+					'message' => $e->getMessage(),
+					'code' => $e->getCode()
+				]
+			];
+		}
+		header("Content-type: application/json");
+		echo json_encode($response);
+		die();
+	}
+
+	public function do_soup_resynch_progress(){
+		// check_admin_referer( 'vacation-soup','_vs_nonce' ); to allow for kitchen-side checking
+		session_write_close(); // prevent locking
+		$progress = get_option('vs-resynch-progress');//,[ 'total'=>0, 'processed'=>0, 'progress'=>0 ]);
+		header("Content-type: application/json");
+		echo json_encode($progress);
+		die();
 	}
 }
