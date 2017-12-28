@@ -642,14 +642,14 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Grab the basics
 		$context = $this->get_context('connect');
 
-		$context['social']['FB'] = FB::single();
+		/*$context['social']['FB'] = FB::single();
 		$context['social']['TW'] = TW::single();
 		$context['social']['PI'] = PI::single();
 		$context['social']['GP'] = GP::single();
 		$context['social']['LI'] = LI::single();
 		$context['social']['RD'] = RD::single();
 		$context['social']['SU'] = SU::single();
-		$context['social']['IG'] = IG::single();
+		$context['social']['IG'] = IG::single();*/
 		/*
 		 * Still to add
 		 * vk.com
@@ -658,6 +658,23 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		 * renren
 		 * weixin (wechat)
 		 */
+/*		 $sql = $wpdb->prepare( "
+    SELECT DISTINCT p.*,
+    FROM $wpdb->posts p
+    INNER JOIN $wpdb->postmeta pm ON p.ID = pm.post_id
+    WHERE $user_id.ID=%d
+    ",
+			$earth_radius,
+			$attributes['latitude'],
+			$attributes['longitude'],
+			$attributes['latitude'],
+			$type,
+			$offset,
+			$limit
+		);
+
+		$posts = $wpdb->get_results( $sql, OBJECT);
+*/
 		return $context;
 	}
 

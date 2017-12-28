@@ -538,7 +538,8 @@ class SoupWaiter extends SitePersistedSingleton {
 			'post_status' => 'publish',
 			'post_type'   => 'post',
 			'orderby'     => 'date',
-			'order'       => 'DESC'
+			'order'       => 'DESC',
+			'posts_per_page' => -1
 		];
 		$allposts = new \WP_Query( $args );
 
