@@ -66,13 +66,18 @@ class SoupWaiter extends SitePersistedSingleton {
      */
     protected $destinations;
 
-    protected function get_current_destination(){
-        $id=0; // Default
-        if (isset($_REQUEST['destination_id'])){
-            $id = intval($_REQUEST['destination_id']);
-        }
-        return $id;
-    }
+	/**
+	 * @var boolean Whether to skip automnatic post syndicating. Hack to prevent double saving
+	 */
+	protected $skipSyndicate;
+
+	protected function get_current_destination(){
+		$id=0; // Default
+		if (isset($_REQUEST['destination_id'])){
+			$id = intval($_REQUEST['destination_id']);
+		}
+		return $id;
+	}
 	public function get_destination(){
 		return $this->destinations[$this->get_current_destination()];
 	}
@@ -102,8 +107,27 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws \Exception if not SSL
 	 */
 	public function set_kitchen_host($host){
+		global $wpdb;
+
 		if (0==strncasecmp($host,'https://',8)){
+			if ($this->kitchen_host!='' &&  // It's not being 'changed', just set
+			    $this->kitchen_host!=$host){ // And it's value is changing
+				// Kitchen has changed, reset the synchronised post history
+				$sql = "
+					DELETE FROM $wpdb->postmeta
+					WHERE meta_key in (
+					'soup_local_image_id',
+					'kitchen_id',
+					'kitchen_image_id',
+					'kitchen_url'
+					)
+				";
+				$wpdb->get_results( $sql );
+
+			}
+
 			$this->kitchen_host = $host;
+			$this->persist();
 		} else {
 			throw new \Exception("SoupKitchen location must begin https://, but got ".$host);
 		}
@@ -181,7 +205,8 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
-		$this->set_kitchen_host('https://core.vacationsoup.com'); # 'https://staging1.privy2.com';#
+		$host = 'https://core.vacationsoup.com';
+		$this->set_kitchen_host($host); # 'https://staging1.privy2.com';#
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
         $this->nextMOTD = 0;
@@ -212,7 +237,7 @@ class SoupWaiter extends SitePersistedSingleton {
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
-		// add_action( 'shutdown', [$this, 'wp_async_save_post'],10,2 );
+		add_action( 'save_post', [$this, 'wp_async_save_post'],10,2 );
 		// new SoupAsync(); // Asynchronous post saving
 
 		// Now install the admin screens if needed
@@ -280,7 +305,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 * @return bool
 	 */
-	private function api_success($response){
+	public function api_success($response){
 		if (is_wp_error( $response )) return FALSE;
 		if (wp_remote_retrieve_response_code($response) > 399) return FALSE;
 		return TRUE;
@@ -295,7 +320,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 * @return mixed
 	 */
-	private function api_error_message($response){
+	public function api_error_message($response){
 		if (is_wp_error($response)) {
 			return $response->get_error_message();
 		} else {
@@ -307,7 +332,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	/**
 	 * @return string[] Options needed
 	 */
-	private function std_options(){
+	public function std_options(){
 		$options =  [
 			'headers' => [
 				'Authorization' => 'Bearer '.$this->getSoupKitchenToken(),
@@ -435,16 +460,19 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @internal param string $oldStatus
 	 */
 	public function wp_async_save_post( $id, \WP_Post $post ) {
+		if ($this->skipSyndicate) return;
 		if ($post->post_type == 'post'){
 			try {
 					update_user_meta(get_current_user_id(),"VacationSoup",date("D M j G:i:s T Y"));
-					$this->syndicate_post($post);
-					$this->addNotice('info','Syndicated Post to VacationSoup');
+					if ($this->syndicate_post($post)){
+						$this->addNotice('info','Syndicated Post to VacationSoup');
+					}
 			} catch (Exception $e) {
 				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
 			}
 		}
 	}
+
 
 	/**
 	 *
@@ -454,10 +482,19 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 * @param bool|string $force Force recreating post & image
 	 *
+	 * @return bool if we decided not to syndicate (as opposed to errors that are thrown)
 	 * @throws Exception
 	 */
 	public function syndicate_post(WP_Post $post, $force=false){
+		if (!in_array($post->post_status ,['publish','future','draft'])){
+			return false;
+		}
+
+
 		$featured_image = get_post_thumbnail_id($post->ID);
+		if (!$featured_image){
+			return false;
+		}
 
 		$kitchen = 			[
 			'date_gmt' => $post->post_date_gmt,
@@ -465,29 +502,32 @@ class SoupWaiter extends SitePersistedSingleton {
 			'status'   => $post->post_status,
 			'title'    => $post->post_title,
 			'content'  => $post->post_content,
-			'excerpt'  => $post->post_excerpt,
+			'excerpt'  => $post->post_excerpt
 		];
+		$fi = get_post_meta($post->ID,'kitchen_image_id',true);
+		if ($fi) {
+			$kitchen['featured_media'] = $fi;
+		}
 
-		if ($featured_image){
-			// Has it changed
-			$kitchen_featured_image = get_post_meta($post->ID,'soup_local_image_id',true);
-			if ( !$kitchen_featured_image ||                        // if there is no image in soup yet
-			     ($force && 'image'===$force ) ||                   // or we are doing a forced re-send
-			     $featured_image !== $kitchen_featured_image){      // or the featured image has changed
-				update_post_meta($post->ID,'soup_local_image_id',$featured_image);
 
-				$rri = '/media';
-				$kitchen_media = $this->imagePostToKitchen($rri,get_attached_file($featured_image));
-				update_post_meta($post->ID,'kitchen_image_id',$kitchen_media->id);
+		// Has featured image changed
+		$kitchen_featured_image = get_post_meta($post->ID,'soup_local_image_id',true);
+		if ( !$kitchen_featured_image ||                        // if there is no image in soup yet
+		     ($force && 'image'===$force ) ||                   // or we are doing a forced re-send
+		     $featured_image !== $kitchen_featured_image){      // or the featured image has changed
+			update_post_meta($post->ID,'soup_local_image_id',$featured_image);
 
-				$kitchen_image = 			[
-					'date_gmt' => $post->post_date_gmt,
-					'slug'     => $post->post_name,
-					'status'   => $post->post_status,
-					'title'    => get_the_title($featured_image),
-				];
-				$this->postToKitchen( $rri.'/'.$kitchen_media->id,$kitchen_image );
-			}
+			$rri = '/media';
+			$kitchen_media = $this->imagePostToKitchen($rri,get_attached_file($featured_image));
+			update_post_meta($post->ID,'kitchen_image_id',$kitchen_media->id);
+
+			$kitchen_image = 			[
+				'date_gmt' => $post->post_date_gmt,
+				'slug'     => $post->post_name,
+				'status'   => $post->post_status,
+				'title'    => get_the_title($featured_image),
+			];
+			$this->postToKitchen( $rri.'/'.$kitchen_media->id,$kitchen_image );
 			$kitchen['featured_media'] = $kitchen_media->id;
 		}
 
@@ -517,6 +557,7 @@ class SoupWaiter extends SitePersistedSingleton {
 
 		update_post_meta($post->ID,'kitchen_id',$kitchen_post->id);
 		update_post_meta($post->ID,'kitchen_url',$kitchen_post->link);
+		return $post->ID;
 	}
 
 	/**
@@ -569,6 +610,7 @@ class SoupWaiter extends SitePersistedSingleton {
 					'processed'=>$processed,
 					'progress'=>$progress
 				],true);
+				@set_time_limit(30); // Try to stop us timing out
 			}
 		}
 		return $total;

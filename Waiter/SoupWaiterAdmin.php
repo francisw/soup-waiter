@@ -59,6 +59,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		add_action( 'wp_ajax_soup_resynch', [ $this, 'do_priv_soup_resynch' ] );
 		add_action( 'wp_ajax_nopriv_soup_resynch', [ $this, 'do_nopriv_soup_resynch' ] );
 		add_action( 'wp_ajax_soup_resynch_progress', [ $this, 'do_soup_resynch_progress' ] );
+		add_action( 'wp_ajax_waiter_soup_delete_posts', [ $this, 'do_waiter_soup_delete_posts' ] );
 		add_action( 'wp_ajax_nopriv_soup_resynch_progress', [ $this, 'do_soup_resynch_progress' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
@@ -424,7 +425,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$newpost = $_POST;
 		$newpost['post_content'] .= "<p class='autocreated byline'>Created by ".SoupWaiter::single()->owner_name."</p>";
 
+		$waiter = SoupWaiter::single();
+		$waiter->skipSyndicate = true;
 		$postId = wp_insert_post($newpost,$error_obj);
+		$waiter->skipSyndicate = false;
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
 			wp_set_post_categories( $postId, $_POST['cats']);
@@ -434,6 +438,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			update_post_meta($postId,'longitude',$_POST['longitude']);
 			update_post_meta($postId,'destination_id',$_POST['destination_id']);
 		}
+		// Because we skipped syndication above, we now need to do it
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
 
 		unset($_POST['post_status']);
@@ -450,10 +455,28 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 * @return array
 	 */
 	private function get_context($tab){
+		global $wpdb;
+
 		$context = Timber::get_context();
 		$context['tab'] = $tab;     // Used to decide current and next actions
 		$context['soup'] = SoupWaiter::single();   // Exposing the waiter and soup.admin (in twig) is the SoupWaiterAdmin
 		$context['admin'] = $this;
+		$sql = "
+				SELECT count(*) as 'unsynch'
+				FROM $wpdb->posts p
+				WHERE p.ID not in
+      				(SELECT post_id FROM $wpdb->postmeta pm WHERE pm.meta_key = 'kitchen_id')
+      			AND p.post_type = 'post'
+      			AND p.post_status = 'publish'
+				";
+
+
+		$result = $wpdb->get_results( $sql, ARRAY_A );
+		if (isset($result) && isset($result[0]) && isset($result[0]['unsynch'])){
+			$context['kitchen_synch'] = $result[0]['unsynch'];
+		} else {
+			$context['kitchen_synch'] = 0;
+		}
 		return $context;
 	}
 
@@ -468,6 +491,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
         // In case the destination is multiple words
 
 		$context['permTags'][] = 'VacationSoup';
+		$doneOne = false;
 		// Allows rendering the lat/long
 		$context['destination'] = SoupWaiter::single()->get_destination();
         foreach (SoupWaiter::single()->destinations_for_property as $destination) {
@@ -482,7 +506,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 	        $context['permTags'][] = $dest;
 
-	        if ($context['destination'] == $destination['destination']){
+	        if ($context['destination'] == $destination){
 		        foreach (['Holiday','Vacation'] as $holiday){
 			        $context['permTags'][] = $holiday.$render;
 		        }
@@ -691,7 +715,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// All this ajax to be called by the kitchen to trigger it
 		session_write_close(); // prevent locking
 		try {
-			$quant = SoupWaiter::single()->syndicate_all_posts('image');
+			$quant = SoupWaiter::single()->syndicate_all_posts(false); //'image');
 			update_option('vs-resynch',"Sent $quant posts, ".date("D M j G:i:s T Y"),false);
 			$response = [
 				'success' => true,
@@ -721,4 +745,32 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		echo json_encode($progress);
 		die();
 	}
+
+	public function do_waiter_soup_delete_posts(){
+		// check_admin_referer( 'vacation-soup','_vs_nonce' ); to allow for kitchen-side checking
+		session_write_close(); // prevent locking
+
+		$waiter = SoupWaiter::single();
+		$options = $waiter->std_options();
+		$response = wp_remote_get($waiter->kitchen_host.'/admin-ajax.php?action=soup_delete_posts',$options);
+
+		if (!$waiter->api_success($response)) {
+			$response = [
+				'success' => false,
+				'error' => [
+					'message' => $waiter->api_error_message($response),
+					'code' => 0
+				]
+			];
+		} else {
+			$response = json_decode( wp_remote_retrieve_body( $response ) );
+		}
+
+		// Not yet implemented
+
+		header("Content-type: application/json");
+		echo json_encode($response);
+		die();
+	}
+
 }

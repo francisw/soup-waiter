@@ -67,13 +67,13 @@
                 }
             };
             jQuery.ajax(ajaxCall)
-                .done(function($response){
-                    if ($response.progress) {
+                .done(function(response){
+                    if (response.progress) {
                         var $=jQuery('BUTTON.resynch');
                         if ('Re-Synch'===$.html()) {
                             return;
-                        } else {
-                            $.html(''+$response.progress+'%');
+                        } else if (100!==response.progress || '0%'!==$.html()) {
+                            $.html(''+response.progress+'%');
                         }
                     }
                     setTimeout(soup_progress,1000);
@@ -83,6 +83,20 @@
         jQuery('BUTTON.resynch').click(function (){
             this.disabled=true;
             jQuery('BUTTON.resynch').html('0%');
+
+/*            var ajaxCallDelete = {
+                type: "get",
+                url: ajaxurl,
+                data: {
+                    'action': 'waiter_soup_delete_posts',
+                    _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
+                }
+            };
+            jQuery.ajax(ajaxCallDelete)
+                .always(function(response){
+                    alert("Deleted ".response.deleted);
+                });
+*/
             var ajaxCall = {
                 type: "post",
                 context: this,
@@ -136,6 +150,9 @@
                     <input type="text" class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
                     <button class="resynch">Re-Synch</button>
                 </div>
+                {% if soup.connected and kitchen_synch %}
+                <div class="error">You have {{ kitchen_synch }} posts waiting to send to Vacation Soup. Click Re-Synch to send them</div>
+                {% endif %}
                 <div class="field">
                     <label for="kitchen_auth_api">
                         Auth API
