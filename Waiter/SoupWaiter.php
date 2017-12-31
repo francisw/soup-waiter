@@ -683,7 +683,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws Exception
 	 */
 	public function syndicate_some_posts($force=true) {
-		if (isset($_GET['init'])){
+		if ($_REQUEST['init']){
 			update_option('vs-resynch-progress',[
 				'total'=>0,
 				'processed'=>0,
@@ -773,7 +773,7 @@ class SoupWaiter extends SitePersistedSingleton {
 			'processed'=>$processed,
 			'progress'=>$progress_pct
 		],true);
-		return $progress_pct;
+		return $processed;
 	}
 }
 
