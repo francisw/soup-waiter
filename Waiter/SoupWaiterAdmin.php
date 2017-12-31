@@ -166,7 +166,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	}
 
 	protected function service_url(&$service){
-		$html = wp_remote_get($service['url']);
+		$html = wp_remote_get($service['testurl']);
+		if (is_wp_error($html)){
+			$service['message'] = $html->get_error_message();
+			return false;
+		}
 		if ($html['response']) {
 			if (200 == $html['response']['code']){
 				$service['message'] = 'Service did not return acceptable message';
@@ -217,7 +221,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "message"=> "Service is not live",
 	                    "url"=>     "https://vacationsoup.com",
                         "call"=>    [$this,'service_url'],
-	                    "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+	                    "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller',
 	                    "search" => 'Traveller'
                     ],
                     "community" => [
@@ -236,7 +240,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "title" =>   "Soup Links To Your Site",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
-                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller/',
                         "search" => 'Traveller'
                     ],
                     "learn" => [
@@ -253,7 +257,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "title" =>   "Soup Advertising",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
-                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller',
                         "search" => 'Traveller'
                     ]
                 ]
@@ -283,9 +287,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
             	$message = esc_html($_REQUEST["service"]);
                 throw new \Exception("Service unknown: {$message}");
             }
-			if (isset($service["message"])){
-				$result['message'] = $service["message"]; // Default failure message
-			}
             switch($service["type"]){
                 case "group":
                     $result["group"] = $service["group"];
@@ -299,6 +300,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     if ($object->$method($service)){
 	                    $result["status"] = 'ok';
 	                    $result["message"] = 'Service connected & up';
+                    } else {
+	                    if (isset($service["message"])){
+		                    $result['message'] = $service["message"];
+	                    }
                     }
                     break;
                 case "prop":
@@ -307,6 +312,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     if ($object->$prop){
                         $result["status"] = 'ok';
 	                    $result["message"] = 'Service connected & up';
+                    } else {
+	                    if (isset($service["message"])){
+		                    $result['message'] = $service["message"];
+	                    }
                     }
                     break;
             }
