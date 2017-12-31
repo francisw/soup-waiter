@@ -684,13 +684,11 @@ class SoupWaiter extends SitePersistedSingleton {
 	 */
 	public function syndicate_some_posts($force=true) {
 		if ($_REQUEST['init']){
-			update_option('vs-resynch-progress',[
-				'total'=>0,
-				'processed'=>0,
-				'progress'=>100
-			],true);
+			delete_option('vs-resynch-progress');
+			$progress = null;
+		}else {
+			$progress = get_option('vs-resynch-progress');
 		}
-		$progress = get_option('vs-resynch-progress');
 		$progress_pct = 0;
 		if (!$progress || 100 == $progress['progress'] || 0 == $progress['total']){
 			$args     = [
