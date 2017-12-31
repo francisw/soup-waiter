@@ -89,7 +89,7 @@
         }
         window.doSync = function (){
             var $=jQuery('BUTTON.resync');
-            this.disabled=true;
+            button.prop('disabled',true);
             if ('Re-Synch'===$.html()){
                 $.html('connecting');
             }
@@ -112,7 +112,7 @@
                         window.doSync();
                     } else {
                         var button = jQuery('BUTTON.resync');
-                        this.disabled=false;
+                        button.prop('disabled',false);
                         button.html('Re-Synch');
                         button.removeClass('required auto');
                         jQuery('#sync-message').addClass('hidden');

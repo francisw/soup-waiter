@@ -215,8 +215,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "type" =>   "func",
                         "title"=>   "Vacation Soup",
                         "message"=> "Service is not live",
+	                    "url"=>     "https://vacationsoup.com",
                         "call"=>    [$this,'service_url'],
-	                    "url" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+	                    "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
 	                    "search" => 'Traveller'
                     ],
                     "community" => [
@@ -225,6 +226,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "url" => "https://community.vacationsoup.com",
                         "message"=> "Service is not live",
                         "call"=>    [$this,'service_url'],
+                        "testurl" => "https://community.vacationsoup.com",
                         "search" => 'Latest News'
                     ]
                  ],
@@ -234,7 +236,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "title" =>   "Soup Links To Your Site",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
-                        "url" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
                         "search" => 'Traveller'
                     ],
                     "learn" => [
@@ -243,6 +245,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "url" => "https://learn.vacationsoup.com",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
+                        "testurl" => "https://learn.vacationsoup.com",
                         "search" => 'The Learning Center'
                     ],
                     "full-publication" => [
@@ -250,7 +253,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "title" =>   "Soup Advertising",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
-                        "url" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
                         "search" => 'Traveller'
                     ]
                 ]
@@ -426,7 +429,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 			if ($this->requested_tab!=$tab) {
 				$this->required = $required;
-				$this->tab_message = "You have been redirected here because {$msg}.";
+				if ($msg) $this->tab_message = "You have been redirected here because {$msg}.";
 			} else {
 				$this->requested_tab = null;
 			}
@@ -445,19 +448,29 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	public function needs_syndication(){
 		global $wpdb;
-		if (null === $this->kitchen_sync){
-			$sql = "
-				SELECT count(*) as 'unsynch'
-				FROM $wpdb->posts p
-				WHERE p.ID not in
-      				(SELECT post_id FROM $wpdb->postmeta pm WHERE pm.meta_key = 'kitchen_id')
-      			AND p.post_type = 'post'
-      			AND p.post_status = 'publish'
-				";
+		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
+			$args     = [
+				'post_status' => 'publish',
+				'post_type'   => 'post',
+				'posts_per_page' => -1,
+				'fields' => 'ids',
+				'no_found_rows' => true,
+				'meta_query' => [
+					'relation' => 'AND',
+					[
+						'key' => 'kitchen_id',
+						'compare' => 'NOT EXISTS'
+					],
+					[
+						'key' => '_thumbnail_id',
+						'compare' => 'EXISTS'
+					]
+				]
+			];
+			$posts_count = new \WP_Query( $args );
 
-			$result = $wpdb->get_results( $sql, ARRAY_A );
-			if (isset($result) && isset($result[0]) && isset($result[0]['unsynch'])){
-				$this->kitchen_sync = $result[0]['unsynch'];
+			if (isset($posts_count)){
+				$this->kitchen_sync = $posts_count->post_count;
 			}
 		}
 		return $this->kitchen_sync;

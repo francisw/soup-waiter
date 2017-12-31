@@ -243,7 +243,7 @@ class SoupWaiter extends SitePersistedSingleton {
 		if (0  !==  strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
 			try{
 				$this->set_kitchen_host(self::SOUP_KITCHEN);
-				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials");
+				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials on the <so>connect</so> tab of Vacation Soup");
 			} catch (\Exception $e){
 				$this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
 			}
@@ -693,9 +693,14 @@ class SoupWaiter extends SitePersistedSingleton {
 				'fields' => 'ids',
 				'no_found_rows' => true,
 				'meta_query' => [
+					'relation' => 'AND',
 					[
 						'key' => 'kitchen_id',
 						'compare' => 'NOT EXISTS'
+					],
+					[
+					'key' => '_thumbnail_id',
+					'compare' => 'EXISTS'
 					]
 				]
 			];
