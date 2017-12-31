@@ -78,8 +78,12 @@
                         window.soup_progress = response.progress;
                         var button=jQuery('#sync_kitchen');
                         if ('Re-Synch'!==button.html()) {
-                            button.html(''+response.progress+'%');
-                            jQuery('#sync-message-count').html(response.total-response.processed);
+                            if (100 !== response.progress) {
+                                button.html(''+response.progress+'%');
+                            }
+                            if (response.total !== response.processed) {
+                                jQuery('#sync-message-count').html(response.total-response.processed);
+                            }
                             setTimeout(soup_get_progress,1000);
                         }
                     }
