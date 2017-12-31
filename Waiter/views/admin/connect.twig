@@ -93,7 +93,7 @@
             if ('Re-Synch'===button.html()){
                 button.html('connecting');
             }
-
+            soup_get_progress();
             var ajaxCall = {
                 type: "post",
                 context: this,
@@ -110,7 +110,7 @@
                 })
                 .done(function(response) {
                     if (window.soup_progress && 100 > window.soup_progress){
-                        window.doSync(false);
+                        setTimeout(window.doSync,100);
                     } else {
                         var button = jQuery('#sync_kitchen');
                         button.prop('disabled',false);
@@ -119,11 +119,17 @@
                         jQuery('#sync-message').addClass('hidden');
                     }
                 });
-            setTimeout(soup_get_progress,0);
             return false;
         };
         jQuery('#sync_kitchen').click(function(){
             window.doSync(true);
+        });
+        $passwd = jQuery('kitchen_password');
+        $passwd.on('focus',function(){
+            jQuery('#done').prop('disabled',true);
+        });
+        $passwd.on('blur',function(){
+            jQuery('#done').prop('disabled',false);
         });
     });
     </script>
@@ -148,7 +154,7 @@
                     data-persist-action="doAllServiceChecks()"/>
                 </div>
                 <div class="label-indent">
-                    <input type="submit" value="done" class="unload" onClick="if (!document.getElementById('kitchen_password').disabled) window.location.reload()">
+                    <input type="submit" value="done" class="unload" id="done" onClick="if (!document.getElementById('kitchen_password').disabled) window.location.reload()">
                 </div>
                 <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
                 {% if autoSync %}
