@@ -77,7 +77,7 @@
                     if (response.total) {
                         window.soup_progress = response.progress;
                         var button=jQuery('#sync_kitchen');
-                        if ('Re-Synch'!==button.html()) {
+                        if (button.prop('disabled')) {
                             if (100 !== response.progress) {
                                 button.html(''+response.progress+'%');
                             }

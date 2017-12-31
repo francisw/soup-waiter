@@ -479,6 +479,10 @@ I.fa-refresh.active {
     box-shadow: 0 5px #27496d;
     margin-top: 10px;
 }
+.vs-content #done.unload:disabled {
+    background-color: #999999;
+    box-shadow: 0 5px #666666;
+}
 
 .vs-content input[type="submit"]:hover.unload {
     background-color: #417cb8
@@ -525,4 +529,7 @@ BUTTON.resync:disabled {
 }
 #sync-message {
     margin-bottom: 10px;
+}
+#done:disabled {
+
 }
