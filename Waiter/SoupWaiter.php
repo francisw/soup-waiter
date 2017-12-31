@@ -18,6 +18,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	const TIMEOUT       = 500; // ms
 
 	const SOUP_KITCHEN  = 'https://vacationsoup.com';
+	// const SOUP_KITCHEN  = 'https://soup.freevacationrentalwebsite.com';
 
 	/**
 	 * @var string $kitchen_host Base URL of host providing SoupKitchen
@@ -125,7 +126,7 @@ class SoupWaiter extends SitePersistedSingleton {
 					)
 				";
 				$wpdb->get_results( $sql );
-
+				$this->kitchen_token = null;
 			}
 
 			$this->kitchen_host = $host;
@@ -238,7 +239,8 @@ class SoupWaiter extends SitePersistedSingleton {
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
 
-		if (!strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
+		// $myvar = strcmp($this->kitchen_host,self::SOUP_KITCHEN);
+		if (0  !==  strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
 			try{
 				$this->set_kitchen_host(self::SOUP_KITCHEN);
 				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials");
