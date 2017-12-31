@@ -35,6 +35,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	protected $requested_tab;
 	/**
+	 * @var string|null $kitchen_sync the count of posts that need synch
+	 */
+	protected $kitchen_sync;
+	/**
 	 * Called from the 'init' Wordpress action
 	 *
 	 * Retrieve Session variables
@@ -56,11 +60,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		add_action( 'admin_init', [$this,'process_post_data']);
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
-		add_action( 'wp_ajax_soup_resynch', [ $this, 'do_priv_soup_resynch' ] );
-		add_action( 'wp_ajax_nopriv_soup_resynch', [ $this, 'do_nopriv_soup_resynch' ] );
-		add_action( 'wp_ajax_soup_resynch_progress', [ $this, 'do_soup_resynch_progress' ] );
+		add_action( 'wp_ajax_soup_resync', [ $this, 'do_priv_soup_resync' ] );
+		add_action( 'wp_ajax_nopriv_soup_resync', [ $this, 'do_nopriv_soup_resync' ] );
+		add_action( 'wp_ajax_soup_resync_progress', [ $this, 'do_soup_resync_progress' ] );
 		add_action( 'wp_ajax_waiter_soup_delete_posts', [ $this, 'do_waiter_soup_delete_posts' ] );
-		add_action( 'wp_ajax_nopriv_soup_resynch_progress', [ $this, 'do_soup_resynch_progress' ] );
+		add_action( 'wp_ajax_nopriv_soup_resync_progress', [ $this, 'do_soup_resync_progress' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
     }
@@ -157,9 +161,25 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		wp_die();
 	}
 
-	protected function fail_service_stub(){
-	    return false;
-    }
+	protected function fail_service_stub($service){
+		return false;
+	}
+
+	protected function service_url(&$service){
+		$html = wp_remote_get($service['url']);
+		if ($html['response']) {
+			if (200 == $html['response']['code']){
+				$service['message'] = 'Service did not return acceptable message';
+				return (strpos($html['body'],$service['search']));
+			} else {
+				$service['message'] = "Service returned error {$html['response']['code']}: {$html['response']['message']}";
+				return false;
+			}
+		} else {
+			$service['message'] = 'No response from service';
+			return false;
+		}
+	}
 
     protected function get_service($handle){
 	    $groupedServices = $this->get_services();
@@ -188,43 +208,50 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "post-social" => [
                         "type" =>   "func",
                         "title"=>   "Social Posting",
-                        "message"=> "Service is not live",
+                        "message"=> "Service is not yet available",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "vacation-soup" => [
                         "type" =>   "func",
                         "title"=>   "Vacation Soup",
                         "message"=> "Service is not live",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+	                    "url" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+	                    "search" => 'Traveller'
                     ],
                     "community" => [
                         "type" =>   "func",
                         "title" =>   "Community",
                         "url" => "https://community.vacationsoup.com",
                         "message"=> "Service is not live",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "search" => 'Latest News'
                     ]
                  ],
                "premium"=> [
                     "soup-trade" => [
                         "type" =>   "func",
-                        "title" =>   "Soup Sending Bookers",
+                        "title" =>   "Soup Links To Your Site",
                         "message"=> "Premium Service not subscribed",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "url" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+                        "search" => 'Traveller'
                     ],
                     "learn" => [
                         "type" =>   "func",
                         "title" =>   "Learning Centre",
                         "url" => "https://learn.vacationsoup.com",
                         "message"=> "Premium Service not subscribed",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "search" => 'The Learning Center'
                     ],
                     "full-publication" => [
                         "type" =>   "func",
                         "title" =>   "Soup Advertising",
-                        "url" => "https://community.vacationsoup.com",
                         "message"=> "Premium Service not subscribed",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "url" =>  SoupWaiter::single()->kitchen_host.'/magazines/traveller',
+                        "search" => 'Traveller'
                     ]
                 ]
             ];
@@ -239,7 +266,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
      *
      */
     public function do_servicecheck(){
-		header("Content-type: application/json");
+	    session_write_close(); // prevent locking
+
+	    header("Content-type: application/json");
 		try {
             $result = [
                 'success' => true,  // Default to ajax call success
@@ -264,7 +293,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     if (!method_exists($object,$method)){
                         throw new \Exception("Service check error: {$object}->{$method} not found");
                     }
-                    if ($object->$method()){
+                    if ($object->$method($service)){
 	                    $result["status"] = 'ok';
 	                    $result["message"] = 'Service connected & up';
                     }
@@ -347,12 +376,15 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$tabs = ['create','owner','property','connect'];
 		$this->tab_message = '';
 		$required = [];
+		$this->needs_syndication(); // Checks for and sets members
 
 		if (!$tab) {
 			if (isset($_REQUEST['requested-tab'])){
 				$tab = $_REQUEST['requested-tab'];
+				$this->requested_tab = $tab;
 			} elseif (isset($_REQUEST['tab'])){
 				$tab = $_REQUEST['tab'];
+				$this->requested_tab = $tab;
 			} else {
 				$tab = $default;
 			}
@@ -374,7 +406,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$msg = "at least one property must be created";
 					$required = ['title-0','join-0','destination-0','latitude-0','longitude-0'];
 				}
-				elseif (empty($this->get_properties()[0]->latitude)) {
+				elseif (empty($this->get_properties()[0]->latitude) ||
+				        empty($this->get_properties()[0]->longitude)) {
 					$tab = 'property';
 					$required = ['latitude-0','longitude-0'];
 					$msg = "the location (latitude/longitude) of the property is needed";
@@ -384,11 +417,18 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$required = ['kitchen_user','kitchen_password'];
 					$msg = "you need to enter your Vacation Soup credentials";
 				}
+				elseif ($this->needs_syndication()) {
+					$tab = 'connect';
+					$required = ['sync_kitchen'];
+					$msg = "you need to re-synch with the Soup";
+				}
 			}
-			if ('create'!=$tab) {
-				$this->requested_tab = 'create';
+
+			if ($this->requested_tab!=$tab) {
 				$this->required = $required;
 				$this->tab_message = "You have been redirected here because {$msg}.";
+			} else {
+				$this->requested_tab = null;
 			}
 		}
 		return $tab;
@@ -400,7 +440,28 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		}
 		return $tab;
 	}
+	/**
+	 * Find out if there are any posts to synch
+	 */
+	public function needs_syndication(){
+		global $wpdb;
+		if (null === $this->kitchen_sync){
+			$sql = "
+				SELECT count(*) as 'unsynch'
+				FROM $wpdb->posts p
+				WHERE p.ID not in
+      				(SELECT post_id FROM $wpdb->postmeta pm WHERE pm.meta_key = 'kitchen_id')
+      			AND p.post_type = 'post'
+      			AND p.post_status = 'publish'
+				";
 
+			$result = $wpdb->get_results( $sql, ARRAY_A );
+			if (isset($result) && isset($result[0]) && isset($result[0]['unsynch'])){
+				$this->kitchen_sync = $result[0]['unsynch'];
+			}
+		}
+		return $this->kitchen_sync;
+	}
 	/**
 	 * Admin page callback
 	 * Set default tab and pass to twig with appropriate context
@@ -423,7 +484,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$error_obj = false;
 
 		$newpost = $_POST;
-		$newpost['post_content'] .= "<p class='autocreated byline'>Created by ".SoupWaiter::single()->owner_name."</p>";
 
 		$waiter = SoupWaiter::single();
 		$waiter->skipSyndicate = true;
@@ -440,6 +500,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		}
 		// Because we skipped syndication above, we now need to do it
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
+		$kitchen_url = get_post_meta($postId,'kitchen_url',true);
+		$newpost['post_content'] .= "<p class='autocreated byline'>Travel Tip created by ".SoupWaiter::single()->owner_name." in association with <a href='{$kitchen_url}'>Vacation Soup</a></p>";
+
 
 		unset($_POST['post_status']);
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
@@ -461,22 +524,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$context['tab'] = $tab;     // Used to decide current and next actions
 		$context['soup'] = SoupWaiter::single();   // Exposing the waiter and soup.admin (in twig) is the SoupWaiterAdmin
 		$context['admin'] = $this;
-		$sql = "
-				SELECT count(*) as 'unsynch'
-				FROM $wpdb->posts p
-				WHERE p.ID not in
-      				(SELECT post_id FROM $wpdb->postmeta pm WHERE pm.meta_key = 'kitchen_id')
-      			AND p.post_type = 'post'
-      			AND p.post_status = 'publish'
-				";
-
-
-		$result = $wpdb->get_results( $sql, ARRAY_A );
-		if (isset($result) && isset($result[0]) && isset($result[0]['unsynch'])){
-			$context['kitchen_synch'] = $result[0]['unsynch'];
-		} else {
-			$context['kitchen_synch'] = 0;
-		}
 		return $context;
 	}
 
@@ -702,24 +749,24 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		return $context;
 	}
 
-	public function do_nopriv_soup_resynch(){
+	public function do_nopriv_soup_resync(){
 		// Apply a key check from kitchen TODO
-		$this->do_soup_resynch();
+		$this->do_soup_resync();
 	}
-	public function do_priv_soup_resynch(){
+	public function do_priv_soup_resync(){
 		check_admin_referer( 'vacation-soup','_vs_nonce' );
-		$this->do_soup_resynch();
+		$this->do_soup_resync();
 	}
 
-	private function do_soup_resynch(){
+	private function do_soup_resync(){
 		// All this ajax to be called by the kitchen to trigger it
 		session_write_close(); // prevent locking
 		try {
-			$quant = SoupWaiter::single()->syndicate_all_posts(false); //'image');
-			update_option('vs-resynch',"Sent $quant posts, ".date("D M j G:i:s T Y"),false);
+			$completed = SoupWaiter::single()->syndicate_some_posts(false);
+			update_option('vs-resynch',"Sent $completed posts, ".date("D M j G:i:s T Y"),false);
 			$response = [
 				'success' => true,
-				'updated' => $quant
+				'progress' => $completed
 			];
 		} catch (\Exception $e){
 			update_option('vs-resynch',"Failed ".date("D M j G:i:s T Y"),false);
@@ -737,7 +784,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		die();
 	}
 
-	public function do_soup_resynch_progress(){
+	public function do_soup_resync_progress(){
 		// check_admin_referer( 'vacation-soup','_vs_nonce' ); to allow for kitchen-side checking
 		session_write_close(); // prevent locking
 		$progress = get_option('vs-resynch-progress');//,[ 'total'=>0, 'processed'=>0, 'progress'=>0 ]);
@@ -746,6 +793,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		die();
 	}
 
+	/* Not Yet Implemented */
 	public function do_waiter_soup_delete_posts(){
 		// check_admin_referer( 'vacation-soup','_vs_nonce' ); to allow for kitchen-side checking
 		session_write_close(); // prevent locking

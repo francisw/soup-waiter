@@ -3,7 +3,13 @@
 {% embed 'admin/form.twig' %}
 {% block form_name %}connect{% endblock form_name %}
 {% block form_content %}
-<script>
+    {% if soup.connected and admin.kitchen_sync %}
+        {% set autoSync = admin.kitchen_sync %}
+    {% else %}
+        {% set autoSync = 0 %}
+    {% endif %}
+
+    <script>
     jQuery(function() {
         window.doAllServiceChecks = function(){
             jQuery(".servicecheck").each(function () {
@@ -26,7 +32,7 @@
                     .fail(function (jqXHR, status, error) {
                         if (unloading) return;
                         console.log('fail (vacation-soup) ' + status + ' ' + error);
-                        jQuery(this).addClass('nok')
+                        jQuery(this).addClass('nok fail')
                             .find('I')
                             .removeClass('fa-question')
                             .addClass('fa-chain-broken');
@@ -57,52 +63,43 @@
         jQuery('.soup-icon').click(doAllServiceChecks);
         doAllServiceChecks();
 
-        window.soup_progress = function(){
+        window.soup_get_progress = function(){
             var ajaxCall = {
                 type: "get",
                 url: ajaxurl,
                 data: {
-                    'action': 'soup_resynch_progress',
+                    'action': 'soup_resync_progress',
                     _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
                 }
             };
             jQuery.ajax(ajaxCall)
                 .done(function(response){
-                    if (response.progress) {
-                        var $=jQuery('BUTTON.resynch');
-                        if ('Re-Synch'===$.html()) {
-                            return;
-                        } else if (100!==response.progress || '0%'!==$.html()) {
+                    if (response.total) {
+                        window.soup_progress = response.progress;
+                        var $=jQuery('BUTTON.resync');
+                        if ('Re-Synch'!==$.html()) {
                             $.html(''+response.progress+'%');
+                            jQuery('#sync-message-count').html(response.total-response.processed);
+                        }
+                        if (100!==response.progress) {
+                            setTimeout(soup_get_progress,1000);
                         }
                     }
-                    setTimeout(soup_progress,1000);
                 });
         }
-
-        jQuery('BUTTON.resynch').click(function (){
+        window.doSync = function (){
+            var $=jQuery('BUTTON.resync');
             this.disabled=true;
-            jQuery('BUTTON.resynch').html('0%');
+            if ('Re-Synch'===$.html()){
+                $.html('connecting');
+            }
 
-/*            var ajaxCallDelete = {
-                type: "get",
-                url: ajaxurl,
-                data: {
-                    'action': 'waiter_soup_delete_posts',
-                    _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
-                }
-            };
-            jQuery.ajax(ajaxCallDelete)
-                .always(function(response){
-                    alert("Deleted ".response.deleted);
-                });
-*/
             var ajaxCall = {
                 type: "post",
                 context: this,
                 url: ajaxurl,
                 data: {
-                    'action': 'soup_resynch',
+                    'action': 'soup_resync',
                     _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
                 }
             };
@@ -110,13 +107,21 @@
                 .fail(function(jqXHR,status,error) {
                     console.log('fail (vacation-soup) '+status+' '+error);
                 })
-                .always(function(response) {
-                    this.disabled=false;
-                    jQuery('BUTTON.resynch').html('Re-Synch');
+                .done(function(response) {
+                    if (window.soup_progress && 100 > window.soup_progress){
+                        window.doSync();
+                    } else {
+                        var button = jQuery('BUTTON.resync');
+                        this.disabled=false;
+                        button.html('Re-Synch');
+                        button.removeClass('required auto');
+                        jQuery('#sync-message').addClass('hidden');
+                    }
                 });
-            setTimeout(soup_progress,0);
+            setTimeout(soup_get_progress,0);
             return false;
-        });
+        }
+        jQuery('BUTTON.resync').click(window.doSync);
     });
     </script>
 
@@ -143,27 +148,27 @@
                     <input type="submit" value="done" class="unload" onClick="if (!document.getElementById('kitchen_password').disabled) window.location.reload()">
                 </div>
                 <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
+                {% if autoSync %}
+                    <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. Click Re-Synch to send {{ autoSync > 1 ? 'them':'it' }}</div>
+                {% endif %}
                 <div class="field">
                     <label for="kitchen_host">
                         Kitchen
                     </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
-                    <button class="resynch">Re-Synch</button>
+                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
+                    <button id="sync_kitchen" class="resync {{ autoSync? 'auto' }}">Re-Synch</button>
                 </div>
-                {% if soup.connected and kitchen_synch %}
-                <div class="error">You have {{ kitchen_synch }} posts waiting to send to Vacation Soup. Click Re-Synch to send them</div>
-                {% endif %}
                 <div class="field">
                     <label for="kitchen_auth_api">
                         Auth API
                     </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
+                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
                 </div>
                 <div class="field">
                     <label for="kitchen_api">
                         Kitchen API
                     </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
+                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
                 </div>
             </div>
         </div>

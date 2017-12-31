@@ -502,10 +502,12 @@ I.fa-refresh.active {
 SPAN.required{
     vertical-align: super;
 }
-INPUT.required {
+INPUT.required,
+BUTTON.required,
+BUTTON.auto {
     border: 1px solid red;
 }
-BUTTON.resynch {
+BUTTON.resync {
     border-radius: 5px;
     height: 20px;
     width: 80px;
@@ -513,7 +515,11 @@ BUTTON.resynch {
     background: rgba(0,0,0,0.1);
     color: rgba(0,0,0,0.9);
 }
-BUTTON.resynch:disabled {
+BUTTON.resync.auto {
+    background: rgba(255,0,0,0.1);
+}
+
+BUTTON.resync:disabled {
     background: rgba(0,0,0,1); /* url(../img/loading.svg) center no-repeat; */
     color: rgba(255,255,255,1);
 }

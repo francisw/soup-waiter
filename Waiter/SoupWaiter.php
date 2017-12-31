@@ -17,6 +17,8 @@ class SoupWaiter extends SitePersistedSingleton {
 	const SSL_VERIFY    = false; // make true on production
 	const TIMEOUT       = 500; // ms
 
+	const SOUP_KITCHEN  = 'https://vacationsoup.com';
+
 	/**
 	 * @var string $kitchen_host Base URL of host providing SoupKitchen
 	 */
@@ -205,8 +207,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
-		$host = 'https://core.vacationsoup.com';
-		$this->set_kitchen_host($host); # 'https://staging1.privy2.com';#
+		$this->set_kitchen_host(SOUP_KITCHEN);
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
         $this->nextMOTD = 0;
@@ -233,11 +234,22 @@ class SoupWaiter extends SitePersistedSingleton {
 	 */
 	public function init(){
 		if(!session_id()) session_start();
-
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
+
+		if (!strcmp($this->kitchen_host,SOUP_KITCHEN)){
+			try{
+				$this->set_kitchen_host(SOUP_KITCHEN);
+				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials");
+			} catch (\Exception $e){
+				$this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
+			}
+		}
+
 		add_action( 'save_post', [$this, 'wp_async_save_post'],10,2 );
+		add_action( 'before_delete_post', [$this, 'async_delete_post'],10,1 );
+		add_action( 'trash_post', [$this, 'async_delete_post'],10,1 );
 		// new SoupAsync(); // Asynchronous post saving
 
 		// Now install the admin screens if needed
@@ -367,6 +379,31 @@ class SoupWaiter extends SitePersistedSingleton {
 		return json_decode( wp_remote_retrieve_body( $response ) );
 	}
 	/**
+	 * Send a POST JSON API request to the SoupKitchen, always returns a valid response
+	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
+	 *
+	 * @param string $rri Relative Resource Indicator
+	 * @param array $body Body to be sent, in array format
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function deleteFromKitchen($rri,$body=null){
+		$options = $this->std_options();
+		//$options['body'] = json_encode($body);
+		$options['method'] = 'DELETE';
+		$options['force'] = 'true';
+		//$rri .= '?force=true';
+		$response = wp_remote_request($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
+
+		if (!$this->api_success($response)) {
+			throw new \Exception ("postToKitchen({$rri}): ".
+			                      $this->api_error_message($response));
+		}
+
+		return json_decode( wp_remote_retrieve_body( $response ) );
+	}
+	/**
 	 * Send a GET API request to the SoupKitchen, always returns a valid response
 	 * and throws an exception on an invalid HTTP response (e.g. 403) or error response
 	 *
@@ -448,6 +485,24 @@ class SoupWaiter extends SitePersistedSingleton {
 	}
 
 	/**
+	 * @param $post_id
+	 *
+	 * @throws Exception
+	 */
+	public function async_delete_post($post_id){
+		$kitchen_image_id = get_post_meta($post_id,"kitchen_image_id",true);
+		if ($kitchen_image_id){
+			// $this->deleteFromKitchen("/media/$kitchen_image_id");
+			// delete_post_meta($post_id, "kitchen_image_id");
+		}
+		$kitchen_id = get_post_meta($post_id,"kitchen_id",true);
+		if ($kitchen_id){
+			$this->deleteFromKitchen("/posts/$kitchen_id");
+			delete_post_meta($post_id, "kitchen_id");
+		}
+	}
+
+	/**
 	 *
 	 * Syndicate Post on publish and update
 	 *
@@ -460,15 +515,19 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @internal param string $oldStatus
 	 */
 	public function wp_async_save_post( $id, \WP_Post $post ) {
+		static $notice_sent = false;
 		if ($this->skipSyndicate) return;
 		if ($post->post_type == 'post'){
 			try {
 					update_user_meta(get_current_user_id(),"VacationSoup",date("D M j G:i:s T Y"));
-					if ($this->syndicate_post($post)){
+					$post_id = $this->syndicate_post($post);
+					if ($post_id && !$notice_sent){
 						$this->addNotice('info','Syndicated Post to VacationSoup');
+						$notice_sent = true;
 					}
 			} catch (Exception $e) {
 				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
+				$notice_sent = true;
 			}
 		}
 	}
@@ -614,6 +673,88 @@ class SoupWaiter extends SitePersistedSingleton {
 			}
 		}
 		return $total;
+	}
+	/**
+	 * @param bool $force
+	 *
+	 * @return int number of posts sent
+	 * @throws Exception
+	 */
+	public function syndicate_some_posts($force=true) {
+		$progress = get_option('vs-resynch-progress');
+		$progress_pct = 0;
+		if (!$progress || 100 == $progress['progress'] || 0 == $progress['total']){
+			$args     = [
+				'post_status' => 'publish',
+				'post_type'   => 'post',
+				'posts_per_page' => -1,
+				'fields' => 'ids',
+				'no_found_rows' => true,
+				'meta_query' => [
+					[
+						'key' => 'kitchen_id',
+						'compare' => 'NOT EXISTS'
+					]
+				]
+			];
+			$posts_count = new \WP_Query( $args );
+			$progress = [
+				'total'=>$posts_count->post_count,
+				'processed'=>0,
+				'progress'=>($posts_count->post_count)?0:100
+			];
+			update_option('vs-resynch-progress',$progress,true);
+		}
+		if (0 == $progress['total']){ // If they have 2 or more threads running, and one finished
+			return ($progress);
+		}
+
+		$default = Property::findOne(0);
+
+		$args     = [
+			'post_status' => 'publish',
+			'post_type'   => 'post',
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+			'posts_per_page' => 2,
+			'meta_query' => [
+				[
+					'key' => 'kitchen_id',
+					'compare' => 'NOT EXISTS'
+				]
+			]
+		];
+		$allposts = new \WP_Query( $args );
+
+		$total = $progress['total'];
+		$processed = $progress['processed'];
+		$reported = 0;
+
+		foreach ( $allposts->posts as $post ) {
+			$latitude = get_post_meta($post->ID,'latitude',true);
+			$longitude = get_post_meta($post->ID,'longitude',true);
+			if (!$latitude || !$longitude){
+				update_post_meta($post->ID,'latitude',$default->latitude);
+				update_post_meta($post->ID,'longitude',$default->longitude);
+			}
+			$this->syndicate_post( $post, $force );
+			$progress_pct=intval(++$processed*100/$total);
+			if ($reported < $progress_pct){
+				$reported = $progress_pct;
+				update_option('vs-resynch-progress',[
+					'total'=>$total,
+					'processed'=>$processed,
+					'progress'=>$progress_pct
+				],true);
+				@set_time_limit(30); // Try to stop us timing out
+			}
+		}
+		update_option('vs-resynch-progress',[
+			'total'=>$total,
+			'processed'=>$processed,
+			'progress'=>$progress_pct
+		],true);
+		return $progress_pct;
 	}
 }
 
