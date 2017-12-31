@@ -76,9 +76,9 @@
                 .done(function(response){
                     if (response.total) {
                         window.soup_progress = response.progress;
-                        var $=jQuery('BUTTON.resync');
-                        if ('Re-Synch'!==$.html()) {
-                            $.html(''+response.progress+'%');
+                        var button=jQuery('#sync_kitchen');
+                        if ('Re-Synch'!==button.html()) {
+                            button.html(''+response.progress+'%');
                             jQuery('#sync-message-count').html(response.total-response.processed);
                         }
                         if (100!==response.progress) {
@@ -88,10 +88,10 @@
                 });
         }
         window.doSync = function (){
-            var $=jQuery('BUTTON.resync');
+            var button=jQuery('#sync_kitchen');
             button.prop('disabled',true);
-            if ('Re-Synch'===$.html()){
-                $.html('connecting');
+            if ('Re-Synch'===button.html()){
+                button.html('connecting');
             }
 
             var ajaxCall = {
@@ -111,7 +111,7 @@
                     if (window.soup_progress && 100 > window.soup_progress){
                         window.doSync();
                     } else {
-                        var button = jQuery('BUTTON.resync');
+                        var button = jQuery('#sync_kitchen');
                         button.prop('disabled',false);
                         button.html('Re-Synch');
                         button.removeClass('required auto');
@@ -120,8 +120,10 @@
                 });
             setTimeout(soup_get_progress,0);
             return false;
-        }
-        jQuery('BUTTON.resync').click(window.doSync);
+        };
+        jQuery('#sync_kitchen').click(function(){
+            window.doSync();
+        });
     });
     </script>
 
