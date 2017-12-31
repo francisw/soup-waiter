@@ -80,8 +80,6 @@
                         if ('Re-Synch'!==button.html()) {
                             button.html(''+response.progress+'%');
                             jQuery('#sync-message-count').html(response.total-response.processed);
-                        }
-                        if (100!==response.progress) {
                             setTimeout(soup_get_progress,1000);
                         }
                     }
@@ -93,7 +91,6 @@
             if ('Re-Synch'===button.html()){
                 button.html('connecting');
             }
-            soup_get_progress();
             var ajaxCall = {
                 type: "post",
                 context: this,
@@ -119,12 +116,13 @@
                         jQuery('#sync-message').addClass('hidden');
                     }
                 });
+            soup_get_progress();
             return false;
         };
         jQuery('#sync_kitchen').click(function(){
             window.doSync(true);
         });
-        $passwd = jQuery('kitchen_password');
+        $passwd = jQuery('#kitchen_password');
         $passwd.on('focus',function(){
             jQuery('#done').prop('disabled',true);
         });
