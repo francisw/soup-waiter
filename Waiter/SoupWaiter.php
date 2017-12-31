@@ -683,6 +683,13 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws Exception
 	 */
 	public function syndicate_some_posts($force=true) {
+		if (isset($_GET['init'])){
+			update_option('vs-resynch-progress',[
+				'total'=>0,
+				'processed'=>0,
+				'progress'=>100
+			],true);
+		}
 		$progress = get_option('vs-resynch-progress');
 		$progress_pct = 0;
 		if (!$progress || 100 == $progress['progress'] || 0 == $progress['total']){
@@ -723,11 +730,16 @@ class SoupWaiter extends SitePersistedSingleton {
 			'post_type'   => 'post',
 			'orderby'     => 'date',
 			'order'       => 'DESC',
-			'posts_per_page' => 2,
+			'posts_per_page' => 20,
 			'meta_query' => [
+				'relation' => 'AND',
 				[
 					'key' => 'kitchen_id',
 					'compare' => 'NOT EXISTS'
+				],
+				[
+					'key' => '_thumbnail_id',
+					'compare' => 'EXISTS'
 				]
 			]
 		];

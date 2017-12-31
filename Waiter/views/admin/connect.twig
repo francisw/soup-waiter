@@ -87,7 +87,7 @@
                     }
                 });
         }
-        window.doSync = function (){
+        window.doSync = function (is_init){
             var button=jQuery('#sync_kitchen');
             button.prop('disabled',true);
             if ('Re-Synch'===button.html()){
@@ -100,6 +100,7 @@
                 url: ajaxurl,
                 data: {
                     'action': 'soup_resync',
+                    'init': is_init,
                     _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val()
                 }
             };
@@ -109,7 +110,7 @@
                 })
                 .done(function(response) {
                     if (window.soup_progress && 100 > window.soup_progress){
-                        window.doSync();
+                        window.doSync(false);
                     } else {
                         var button = jQuery('#sync_kitchen');
                         button.prop('disabled',false);
@@ -122,7 +123,7 @@
             return false;
         };
         jQuery('#sync_kitchen').click(function(){
-            window.doSync();
+            window.doSync(true);
         });
     });
     </script>
