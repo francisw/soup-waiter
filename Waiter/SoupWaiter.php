@@ -207,7 +207,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
-		$this->set_kitchen_host(SOUP_KITCHEN);
+		$this->set_kitchen_host(self::SOUP_KITCHEN);
 		$this->kitchen_api = 'wp-json/wp/v2';
 		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
         $this->nextMOTD = 0;
@@ -238,9 +238,9 @@ class SoupWaiter extends SitePersistedSingleton {
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
 
-		if (!strcmp($this->kitchen_host,SOUP_KITCHEN)){
+		if (!strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
 			try{
-				$this->set_kitchen_host(SOUP_KITCHEN);
+				$this->set_kitchen_host(self::SOUP_KITCHEN);
 				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials");
 			} catch (\Exception $e){
 				$this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
