@@ -506,6 +506,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$error_obj = false;
 
 		$newpost = $_POST;
+		$newpost['post_content'] .= "<p class='autocreated byline'>Travel Tip created by ".SoupWaiter::single()->owner_name." in association with <a href='https://vacationsoup.com'>Vacation Soup</a></p>";
 
 		$waiter = SoupWaiter::single();
 		$waiter->skipSyndicate = true;
@@ -523,7 +524,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Because we skipped syndication above, we now need to do it
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
 		$kitchen_url = get_post_meta($postId,'kitchen_url',true);
-		$newpost['post_content'] .= "<p class='autocreated byline'>Travel Tip created by ".SoupWaiter::single()->owner_name." in association with <a href='{$kitchen_url}'>Vacation Soup</a></p>";
 
 
 		unset($_POST['post_status']);
