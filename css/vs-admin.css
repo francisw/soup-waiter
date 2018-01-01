@@ -479,6 +479,10 @@ I.fa-refresh.active {
     box-shadow: 0 5px #27496d;
     margin-top: 10px;
 }
+.vs-content #done.unload:disabled {
+    background-color: #999999;
+    box-shadow: 0 5px #666666;
+}
 
 .vs-content input[type="submit"]:hover.unload {
     background-color: #417cb8
@@ -502,6 +506,30 @@ I.fa-refresh.active {
 SPAN.required{
     vertical-align: super;
 }
-INPUT.required {
+INPUT.required,
+BUTTON.required,
+BUTTON.auto {
     border: 1px solid red;
+}
+BUTTON.resync {
+    border-radius: 5px;
+    height: 20px;
+    width: 80px;
+    display: inline-block;
+    background: rgba(0,0,0,0.1);
+    color: rgba(0,0,0,0.9);
+}
+BUTTON.resync.auto {
+    background: rgba(255,0,0,0.1);
+}
+
+BUTTON.resync:disabled {
+    background: rgba(0,0,0,1); /* url(../img/loading.svg) center no-repeat; */
+    color: rgba(255,255,255,1);
+}
+#sync-message {
+    margin-bottom: 10px;
+}
+#done:disabled {
+
 }

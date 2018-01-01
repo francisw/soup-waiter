@@ -35,6 +35,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	protected $requested_tab;
 	/**
+	 * @var string|null $kitchen_sync the count of posts that need synch
+	 */
+	protected $kitchen_sync;
+	/**
 	 * Called from the 'init' Wordpress action
 	 *
 	 * Retrieve Session variables
@@ -56,6 +60,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		add_action( 'admin_init', [$this,'process_post_data']);
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
+		add_action( 'wp_ajax_soup_resync', [ $this, 'do_priv_soup_resync' ] );
+		add_action( 'wp_ajax_nopriv_soup_resync', [ $this, 'do_nopriv_soup_resync' ] );
+		add_action( 'wp_ajax_soup_resync_progress', [ $this, 'do_soup_resync_progress' ] );
+		add_action( 'wp_ajax_waiter_soup_delete_posts', [ $this, 'do_waiter_soup_delete_posts' ] );
+		add_action( 'wp_ajax_nopriv_soup_resync_progress', [ $this, 'do_soup_resync_progress' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
     }
@@ -152,9 +161,29 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		wp_die();
 	}
 
-	protected function fail_service_stub(){
-	    return false;
-    }
+	protected function fail_service_stub($service){
+		return false;
+	}
+
+	protected function service_url(&$service){
+		$html = wp_remote_get($service['testurl']);
+		if (is_wp_error($html)){
+			$service['message'] = $html->get_error_message();
+			return false;
+		}
+		if ($html['response']) {
+			if (200 == $html['response']['code']){
+				$service['message'] = 'Service did not return acceptable message';
+				return (strpos($html['body'],$service['search']));
+			} else {
+				$service['message'] = "Service returned error {$html['response']['code']}: {$html['response']['message']}";
+				return false;
+			}
+		} else {
+			$service['message'] = 'No response from service';
+			return false;
+		}
+	}
 
     protected function get_service($handle){
 	    $groupedServices = $this->get_services();
@@ -183,43 +212,53 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     "post-social" => [
                         "type" =>   "func",
                         "title"=>   "Social Posting",
-                        "message"=> "Service is not live",
+                        "message"=> "Service is not yet available",
                         "call"=>    [$this,'fail_service_stub']
                     ],
                     "vacation-soup" => [
                         "type" =>   "func",
                         "title"=>   "Vacation Soup",
                         "message"=> "Service is not live",
-                        "call"=>    [$this,'fail_service_stub']
+	                    "url"=>     "https://vacationsoup.com",
+                        "call"=>    [$this,'service_url'],
+	                    "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller',
+	                    "search" => 'Traveller'
                     ],
                     "community" => [
                         "type" =>   "func",
                         "title" =>   "Community",
                         "url" => "https://community.vacationsoup.com",
                         "message"=> "Service is not live",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "testurl" => "https://community.vacationsoup.com",
+                        "search" => 'Latest News'
                     ]
                  ],
                "premium"=> [
                     "soup-trade" => [
                         "type" =>   "func",
-                        "title" =>   "Soup Sending Bookers",
+                        "title" =>   "Soup Links To Your Site",
                         "message"=> "Premium Service not subscribed",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller/',
+                        "search" => 'Traveller'
                     ],
                     "learn" => [
                         "type" =>   "func",
                         "title" =>   "Learning Centre",
                         "url" => "https://learn.vacationsoup.com",
                         "message"=> "Premium Service not subscribed",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "testurl" => "https://learn.vacationsoup.com",
+                        "search" => 'The Learning Center'
                     ],
                     "full-publication" => [
                         "type" =>   "func",
                         "title" =>   "Soup Advertising",
-                        "url" => "https://community.vacationsoup.com",
                         "message"=> "Premium Service not subscribed",
-                        "call"=>    [$this,'fail_service_stub']
+                        "call"=>    [$this,'service_url'],
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller',
+                        "search" => 'Traveller'
                     ]
                 ]
             ];
@@ -234,7 +273,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
      *
      */
     public function do_servicecheck(){
-		header("Content-type: application/json");
+	    session_write_close(); // prevent locking
+
+	    header("Content-type: application/json");
 		try {
             $result = [
                 'success' => true,  // Default to ajax call success
@@ -246,9 +287,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
             	$message = esc_html($_REQUEST["service"]);
                 throw new \Exception("Service unknown: {$message}");
             }
-			if (isset($service["message"])){
-				$result['message'] = $service["message"]; // Default failure message
-			}
             switch($service["type"]){
                 case "group":
                     $result["group"] = $service["group"];
@@ -259,9 +297,13 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     if (!method_exists($object,$method)){
                         throw new \Exception("Service check error: {$object}->{$method} not found");
                     }
-                    if ($object->$method()){
+                    if ($object->$method($service)){
 	                    $result["status"] = 'ok';
 	                    $result["message"] = 'Service connected & up';
+                    } else {
+	                    if (isset($service["message"])){
+		                    $result['message'] = $service["message"];
+	                    }
                     }
                     break;
                 case "prop":
@@ -270,6 +312,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                     if ($object->$prop){
                         $result["status"] = 'ok';
 	                    $result["message"] = 'Service connected & up';
+                    } else {
+	                    if (isset($service["message"])){
+		                    $result['message'] = $service["message"];
+	                    }
                     }
                     break;
             }
@@ -342,12 +388,15 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$tabs = ['create','owner','property','connect'];
 		$this->tab_message = '';
 		$required = [];
+		$this->needs_syndication(); // Checks for and sets members
 
 		if (!$tab) {
 			if (isset($_REQUEST['requested-tab'])){
 				$tab = $_REQUEST['requested-tab'];
+				$this->requested_tab = $tab;
 			} elseif (isset($_REQUEST['tab'])){
 				$tab = $_REQUEST['tab'];
+				$this->requested_tab = $tab;
 			} else {
 				$tab = $default;
 			}
@@ -369,7 +418,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$msg = "at least one property must be created";
 					$required = ['title-0','join-0','destination-0','latitude-0','longitude-0'];
 				}
-				elseif (empty($this->get_properties()[0]->latitude)) {
+				elseif (empty($this->get_properties()[0]->latitude) ||
+				        empty($this->get_properties()[0]->longitude)) {
 					$tab = 'property';
 					$required = ['latitude-0','longitude-0'];
 					$msg = "the location (latitude/longitude) of the property is needed";
@@ -379,11 +429,18 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$required = ['kitchen_user','kitchen_password'];
 					$msg = "you need to enter your Vacation Soup credentials";
 				}
+				elseif ($this->needs_syndication()) {
+					$tab = 'connect';
+					$required = ['sync_kitchen'];
+					$msg = "you need to re-synch with the Soup";
+				}
 			}
-			if ('create'!=$tab) {
-				$this->requested_tab = 'create';
+
+			if ($this->requested_tab!=$tab) {
 				$this->required = $required;
-				$this->tab_message = "You have been redirected here because {$msg}.";
+				if ($msg) $this->tab_message = "You have been redirected here because {$msg}.";
+			} else {
+				$this->requested_tab = null;
 			}
 		}
 		return $tab;
@@ -395,7 +452,38 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		}
 		return $tab;
 	}
+	/**
+	 * Find out if there are any posts to synch
+	 */
+	public function needs_syndication(){
+		global $wpdb;
+		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
+			$args     = [
+				'post_status' => 'publish',
+				'post_type'   => 'post',
+				'posts_per_page' => -1,
+				'fields' => 'ids',
+				'no_found_rows' => true,
+				'meta_query' => [
+					'relation' => 'AND',
+					[
+						'key' => 'kitchen_id',
+						'compare' => 'NOT EXISTS'
+					],
+					[
+						'key' => '_thumbnail_id',
+						'compare' => 'EXISTS'
+					]
+				]
+			];
+			$posts_count = new \WP_Query( $args );
 
+			if (isset($posts_count)){
+				$this->kitchen_sync = $posts_count->post_count;
+			}
+		}
+		return $this->kitchen_sync;
+	}
 	/**
 	 * Admin page callback
 	 * Set default tab and pass to twig with appropriate context
@@ -418,9 +506,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$error_obj = false;
 
 		$newpost = $_POST;
-		$newpost['post_content'] .= "<p class='autocreated byline'>Created by ".SoupWaiter::single()->owner_name."</p>";
+		$newpost['post_content'] .= "<p class='autocreated byline'>Travel Tip created by ".SoupWaiter::single()->owner_name." in association with <a href='https://vacationsoup.com'>Vacation Soup</a></p>";
 
+		$waiter = SoupWaiter::single();
+		$waiter->skipSyndicate = true;
 		$postId = wp_insert_post($newpost,$error_obj);
+		$waiter->skipSyndicate = false;
 		if (!$error_obj){
 			wp_set_post_tags($postId, $_POST['tags']);
 			wp_set_post_categories( $postId, $_POST['cats']);
@@ -430,7 +521,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			update_post_meta($postId,'longitude',$_POST['longitude']);
 			update_post_meta($postId,'destination_id',$_POST['destination_id']);
 		}
+		// Because we skipped syndication above, we now need to do it
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
+		$kitchen_url = get_post_meta($postId,'kitchen_url',true);
+
 
 		unset($_POST['post_status']);
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
@@ -446,6 +540,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 * @return array
 	 */
 	private function get_context($tab){
+		global $wpdb;
+
 		$context = Timber::get_context();
 		$context['tab'] = $tab;     // Used to decide current and next actions
 		$context['soup'] = SoupWaiter::single();   // Exposing the waiter and soup.admin (in twig) is the SoupWaiterAdmin
@@ -464,6 +560,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
         // In case the destination is multiple words
 
 		$context['permTags'][] = 'VacationSoup';
+		$doneOne = false;
 		// Allows rendering the lat/long
 		$context['destination'] = SoupWaiter::single()->get_destination();
         foreach (SoupWaiter::single()->destinations_for_property as $destination) {
@@ -477,8 +574,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	        }
 
 	        $context['permTags'][] = $dest;
-	        foreach (['Holiday','Vacation'] as $holiday){
-		        $context['permTags'][] = $holiday.$render;
+
+	        if ($context['destination'] == $destination){
+		        foreach (['Holiday','Vacation'] as $holiday){
+			        $context['permTags'][] = $holiday.$render;
+		        }
 	        }
         }
 		add_filter('tiny_mce_before_init', [$this,'mce_autosave_mod']);
@@ -635,14 +735,14 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Grab the basics
 		$context = $this->get_context('connect');
 
-		$context['social']['FB'] = FB::single();
+		/*$context['social']['FB'] = FB::single();
 		$context['social']['TW'] = TW::single();
 		$context['social']['PI'] = PI::single();
 		$context['social']['GP'] = GP::single();
 		$context['social']['LI'] = LI::single();
 		$context['social']['RD'] = RD::single();
 		$context['social']['SU'] = SU::single();
-		$context['social']['IG'] = IG::single();
+		$context['social']['IG'] = IG::single();*/
 		/*
 		 * Still to add
 		 * vk.com
@@ -651,6 +751,96 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		 * renren
 		 * weixin (wechat)
 		 */
+/*		 $sql = $wpdb->prepare( "
+    SELECT DISTINCT p.*,
+    FROM $wpdb->posts p
+    INNER JOIN $wpdb->postmeta pm ON p.ID = pm.post_id
+    WHERE $user_id.ID=%d
+    ",
+			$earth_radius,
+			$attributes['latitude'],
+			$attributes['longitude'],
+			$attributes['latitude'],
+			$type,
+			$offset,
+			$limit
+		);
+
+		$posts = $wpdb->get_results( $sql, OBJECT);
+*/
 		return $context;
 	}
+
+	public function do_nopriv_soup_resync(){
+		// Apply a key check from kitchen TODO
+		$this->do_soup_resync();
+	}
+	public function do_priv_soup_resync(){
+		check_admin_referer( 'vacation-soup','_vs_nonce' );
+		$this->do_soup_resync();
+	}
+
+	private function do_soup_resync(){
+		// All this ajax to be called by the kitchen to trigger it
+		session_write_close(); // prevent locking
+		try {
+			$completed = SoupWaiter::single()->syndicate_some_posts(false);
+			update_option('vs-resynch',"Sent $completed posts, ".date("D M j G:i:s T Y"),false);
+			$response = [
+				'success' => true,
+				'progress' => $completed
+			];
+		} catch (\Exception $e){
+			update_option('vs-resynch',"Failed ".date("D M j G:i:s T Y"),false);
+			update_option('vs-resynch-error',$e,false);
+			$response = [
+				'success' => false,
+				'error' => [
+					'message' => $e->getMessage(),
+					'code' => $e->getCode()
+				]
+			];
+		}
+		header("Content-type: application/json");
+		echo json_encode($response);
+		die();
+	}
+
+	public function do_soup_resync_progress(){
+		// check_admin_referer( 'vacation-soup','_vs_nonce' ); to allow for kitchen-side checking
+		session_write_close(); // prevent locking
+		$progress = get_option('vs-resynch-progress');//,[ 'total'=>0, 'processed'=>0, 'progress'=>0 ]);
+		header("Content-type: application/json");
+		echo json_encode($progress);
+		die();
+	}
+
+	/* Not Yet Implemented */
+	public function do_waiter_soup_delete_posts(){
+		// check_admin_referer( 'vacation-soup','_vs_nonce' ); to allow for kitchen-side checking
+		session_write_close(); // prevent locking
+
+		$waiter = SoupWaiter::single();
+		$options = $waiter->std_options();
+		$response = wp_remote_get($waiter->kitchen_host.'/admin-ajax.php?action=soup_delete_posts',$options);
+
+		if (!$waiter->api_success($response)) {
+			$response = [
+				'success' => false,
+				'error' => [
+					'message' => $waiter->api_error_message($response),
+					'code' => 0
+				]
+			];
+		} else {
+			$response = json_decode( wp_remote_retrieve_body( $response ) );
+		}
+
+		// Not yet implemented
+
+		header("Content-type: application/json");
+		echo json_encode($response);
+		die();
+	}
+
 }

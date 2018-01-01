@@ -1,5 +1,27 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.0 (2017.12.31)
+
+* **Enhancements**:
+  - Improved automatic tags
+  - Automatically set Geo of all posts to first properties location
+  - Only posts with a featured image get syndicated
+  - Historic posts automatically syndicated
+  - Improved connect->service checks
+
+* **Bug Fixes**:
+  - Manually created posts now syndicate properly
+  - Vacation Soup posts saved as draft for review now syndicate
+  - Stopped suplicate posts appearing in the soup
+  - Stopped featured image being dropped when editing a post
+  - Fixed bug in enabling re-synch buttton after completion
+  - Fixed bug in synchronising old posts without images
+
+## 0.2.13.1 (2017.12.21)
+
+* **Bug Fixes**:
+  - Corrected instructions
+
 ## 0.2.13 (2017.12.21)
 
 * **Enhancements**:
