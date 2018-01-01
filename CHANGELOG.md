@@ -1,6 +1,6 @@
 # Changelog for Vacation Soup Waiter
 
-## 1.0.0 (2017.12.31)
+## 1.0.8 (2017.12.31)
 
 * **Enhancements**:
   - Improved automatic tags
