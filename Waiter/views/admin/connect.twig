@@ -142,32 +142,37 @@
             <div id="title" class="col-sm-12">
                 <h1>The Soup Settings</h1>
                 <p>Please enter the username (email) and password you <a href="https://learn.vacationsoup.com/register" target="_blank">registered with Vacation Soup</a>. Once set, you cannot change your username. </p>
+                {% if admin.error_msg %}
+                    <div id="error-message" class="error">{{ admin.error_msg }}</div>
+                {% endif %}
                 <div class="field">
                     <label for="kitchen_user">
                         Username <span class="required">*</span>
                     </label>
-                    <input type="text" class="persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="off" value="{{ soup.kitchen_user }}"/>
+                    <input type="text" class="no-persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="off" value="{{ soup.kitchen_user }}"/>
                 </div>
                 <div class="field required">
                     <label for="kitchen_password">
                         Password <span class="required">*</span>
                     </label>
-                    <input type="password" class="persist" name="SoupWaiter.kitchen_password" id="kitchen_password" {{ (soup.connected)?'placeholder="************"' }} autocomplete="off" value=""
+                    <input type="password" class="no-persist" name="SoupWaiter.kitchen_password" id="kitchen_password" autocomplete="off" value=""
                     data-persist-action="doAllServiceChecks()"/>
                 </div>
                 <div class="label-indent">
-                    <input type="submit" value="done" class="unload" id="done" onClick="if (!document.getElementById('kitchen_password').disabled) window.location.reload()">
+                    {% if autoSync %}
+                        <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. Click Re-Synch to send {{ autoSync > 1 ? 'them':'it' }}</div>
+                    {% endif %}
+                    <input type="submit" value="submit" class="margin_5_ no-unload" id="no-done">
+                    {% if soup.connected %}
+                    <button id="sync_kitchen" {{ soup.connected ? '' : 'disabled' }} class="margin_5_ resync {{ autoSync? 'auto' }}">Re-Synch</button>
+                    {% endif %}
                 </div>
                 <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
-                {% if autoSync %}
-                    <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. Click Re-Synch to send {{ autoSync > 1 ? 'them':'it' }}</div>
-                {% endif %}
                 <div class="field">
                     <label for="kitchen_host">
                         Kitchen
                     </label>
                     <input type="text" readonly class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
-                    <button id="sync_kitchen" class="resync {{ autoSync? 'auto' }}">Re-Synch</button>
                 </div>
                 <div class="field">
                     <label for="kitchen_auth_api">

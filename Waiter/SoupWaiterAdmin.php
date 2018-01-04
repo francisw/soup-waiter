@@ -39,6 +39,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	protected $kitchen_sync;
 	/**
+	 * @var string|null Error message for internal display
+	 */
+	protected $error_msg;
+	/**
 	 * Called from the 'init' Wordpress action
 	 *
 	 * Retrieve Session variables
@@ -426,7 +430,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				}
 				elseif (!$w->connected) {
 					$tab = 'connect';
-					$required = ['kitchen_user','kitchen_password'];
+					$required = ['kitchen_password'];
 					$msg = "you need to enter your Vacation Soup credentials";
 				}
 				elseif ($this->needs_syndication()) {
@@ -530,7 +534,18 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		return null; // Causes a fall-through to create the page anyway, as we are not redirecting after persistence
 	}
 	public function process_owner_data(){}
-	public function process_connect_data(){}
+	public function process_connect_data(){
+		if ($_REQUEST['action'] && 'servicecheck' == $_REQUEST['action']) return;
+		try {
+			foreach (['kitchen_user','kitchen_password'] as $field){
+				if (isset($_REQUEST['SoupWaiter_'.$field])){
+					SoupWaiter::single()->$field = $_REQUEST['SoupWaiter_'.$field];
+				}
+			}
+		} catch (\Exception $e){
+			$this->error_msg = 'The username and password combination are not recognized';
+		}
+	}
 	public function process_property_data(){}
 	/**
 	 * get base context
