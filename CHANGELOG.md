@@ -1,5 +1,9 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.9 (2018.01.03)
+* **Bug Fixes**:
+  - Connect password issues fixed
+
 ## 1.0.8 (2017.12.31)
 
 * **Enhancements**:
