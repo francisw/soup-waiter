@@ -420,7 +420,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				if (0==$w->property_count) {
 					$tab = 'property';
 					$msg = "at least one property must be created";
-					$required = ['title-0','join-0','destination-0','latitude-0','longitude-0'];
+					$required = ['title-0','destination-0','latitude-0','longitude-0'];
 				}
 				elseif (empty($this->get_properties()[0]->latitude) ||
 				        empty($this->get_properties()[0]->longitude)) {
@@ -430,14 +430,14 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				}
 				elseif (!$w->connected) {
 					$tab = 'connect';
-					$required = ['kitchen_password'];
+					$required = ['kitchen_user','kitchen_password'];
 					$msg = "you need to enter your Vacation Soup credentials";
 				}
-				elseif ($this->needs_syndication()) {
+				/* elseif ($this->needs_syndication()) {
 					$tab = 'connect';
 					$required = ['sync_kitchen'];
 					$msg = "you need to re-synch with the Soup";
-				}
+				} */
 			}
 
 			if ($this->requested_tab!=$tab) {
