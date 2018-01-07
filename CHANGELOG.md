@@ -1,5 +1,9 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.12 (2018.01.06)
+* **Bug Fixes**:
+  - Removed attempt to force synchronization
+
 ## 1.0.11 (2018.01.06 )
 * **Bug Fixes**:
   - Removed synchronisation for stability

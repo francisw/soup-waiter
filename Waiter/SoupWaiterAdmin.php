@@ -433,11 +433,11 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$required = ['kitchen_user','kitchen_password'];
 					$msg = "you need to enter your Vacation Soup credentials";
 				}
-				elseif ($this->needs_syndication()) {
+				/* elseif ($this->needs_syndication()) {
 					$tab = 'connect';
 					$required = ['sync_kitchen'];
 					$msg = "you need to re-synch with the Soup";
-				}
+				} */
 			}
 
 			if ($this->requested_tab!=$tab) {
