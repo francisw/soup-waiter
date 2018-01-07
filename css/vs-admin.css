@@ -511,7 +511,8 @@ BUTTON.required,
 BUTTON.auto {
     border: 1px solid red;
 }
-BUTTON.resync {
+BUTTON.resync,
+BUTTON.noresync{
     border-radius: 5px;
     height: 20px;
     width: 80px;
@@ -519,11 +520,13 @@ BUTTON.resync {
     background: rgba(0,0,0,0.1);
     color: rgba(0,0,0,0.9);
 }
-BUTTON.resync.auto {
+BUTTON.resync.auto,
+BUTTON.noresync.auto {
     background: rgba(255,0,0,0.1);
 }
 
-BUTTON.resync:disabled {
+BUTTON.resync:disabled,
+BUTTON.noresync:disabled {
     background: rgba(0,0,0,1); /* url(../img/loading.svg) center no-repeat; */
     color: rgba(255,255,255,1);
 }
@@ -536,6 +539,10 @@ BUTTON.resync:disabled {
 .resync {
     float: right;
     margin-right: 18%;
+}
+.noresync {
+    float: right;
+    margin-right: 5px;
 }
 .margin_5_ {
     margin-top: 5px;

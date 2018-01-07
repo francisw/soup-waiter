@@ -4,7 +4,7 @@
 {% block form_name %}connect{% endblock form_name %}
 {% block form_content %}
     {% if soup.connected and admin.kitchen_sync %}
-        {% set autoSync = admin.kitchen_sync %}
+        {% set autoSync = 0 %} <!--admin.kitchen_sync %}-->
     {% else %}
         {% set autoSync = 0 %}
     {% endif %}
@@ -163,8 +163,11 @@
                         <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. Click Re-Synch to send {{ autoSync > 1 ? 'them':'it' }}</div>
                     {% endif %}
                     <input type="submit" value="submit" class="margin_5_ no-unload" id="no-done">
-                    {% if soup.connected %}
-                    <button id="sync_kitchen" {{ soup.connected ? '' : 'disabled' }} class="margin_5_ resync {{ autoSync? 'auto' }}">Re-Synch</button>
+                    {% if soup.connected and autoSync %}
+                        <button id="sync_kitchen"  class="margin_5_ resync {{ autoSync? 'notauto' }}">Re-Synch</button>
+                        <a href="?page=vacation-soup-admin&tab=create&bypass">
+                            <button id="no_sync_kitchen"  class="margin_5_  noresync">Not Now</button>
+                        </a>
                     {% endif %}
                 </div>
                 <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
