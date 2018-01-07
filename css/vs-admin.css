@@ -190,7 +190,7 @@ DIV.field LABEL{
     display: inline-block;
 }
 .label-indent {
-    padding-left: 20%;
+    padding-left: 20.5%;
 }
 .field-row INPUT[type="button"] {
     margin: 10px 0 0 20%;
@@ -532,4 +532,12 @@ BUTTON.resync:disabled {
 }
 #done:disabled {
 
+}
+.resync {
+    float: right;
+    margin-right: 18%;
+}
+.margin_5_ {
+    margin-top: 5px;
+    margin-bot: 5px;
 }
