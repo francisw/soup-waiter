@@ -208,12 +208,6 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * SoupWaiter constructor.
 	 */
 	public function __construct(){
-		$this->set_kitchen_host(self::SOUP_KITCHEN);
-		$this->kitchen_api = 'wp-json/wp/v2';
-		$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
-        $this->nextMOTD = 0;
-        $this->next_topic = 0; // This is an offset, not a page number
-        $this->property_count = 0;
 	}
 
 
@@ -234,6 +228,14 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 */
 	public function init(){
+		if (!$this->kitchen_api){
+			$this->set_kitchen_host(self::SOUP_KITCHEN);
+			$this->kitchen_api = 'wp-json/wp/v2';
+			$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
+			$this->nextMOTD = 0;
+			$this->next_topic = 0; // This is an offset, not a page number
+			$this->property_count = 0;
+		}
 		if(!session_id()) session_start();
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];

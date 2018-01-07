@@ -2,7 +2,7 @@
 
 ## 1.0.10 (2018.01.  )
 * **Bug Fixes**:
-  - Connect password issues fixed
+  - More connect password issues fixed
 
 
 ## 1.0.9 (2018.01.03)
