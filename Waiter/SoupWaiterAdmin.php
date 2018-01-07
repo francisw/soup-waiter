@@ -170,7 +170,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	}
 
 	protected function service_url(&$service){
-		$html = wp_remote_get($service['testurl']);
+		$html = wp_remote_get($service['testurl'],['timeout'=>20]);
 		if (is_wp_error($html)){
 			$service['message'] = $html->get_error_message();
 			return false;
