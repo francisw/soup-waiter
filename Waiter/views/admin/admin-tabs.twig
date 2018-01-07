@@ -23,7 +23,8 @@
         <script>
             jQuery(function(){
         {% for req in admin.required %}
-            jQuery('#{{ req }}').addClass('required');
+                var req = jQuery('#{{ req }}');
+                if (!req.val()) req.addClass('required');
         {% endfor %}
             });
         </script>
