@@ -57,9 +57,9 @@ class SoupWaiter extends SitePersistedSingleton {
      */
     protected $next_topic;
     /**
-     * @var number $property_count The number of properties
+     * @ var number $property_count The number of properties
      */
-    protected $property_count;
+    //protected $property_count;
     /**
      * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
      */
@@ -73,6 +73,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @var boolean Whether to skip automnatic post syndicating. Hack to prevent double saving
 	 */
 	protected $skipSyndicate;
+
 
 	protected function get_current_destination(){
 		$id=0; // Default
@@ -234,7 +235,6 @@ class SoupWaiter extends SitePersistedSingleton {
 			$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
 			$this->nextMOTD = 0;
 			$this->next_topic = 0; // This is an offset, not a page number
-			$this->property_count = 0;
 		}
 		if(!session_id()) session_start();
 		if (!isset($_SESSION['soup-kitchen-notices'])){

@@ -23,6 +23,9 @@ What traveller starts their dream vacation by looking for a 4-bed 2-bath propert
 
 With this plugin you will be coached with ideas to get your words flowing, topics that are trending right now with travellers, one-click royalty-free jaw-dropping photos from [Pixabay](https://pixabay.com "Pixabay") and, most important of all, you will be **creating** the content of Vacation Soup itself.
 
+== Installation ==
+The Soup Waiter is installed using the standard Wordpress plugin installer. It also installs a plugin called Timber that it needs to work. Follow the instructions on [WPBeginner](http://www.wpbeginner.com/beginners-guide/step-by-step-guide-to-install-a-wordpress-plugin-for-beginners/) in the section titled **Install a Plugin using WordPress Plugin Search**.
+Once you activate the Waiter plugin, you will be asked to install Timber before Vacation Soup can run. Please folloow the instructions on-screen.
 
 == Changelog ==
 See [the change history](https://github.com/francisw/soup-waiter/blob/release/CHANGELOG.md "Change Log")
@@ -30,4 +33,4 @@ See [the change history](https://github.com/francisw/soup-waiter/blob/release/CH
 == Upgrade Notice ==
 We are continually actively updating the plugin, adding new features (and of course removing any bugs), improving security and making sure your Vacation Rental website gets seen by the most people.
 
-As one of the waiter's jobs is to link you to the Soup kitchen, sharing your posts around the world, you must upgrade to the latest version whenever prompted to. We recommend you install an auto-update plugin for all WordPress sites.
+As one of the waiter's jobs is to link you to the Soup kitchen, sharing your posts around the world, you ***must*** upgrade to the latest version whenever prompted to. We recommend you install an auto-update plugin for all WordPress sites.

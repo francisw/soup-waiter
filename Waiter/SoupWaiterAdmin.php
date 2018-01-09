@@ -417,7 +417,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				$msg = "the Owner's name is needed for posts";
 			}
 			else {
-				if (0==$w->property_count) {
+				if (0==Property::count()) {
 					$tab = 'property';
 					$msg = "at least one property must be created";
 					$required = ['title-0','destination-0','latitude-0','longitude-0'];
@@ -668,7 +668,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
      * Also populates the SoupWaiter::single()->properties
      */
 	public function get_properties(){
-        $propertyCount = SoupWaiter::single()->property_count;
+        $propertyCount = Property::count();
         static $properties = [];
         $destinations = []; // Might as well set these up too
 		$deduped = [];
