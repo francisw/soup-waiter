@@ -30,9 +30,13 @@ class Multiton extends Base  {
 
 		if( empty($SoupMultitonCache[$class][$key]) ) {
 			$SoupMultitonCache[$class][$key] = static::getPersisted($key);
-			if (!$SoupMultitonCache[$class][$key] && $create) {
-				$SoupMultitonCache[$class][$key] = new $class();
-				$SoupMultitonCache[$class][$key]->registerMultiton($key);
+			if (!$SoupMultitonCache[$class][$key]) {
+				if ($create){
+					$SoupMultitonCache[$class][$key] = new $class();
+					$SoupMultitonCache[$class][$key]->registerMultiton($key);
+				} else {
+					unset($SoupMultitonCache[$class][$key]);
+				}
 			}
 		}
 		return $SoupMultitonCache[$class][$key];
