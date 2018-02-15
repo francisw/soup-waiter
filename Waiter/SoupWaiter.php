@@ -15,10 +15,10 @@ class SoupWaiter extends SitePersistedSingleton {
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS  = 'OpenDoor';
 	const SSL_VERIFY    = false; // make true on production
-	const TIMEOUT       = 500; // ms
+	const TIMEOUT       = 30000; // ms
 
 	const SOUP_KITCHEN  = 'https://vacationsoup.com';
-	// const SOUP_KITCHEN  = 'https://soup.freevacationrentalwebsite.com';
+	//const SOUP_KITCHEN  = 'https://soup.freevacationrentalwebsite.com';
 
 	/**
 	 * @var string $kitchen_host Base URL of host providing SoupKitchen
@@ -549,7 +549,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws Exception
 	 */
 	public function syndicate_post(WP_Post $post, $force=false){
-		if (!in_array($post->post_status ,['publish','future','draft'])){
+		if (!in_array($post->post_status ,['publish','future'])){
 			return false;
 		}
 
@@ -580,18 +580,25 @@ class SoupWaiter extends SitePersistedSingleton {
 		     $featured_image !== $kitchen_featured_image){      // or the featured image has changed
 			update_post_meta($post->ID,'soup_local_image_id',$featured_image);
 
-			$rri = '/media';
-			$kitchen_media = $this->imagePostToKitchen($rri,get_attached_file($featured_image));
-			update_post_meta($post->ID,'kitchen_image_id',$kitchen_media->id);
+			try {
+				$rri           = '/media';
+				$kitchen_media = $this->imagePostToKitchen( $rri, get_attached_file( $featured_image ) );
+				if ( ! $kitchen_media ) {
+					return false;
+				}
+				update_post_meta( $post->ID, 'kitchen_image_id', $kitchen_media->id );
 
-			$kitchen_image = 			[
-				'date_gmt' => $post->post_date_gmt,
-				'slug'     => $post->post_name,
-				'status'   => $post->post_status,
-				'title'    => get_the_title($featured_image),
-			];
-			$this->postToKitchen( $rri.'/'.$kitchen_media->id,$kitchen_image );
-			$kitchen['featured_media'] = $kitchen_media->id;
+				$kitchen_image = [
+					'date_gmt' => $post->post_date_gmt,
+					'slug'     => $post->post_name,
+					'status'   => $post->post_status,
+					'title'    => get_the_title( $featured_image ),
+				];
+				$this->postToKitchen( $rri . '/' . $kitchen_media->id, $kitchen_image );
+				$kitchen['featured_media'] = $kitchen_media->id;
+			} catch (\Exception $e){
+				return false;
+			}
 		}
 
 		if ($force) {
@@ -608,6 +615,13 @@ class SoupWaiter extends SitePersistedSingleton {
 		foreach ($postTags as $postTag){
 			$tags[] = $postTag->name;
 		}
+
+		$status = $post->post_status;
+		if (str_word_count($post->post_content) < 100){
+			$status = 'pending';
+		}
+
+		$kitchen['status'] = $status;
 		$kitchen['tags_list'] = $tags;
 		$kitchen['waiter_url'] = get_post_permalink($post);
 		$kitchen['waiter_id'] = $post->ID;

@@ -271,6 +271,57 @@
         }
 
     };
+    var doDraftValidation = function(e){
+        var $recent_titles = jQuery('.recent_post_title');
+        var $title = jQuery('#post_title');
+        var $notify = jQuery('#publish_error');
+        var retval = true;
+
+        $notify
+            .removeClass('error')
+            .html('');
+
+        $recent_titles.each(function (){
+            if (jQuery( this ).text() === $title.val()){
+                retval = false;
+            };
+        });
+        if (!retval){
+            $notify
+                .addClass('error')
+                .append("<b>Error:</b> A post with that title exists");
+            e.preventDefault();
+        }
+        return retval;
+
+    };
+    var haveWarnedOfShortPost = false;
+    var doPublishValidation = function(e){
+        var $title = jQuery('#post_title');
+        var $notify = jQuery('#publish_error');
+
+        $notify
+            .removeClass('error')
+            .html('');
+
+        if (!$title.val()){
+            $notify
+                .addClass('error')
+                .append("<b>Error:</b> Your post needs a title");
+            e.preventDefault();
+            return false;
+        }
+        if ( !haveWarnedOfShortPost &&
+            jQuery('#post_content').val().split(' ').length < 100){
+            haveWarnedOfShortPost = true;
+            $notify
+                .addClass('error')
+                .append("<b>Warning:</b> Your post is less than 100 words.<br />Click publish again to ignore warning.");
+            e.preventDefault();
+            return false;
+        }
+        return doDraftValidation(e);
+    };
     /*
         Setup the page once it's loaded
      */
@@ -400,8 +451,19 @@
                 <h2>Categories</h2>
                 {{ function('wp_dropdown_categories','show_count=1&hierarchical=1&echo=0&hide_empty=0&name=cats[]&multiple=1') }}
                 <h2><label for="when">Schedule</label></h2>
-                <input type="submit" name="post_status" id="save-post" value="draft" class="button button-secondary button-large">
-                <input type="submit" name="post_status" id="publish" class="button button-primary button-large" value="publish">
+                <div id="publish_error" class=""></div>
+                <input type="submit"
+                       name="post_status"
+                       id="save-post"
+                       class="button button-secondary button-large"
+                       onclick="return doDraftValidation(event);"
+                       value="draft">
+                <input type="submit"
+                       name="post_status"
+                       id="publish"
+                       class="button button-primary button-large"
+                       onclick="return doPublishValidation(event);"
+                       value="publish">
                 <div class="vs-field">
                     <select id="when" onchange="
                            setPostDateAndStatus();
