@@ -35,10 +35,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	protected $requested_tab;
 	/**
-	 * @var string|null $kitchen_sync the count of posts that need synch
-	 */
-	protected $kitchen_sync;
-	/**
 	 * @var string|null Error message for internal display
 	 */
 	protected $error_msg;
@@ -392,7 +388,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$tabs = ['create','owner','property','connect'];
 		$this->tab_message = '';
 		$required = [];
-		$this->needs_syndication(); // Checks for and sets members
+		SoupWaiter::single()->needs_syndication(); // Checks for and sets members
 
 		if (!$tab) {
 			if (isset($_REQUEST['requested-tab'])){
@@ -457,38 +453,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		return $tab;
 	}
 	/**
-	 * Find out if there are any posts to synch
-	 */
-	public function needs_syndication(){
-		global $wpdb;
-		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
-			$args     = [
-				'post_status' => 'publish',
-				'post_type'   => 'post',
-				'posts_per_page' => -1,
-				'fields' => 'ids',
-				'no_found_rows' => true,
-				'meta_query' => [
-					'relation' => 'AND',
-					[
-						'key' => 'kitchen_id',
-						'compare' => 'NOT EXISTS'
-					],
-					[
-						'key' => '_thumbnail_id',
-						'compare' => 'EXISTS'
-					]
-				]
-			];
-			$posts_count = new \WP_Query( $args );
-
-			if (isset($posts_count)){
-				$this->kitchen_sync = $posts_count->post_count;
-			}
-		}
-		return $this->kitchen_sync;
-	}
-	/**
 	 * Admin page callback
 	 * Set default tab and pass to twig with appropriate context
 	 */
@@ -499,6 +463,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// ...and go do That Voodoo that You Do ... so well!
 		Timber::render( array( "admin/{$tab}.twig" ), $this->$fn_context() );
 	}
+
 
 	/**
 	 * Create a post using the admin/VS/create page
@@ -561,6 +526,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$context['tab'] = $tab;     // Used to decide current and next actions
 		$context['soup'] = SoupWaiter::single();   // Exposing the waiter and soup.admin (in twig) is the SoupWaiterAdmin
 		$context['admin'] = $this;
+		$context['current_user'] = new \Timber\User();
 		return $context;
 	}
 

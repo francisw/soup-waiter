@@ -73,6 +73,10 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @var boolean Whether to skip automnatic post syndicating. Hack to prevent double saving
 	 */
 	protected $skipSyndicate;
+	/**
+	 * @var string|null $kitchen_sync the count of posts that need synch
+	 */
+	protected $kitchen_sync;
 
 
 	protected function get_current_destination(){
@@ -229,6 +233,12 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 */
 	public function init(){
+	    static $already_called = false;
+	    if ($already_called || !is_user_logged_in()){
+	        return;
+        } else {
+	        $already_called = true;
+        }
 		if (!$this->kitchen_api){
 			$this->set_kitchen_host(self::SOUP_KITCHEN);
 			$this->kitchen_api = 'wp-json/wp/v2';
@@ -241,20 +251,25 @@ class SoupWaiter extends SitePersistedSingleton {
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
 
-		// $myvar = strcmp($this->kitchen_host,self::SOUP_KITCHEN);
+		/*// $myvar = strcmp($this->kitchen_host,self::SOUP_KITCHEN);
 		if (0  !==  strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
 			try{
 				$this->set_kitchen_host(self::SOUP_KITCHEN);
-				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials on the <so>connect</so> tab of Vacation Soup");
+				// $this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials on the <so>connect</so> tab of Vacation Soup");
 			} catch (\Exception $e){
-				$this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
+				// $this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
 			}
-		}
+		}*/
+
+		$wp_footer = 'wp_footer';
+		if (is_admin()){
+		    $wp_footer = 'admin_footer';
+        }
 
 		add_action( 'save_post', [$this, 'wp_async_save_post'],10,2 );
 		add_action( 'before_delete_post', [$this, 'async_delete_post'],10,1 );
 		add_action( 'trash_post', [$this, 'async_delete_post'],10,1 );
-		// new SoupAsync(); // Asynchronous post saving
+		add_action(  $wp_footer, [$this,'do_kitchen_sync'],10);
 
 		// Now install the admin screens if needed
 		if (is_admin()) {
@@ -553,7 +568,6 @@ class SoupWaiter extends SitePersistedSingleton {
 			return false;
 		}
 
-
 		$featured_image = get_post_thumbnail_id($post->ID);
 		if (!$featured_image){
 			return false;
@@ -597,6 +611,7 @@ class SoupWaiter extends SitePersistedSingleton {
 				$this->postToKitchen( $rri . '/' . $kitchen_media->id, $kitchen_image );
 				$kitchen['featured_media'] = $kitchen_media->id;
 			} catch (\Exception $e){
+
 				return false;
 			}
 		}
@@ -789,5 +804,62 @@ class SoupWaiter extends SitePersistedSingleton {
 		],true);
 		return $processed;
 	}
+	/**
+	 * echo Javascript to trigger kitchenSync
+	 */
+	public function do_kitchen_sync() {
+		if ($this->needs_syndication()) { // If there are posts to synch
+			?>
+            <script>  // do_kitchen_sync
+                jQuery(function () {
+                    jQuery.ajax({
+                        type: "post",
+                        context: this,
+                        url: ajaxurl,
+                        data: {
+                            'action': 'soup_resync',
+                            _vs_nonce: '< ?php echo wp_create_nonce("vacation-soup"); ?>'
+                        }
+                    });
+                });
+            </script>
+			<?php
+		}
+		echo "<!-- FWDEBUG -->";
+	}
+
+	/**
+	 * Find out if there are any posts to synch
+	 */
+	public function needs_syndication(){
+		global $wpdb;
+		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
+			$args     = [
+				'post_status' => 'publish',
+				'post_type'   => 'post',
+				'posts_per_page' => -1,
+				'fields' => 'ids',
+				'no_found_rows' => true,
+				'meta_query' => [
+					'relation' => 'AND',
+					[
+						'key' => 'kitchen_id',
+						'compare' => 'NOT EXISTS'
+					],
+					[
+						'key' => '_thumbnail_id',
+						'compare' => 'EXISTS'
+					]
+				]
+			];
+			$posts_count = new \WP_Query( $args );
+
+			if (isset($posts_count)){
+				$this->kitchen_sync = $posts_count->post_count;
+			}
+		}
+		return $this->kitchen_sync;
+	}
+
 }
 
