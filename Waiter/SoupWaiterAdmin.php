@@ -238,10 +238,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "prop"=>    [SoupWaiter::single(),'connected']
                     ],
                     "post-social" => [
-                        "type" =>   "func",
+                        "type" =>   "prop",
                         "title"=>   "Social Posting",
-                        "message"=> "Service is not yet available",
-                        "call"=>    [$this,'fail_service_stub']
+                        "message"=> "Vacation Soup user or password needs setting",
+                        "call"=>    [SoupWaiter::single(),'authorised']
                     ],
                     "vacation-soup" => [
                         "type" =>   "func",
@@ -369,7 +369,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	public function process_post_data(){
 		if (is_admin() && !wp_doing_ajax() &&
 		    !empty($_POST) &&
-		    !empty($_POST['post_status']) &&
 		    !empty($_POST['_vs_nonce'])) {
 
 			check_admin_referer( 'vacation-soup','_vs_nonce' );
