@@ -9,11 +9,41 @@
     var k_topics = []; // Kitchen retrieved topics
     var k_tags = []; // Kitchen retrieved tags
     var vs_title;
-    var vs_query;
+    var vs_query = [];
     var motdClicked = false;
     var checkedTag='';
 
+    var doAutosave = function(){
+        jQuery('INPUT[type=submit]').prop('disabled',true);
+        jQuery.post( ajaxurl+'?action=soup_create',
+            jQuery('FORM.tab-create').serialize(),
+            function(data) {
+                jQuery('INPUT[type=submit]').prop('disabled',false);
+                if (data.success) {
+                    jQuery('INPUT[name=post_id]').val(data.ID);
+                } else {
+                    jQuery('#publish').append('<div class="error">Autosave failed</div>');
+                }
+            },
+            'json' // I expect a JSON response
+        );
+    }
+
+    // Autosubmit form on each field
+    jQuery(function(){
+        jQuery('FORM.tab-create *')
+            .filter(':input:visible')
+            .filter(':not(#create-or-edit)')
+            .on('change',doAutosave);
+    });
+
     var getMOTD = function() {
+        {% if new_post.featured_image_img %}
+            jQuery("#motd").html(
+                '<h1>Featured Image</h1>{{ new_post.featured_image_img }}'
+            );
+            return;
+        {% endif %}
         jQuery('#motd').addClass("checking");
 
         var offset = jQuery('#nextMOTD');
@@ -116,6 +146,8 @@
                         binEndTopics = [];
                     }
                 }
+
+                // Create k_ (keyed) topics and get the tags for them
                 k_topics=[];
                 k_tags=[];
                 response.forEach(function(topic){ // Create k_topics and k_tags (deduped tag_id list)
@@ -151,8 +183,11 @@
                             k_tags[tag.id] = tag;
                         });
                     }
+
                     var topicText = "I'll write my own";
                     k_topics.push({"id":0,"tags":[],"title":{"rendered":topicText,"raw":topicText}});
+
+                    // Render the Topics as Radio Buttons & Text
                     k_topics.forEach(function(topic,i){
                         var location='';
                         var elem = document.createElement('textarea');
@@ -166,10 +201,14 @@
                         jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
                     });
 
-
-                    var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
-                    jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
-                    chooseTopic(randomTopic);
+                    {% if new_post.post_title  %}
+                        showTags();
+                    {%  else  %}
+                        // No prev title/topic so generate one
+                        var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
+                        jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
+                        chooseTopic(randomTopic);
+                    {%  endif %}
                 });
             }
         });
@@ -177,7 +216,7 @@
 
     var inputFromTag = function (tag, i) {
         var label = '<label for="tag_' + i + '">' + tag + '</label>';
-        var input = '<input type="checkbox" name="tags[]" id="tag_' + i +
+        var input = '<input type="checkbox" class="tag" name="tags[]" id="tag_' + i +
                     '" value="' + tag +
                     '" title="' + tag + '" '+
                     checkedTag + '/>';
@@ -189,6 +228,21 @@
 
     var chooseTopic = function(topicId) {
         var topic = k_topics[topicId];
+
+        if (topic.id) {
+            // global the selected tags for pixabay and the subject
+            setTagsFromTopic(topicId);
+            vs_title = topic.title.raw + ' ' + "{{ soup.destination.rendered }}";
+            jQuery('#post_title').prop('autofocus',false).val(vs_title);
+            doAutosave();
+        } else {
+            // They'll write their own
+            jQuery('#post_title').prop('autofocus',true).focus().val("");
+        }
+        showTags();
+    }
+    var setTagsFromTopic = function(topicId) {
+        var topic = k_topics[topicId];
         vs_query = [];
 
         if (topic.id) {
@@ -196,28 +250,46 @@
             vs_query = topic.tags.map(function (tag) {
                 return k_tags[tag].name
             });
-            vs_title = topic.title.raw + ' ' + "{{ soup.destination.rendered }}";
-            jQuery('#post_title').prop('autofocus',false).val(vs_title);
             jQuery('INPUT[name="topic"]').val(topic.id);
-        } else {
-            // They'll write their own
-            jQuery('#post_title').prop('autofocus',true).focus().val("");
         }
-        showTags();
     }
+
+    var fixedTags = ["whatson",
+        "whattodo",
+        "whattosee",
+        "wheretostay",
+        "foodie",
+        "cycling",
+        "hiking",
+        "golf"];
     var newTags = [];
+    var permTags = {{ permTags|json_encode|raw }};
+    var postTags = {{ new_post.tags|json_encode|raw }};
     var showTags = function(){
         var i = 0;
+        var allTags;
+
         // Build the complete tag list
-        permTags = newTags.concat({{ permTags|json_encode|raw }});
+        if (postTags.length) {
+            // remove the magazines
+            allTags = postTags.filter( function( el ) {
+                return !fixedTags.includes( el );
+            } );
+            postTags = [];
+        } else {
+            allTags = newTags.concat(permTags);
+        }
 
         var html = '';
-        vs_query.forEach(function (tag) {
+        var cleaned_query = vs_query.filter( function( el ) {
+            return !fixedTags.includes( el );
+        } );
+        cleaned_query.forEach(function (tag) {
             html += inputFromTag(tag, ++i);
         });
 
         checkedTag = 'checked';
-        permTags.forEach(function (tag) {
+        allTags.forEach(function (tag) {
             html += inputFromTag(tag, ++i);
         });
         checkedTag = '';
@@ -234,11 +306,15 @@
                 this.value = this.value.replace(/\s/g, "");
             }
         });
+        jQuery('INPUT[type=checkbox].tag')
+            .on('change',doAutosave);
+
     };
 
     var newTag = function(elem){
         newTags.push(jQuery(elem).val());
         showTags();
+        doAutosave();
     }
 
     var postDateElem,postStatusElem;
@@ -299,6 +375,7 @@
     var doPublishValidation = function(e){
         var $title = jQuery('#post_title');
         var $notify = jQuery('#publish_error');
+        var $image = jQuery('#featured_image');
 
         $notify
             .removeClass('error')
@@ -308,6 +385,13 @@
             $notify
                 .addClass('error')
                 .append("<b>Error:</b> Your post needs a title");
+            e.preventDefault();
+            return false;
+        }
+        if (!$image.val()){
+            $notify
+                .addClass('error')
+                .append("<b>Error:</b> Your post needs a featured image");
             e.preventDefault();
             return false;
         }
@@ -365,6 +449,20 @@
                 window.location.search += '&destination_id='+this.options[this.selectedIndex].value
             }
         });
+        jQuery('#create-or-edit').change(function(){
+            var args = {
+                "_vs_nonce": jQuery('#_vs_nonce').val(),
+                "action": "soup_new_edit"
+            }
+            jQuery.post(ajaxurl,
+                args,
+                function(data) {
+                    window.location.reload();
+                },
+                'json' // I expect a JSON response
+            );
+
+        });
     });
     /*
         If there is no featured image (FI) or if FI was clicked (i.e. to replace it)
@@ -372,7 +470,7 @@
      */
     var setFeaturedImage = function(ed){
             var fi = jQuery('#featured_image');
-            if (!fi.val() || motdClicked){
+            if (fi.val()==0 || motdClicked){
                 var st,st_cap;
 
                 var elem = ed.getContent();
@@ -381,6 +479,7 @@
                     var image_id = parseInt(elem.substr(9 + elem.indexOf('wp-image-',st)));
                     var imglen = 1 + elem.indexOf('>',st) - st;
                     fi.val(image_id);
+                    doAutosave();
                     jQuery('#motd').html(
                         '<h1>Featured Image</h1>'+elem.substr(st,imglen)
                     );
@@ -395,15 +494,18 @@
     }
 
     </script>
-
+<style>
+    .notice { display: none; }
+</style>
 {% embed 'admin/post-form.twig' %}{% block form_content %}
-    <input type="hidden" id="latitude" name="latitude" value="{{ destination.latitude }}">
-    <input type="hidden" id="longitude" name="longitude" value="{{ destination.longitude }}">
-    <input type="hidden" id="destination_id" name="destination_id" value="{{ destination.id }}">
+    <input type="hidden" id="latitude" name="latitude" value="{{ new_post.latitude }}">
+    <input type="hidden" id="longitude" name="longitude" value="{{ new_post.longitude }}">
+    <input type="hidden" id="destination_id" name="destination_id" value="{{ new_post.destination_id }}">
+    <input type="hidden" id="post_id" name="ID" value="{{ new_post.ID }}">
 
     <div class="vs-content tab-create row">
     <div class="col-xs-12 col-sm-6 col-lg-8">
-        <div class="vs-panel row">
+        <div id="main_panel" class="vs-panel row">
             <div id="title" class="col-sm-12">
                 <h1>Create Post
                     <select title="Alternative destinations" id="alter-destination">
@@ -413,6 +515,12 @@
                             </option>
                         {% endfor %}
                     </select>
+                    {% if new_post.edit_mode == 'edit' %}
+                    <select title="Create or Edit" id="create-or-edit" name="create-or-edit">
+                        <option value="edit" selected>using draft</option>
+                        <option value="create" >from new</option>
+                    </select>
+                    {% endif %}
                 </h1>
             </div>
             <div class="col-xl-8 col-lg-6 col-md-12 col-sm-12">
@@ -430,17 +538,67 @@
             </div>
             <div class="col-sm-12">
                 <div class="subject">
-                    <input type="text" title="Subject" name="post_title" id="post_title" value=""/>
+                    <input type="text" title="Subject" name="post_title" id="post_title" value="{{ new_post.post_title }}"/>
                 </div>
             </div>
             <div class="col-sm-12">
                 <div id="wp-content-editor-container">
-                    {{ fn('wp_editor','','post_content') }}
+                    {{ fn('wp_editor',new_post.post_content,'post_content') }}
                 </div>
             </div>
             {#- Layout the tags in a centered column (lg) or on its own (sm) -#}
             <div id="tagger" class="col-lg-8 col-sm-12">
                 <h2>Tags</h2>
+                <div class="col-sm-12 row">
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/whatson-100.jpeg"
+                             title="WhatsOn"
+                             alt="WhatsOn Travel Guide">
+                        <span class="checklist-item"><label for="tag_a">WhatsOn</label><input type="checkbox" class="tag" name="tags[]" id="tag_a" value="whatson" title="WhatsOn" {{  ('whatson' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/whattodo-100.jpeg"
+                             title="WhatToDo"
+                             alt="WhatToDo Travel Guide">
+                        <span class="checklist-item"><label for="tag_b">WhatToDo</label><input type="checkbox" class="tag" name="tags[]" id="tag_b" value="whattodo" title="WhatToDo" {{  ('whattodo' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/whattosee-100.jpg"
+                             title="WhatToSee"
+                             alt="WhatToSee Travel Guide">
+                        <span class="checklist-item"><label for="tag_c">WhatToSee</label><input type="checkbox" class="tag" name="tags[]" id="tag_c" value="whattosee" title="WhatToSee" {{  ('whattosee' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/beaches-100.jpg"
+                             title="Beaches"
+                             alt="Beaches Travel Guide">
+                        <span class="checklist-item"><label for="tag_d">Beaches</label><input type="checkbox" class="tag" name="tags[]" id="tag_d" value="beaches" title="Beaches" {{  ('beaches' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/foodie-100.jpg"
+                             title="Foodie"
+                             alt="Foodie Travel Guide">
+                        <span class="checklist-item"><label for="tag_e">Foodie</label><input type="checkbox" class="tag" name="tags[]" id="tag_e" value="foodie" title="Foodie" {{  ('foodie' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/cycling-100.jpg"
+                             title="Cycling"
+                             alt="Cycling Travel Guide">
+                        <span class="checklist-item"><label for="tag_f">Cycling</label><input type="checkbox" class="tag" name="tags[]" id="tag_f" value="cycling" title="Cycling" {{  ('cycling' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/hikers-100.jpg"
+                             title="Hikers"
+                             alt="Hikers Travel Guide">
+                        <span class="checklist-item"><label for="tag_g">Hikers</label><input type="checkbox" class="tag" name="tags[]" id="tag_g" value="hikers" title="Hikers" {{  ('hikers' in new_post.tags)?'checked' }}></span>
+                    </div>
+                    <div class="col-sm-3">
+                        <img src="{{ soup.image_url }}/golf-100.jpg"
+                             title="Golf"
+                             alt="Golf Travel Guide">
+                        <span class="checklist-item"><label for="tag_h">Golf</label><input type="checkbox" class="tag" name="tags[]" id="tag_h" value="golf" title="Golf" {{  ('golf' in new_post.tags)?'checked' }}></span>
+                    </div>
+                </div>
                 <ul class="tags-container checklist hoverable">
                     <li class="checklist-item">{# The contents are replaced by javascript #}
                         Creating autotags...
@@ -450,8 +608,19 @@
             <div id="scheduler" class="col-md-4 col-sm-12">
                 <h2>Categories</h2>
                 {{ function('wp_dropdown_categories','show_count=1&hierarchical=1&echo=0&hide_empty=0&name=cats[]&multiple=1') }}
+
+                <h2>Post Location</h2>
+                <input type="text" title="Latitude" placeholder="Latitude" name="latitude_entry" id="latitude_entry" value="{{ new_post.latitude_entry }}"/>
+                <input type="text" title="Longitude" placeholder="Longitude" name="longitude_entry" id="longitude_entry" value="{{ new_post.longitude_entry }}"/>
+
                 <h2><label for="when">Schedule</label></h2>
                 <div id="publish_error" class=""></div>
+                <a href="{{ fn('get_home_url') }}?p={{ new_post.ID }}&preview=true" target="_blank">
+                <input type="button"
+                       name="preview"
+                       id="preview"
+                       class="button button-secondary button-large"
+                       value="preview"></a>
                 <input type="submit"
                        name="post_status"
                        id="save-post"

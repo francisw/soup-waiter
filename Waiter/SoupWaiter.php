@@ -67,7 +67,11 @@ class SoupWaiter extends SitePersistedSingleton {
     /**
      * @var string[] $destinations the Destinations to use in topics (first is default), e.g. Best beaches on BORNHOLM
      */
-    protected $destinations;
+	protected $destinations;
+	/**
+	 * @var int $destinations the Destinations to use in topics (first is default), e.g. Best beaches on BORNHOLM
+	 */
+	protected $current_destination;
 
 	/**
 	 * @var boolean Whether to skip automnatic post syndicating. Hack to prevent double saving
@@ -78,14 +82,23 @@ class SoupWaiter extends SitePersistedSingleton {
 	 */
 	protected $kitchen_sync;
 
-
-	protected function get_current_destination(){
-		$id=0; // Default
-		if (isset($_REQUEST['destination_id'])){
-			$id = intval($_REQUEST['destination_id']);
-		}
-		return $id;
+	/**
+	 * @return int
+	 */
+	public function get_current_destination(){
+		if (!$this->current_destination){
+			if (isset($_REQUEST['destination_id'])){
+				$this->current_destination = intval($_REQUEST['destination_id']);
+			} else {
+				$this->current_destination = 0;
+            }
+        }
+		return $this->current_destination;
 	}
+
+	/**
+	 * @return string[]
+	 */
 	public function get_destination(){
 		return $this->destinations[$this->get_current_destination()];
 	}
@@ -239,6 +252,8 @@ class SoupWaiter extends SitePersistedSingleton {
         } else {
 	        $already_called = true;
         }
+
+        $this->kitchen_sync = null;
 		if (!$this->kitchen_api){
 			$this->set_kitchen_host(self::SOUP_KITCHEN);
 			$this->kitchen_api = 'wp-json/wp/v2';
@@ -714,43 +729,12 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws Exception
 	 */
 	public function syndicate_some_posts($force=true) {
-		if ($_REQUEST['init']){
-			delete_option('vs-resynch-progress');
-			$progress = null;
-		}else {
-			$progress = get_option('vs-resynch-progress');
-		}
-		$progress_pct = 0;
-		if (!$progress || 100 == $progress['progress'] || 0 == $progress['total']){
-			$args     = [
-				'post_status' => 'publish',
-				'post_type'   => 'post',
-				'posts_per_page' => -1,
-				'fields' => 'ids',
-				'no_found_rows' => true,
-				'meta_query' => [
-					'relation' => 'AND',
-					[
-						'key' => 'kitchen_id',
-						'compare' => 'NOT EXISTS'
-					],
-					[
-					'key' => '_thumbnail_id',
-					'compare' => 'EXISTS'
-					]
-				]
-			];
-			$posts_count = new \WP_Query( $args );
-			$progress = [
-				'total'=>$posts_count->post_count,
-				'processed'=>0,
-				'progress'=>($posts_count->post_count)?0:100
-			];
-			update_option('vs-resynch-progress',$progress,true);
-		}
-		if (0 == $progress['total']){ // If they have 2 or more threads running, and one finished
-			return ($progress);
-		}
+        $posts_count = $this->needs_syndication();
+        $progress = [
+            'total'=>$posts_count->post_count,
+            'processed'=>0,
+            'progress'=>($posts_count->post_count)?0:100
+        ];
 
 		$default = Property::findOne(0);
 
@@ -759,7 +743,7 @@ class SoupWaiter extends SitePersistedSingleton {
 			'post_type'   => 'post',
 			'orderby'     => 'date',
 			'order'       => 'DESC',
-			'posts_per_page' => 20,
+			'posts_per_page' => 1,
 			'meta_query' => [
 				'relation' => 'AND',
 				[
@@ -818,7 +802,7 @@ class SoupWaiter extends SitePersistedSingleton {
                         url: ajaxurl,
                         data: {
                             'action': 'soup_resync',
-                            _vs_nonce: '< ?php echo wp_create_nonce("vacation-soup"); ?>'
+                            _vs_nonce: '<?php echo wp_create_nonce("vacation-soup"); ?>'
                         }
                     });
                 });

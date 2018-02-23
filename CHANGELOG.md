@@ -1,5 +1,21 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.15 (2018.02.23)
+
+* **Enhancements**:
+- Less than 100 words to pending & warn
+- Validate for Re-used Title
+- Validate for no Image
+- Improved Featured handling (inserting new media)
+- Added Preview
+- Added Autosave on Post
+- Added Lat & Long to post
+- Added tags for magazines
+- Added Synchronising one at a time
+
+* **Bug Fixes**:
+
+
 ## 1.0.14 (2018.01.09)
 
 * **Bug Fixes**:

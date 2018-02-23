@@ -339,13 +339,16 @@ function media_soup_pixabay_images_tab() {
                     wpnonce: '<?= wp_create_nonce( 'soup_pixabay_images_security_nonce' ); ?>'
                 }, function (response) {
                     if (response.error === undefined) {
-                        if (parent.jQuery('#featured_image').val() && !motdClicked) {
+                        if (parent.jQuery('#featured_image').val()>0 && !motdClicked) {
                             window.location = 'media-upload.php?type=image&tab=library&post_id=' + post_id + '&attachment_id=' + response.id;
                         } else {
-                            parent.jQuery('#featured_image').val(response.id);
-                            parent.jQuery('#motd').html(
+                            parent.jQuery('#featured_image')
+                                .val(response.id);
+                            parent.jQuery('#motd')
+                                .html(
                                 '<h1>Featured Image</h1>'+response.html
                             );
+                            parent.doAutosave();
                             parent.tb_remove();
                         }
                     }
