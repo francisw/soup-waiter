@@ -12,6 +12,11 @@
 - Added Lat & Long to post
 - Added tags for magazines
 - Added Synchronising one at a time
+- Add edit/view buttons on recent posts in create
+- Change the Create title text to 'Edit' when appropriate
+- Allow editing published posts
+- Change the Create title text to show if published
+- Added margin below magazine tags
 
 * **Bug Fixes**:
 

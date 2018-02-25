@@ -614,7 +614,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Grab the basics
 		$context = $this->get_context('create');
 
-		$new_post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
+		if (isset($_GET['p']) && $_GET['p'] > 0) {
+			$new_post_id = $_GET['p'];
+			update_user_meta(get_current_user_id(),'_vs-new-post-id',$new_post_id);
+		} else {
+			$new_post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
+		}
 		if ($new_post_id) {
 			$test_post = get_post($new_post_id);
 			if ($test_post) {
