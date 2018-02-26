@@ -579,7 +579,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws Exception
 	 */
 	public function syndicate_post(WP_Post $post, $force=false){
-		if (!in_array($post->post_status ,['publish','future'])){
+		if (!in_array($post->post_status ,['draft','publish','future'])){
 			return false;
 		}
 
@@ -809,7 +809,6 @@ class SoupWaiter extends SitePersistedSingleton {
             </script>
 			<?php
 		}
-		echo "<!-- FWDEBUG -->";
 	}
 
 	/**

@@ -501,6 +501,9 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$postId = wp_insert_post($_POST,false);
 		delete_user_meta(get_current_user_id(),'_vs-new-post-id');
 		SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
+		if ($_GET['p']){ // if it was an edit, remove the query param
+			header("Location: {$_SERVER['PHP_SELF']}?page=vacation-soup-admin&tab=create");
+		}
 	}
 	/**
 	 * Handle the Ajax callback to save the current post (fires on every change)
@@ -614,11 +617,16 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Grab the basics
 		$context = $this->get_context('create');
 
+		$new_post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
 		if (isset($_GET['p']) && $_GET['p'] > 0) {
+			if ($new_post_id) {
+				$old_post = get_post($new_post_id);
+				if (!$old_post->post_content && !has_post_thumbnail($new_post_id)) {
+					wp_trash_post($new_post_id);
+				}
+			}
 			$new_post_id = $_GET['p'];
 			update_user_meta(get_current_user_id(),'_vs-new-post-id',$new_post_id);
-		} else {
-			$new_post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
 		}
 		if ($new_post_id) {
 			$test_post = get_post($new_post_id);
