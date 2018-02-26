@@ -10,7 +10,7 @@
         {% else %}
             <img src="{{ soup.image_url }}/placeholder-square.jpg"/>
         {% endif %}
-        <div onclick='doAutosave("?page=vacation-soup-admin&tab=create&p="+{{ post.ID }});' title="Edit"><i class="dismiss fa fa-edit"></i></div>
+        <div onclick='autosaveRedirect = "?page=vacation-soup-admin&tab=create&p="+{{ post.ID }};doAutosave();' title="Edit"><i class="dismiss fa fa-edit"></i></div>
         <a href="{{ fn('get_home_url') }}?p={{ post.ID }}&preview=true" target="_blank" title="View (new tab)"><i class="dismiss fa fa-eye"></i></a>
     </div>
     <div class="col-xl-8 col-lg-12 col-sm-8">

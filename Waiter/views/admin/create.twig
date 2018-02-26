@@ -14,10 +14,7 @@
     var checkedTag='';
 
     var autosaveRedirect = null;
-    var doAutosave = function(redirect){
-        if (redirect) {
-            autosaveRedirect = redirect;
-        }
+    var doAutosave = function(e){
         jQuery('INPUT[type=submit]').prop('disabled',true);
         tinyMCE.triggerSave();
         jQuery.post( ajaxurl+'?action=soup_create',
