@@ -194,7 +194,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	}
 
 	protected function service_url(&$service){
-		$html = wp_remote_get($service['testurl'],['timeout'=>20]);
+		$html = wp_remote_get($service['testurl'],['timeout'=>20, 'sslverify' => false]);
 		if (is_wp_error($html)){
 			$service['message'] = $html->get_error_message();
 			return false;
@@ -241,7 +241,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "type" =>   "prop",
                         "title"=>   "Social Posting",
                         "message"=> "Vacation Soup user or password needs setting",
-                        "call"=>    [SoupWaiter::single(),'authorised']
+                        "prop"=>    [SoupWaiter::single(),'authorised']
                     ],
                     "vacation-soup" => [
                         "type" =>   "func",
@@ -249,7 +249,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "message"=> "Service is not live",
 	                    "url"=>     "https://vacationsoup.com",
                         "call"=>    [$this,'service_url'],
-	                    "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller',
+	                    "testurl" =>  SoupWaiter::single()->kitchen_host.'/travel-guide/traveller',
 	                    "search" => 'Traveller'
                     ],
                     "community" => [
@@ -268,7 +268,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "title" =>   "Soup Links To Your Site",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
-                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller/',
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/travel-guide/traveller/',
                         "search" => 'Traveller'
                     ],
                     "learn" => [
@@ -285,7 +285,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
                         "title" =>   "Soup Advertising",
                         "message"=> "Premium Service not subscribed",
                         "call"=>    [$this,'service_url'],
-                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/magazine/traveller',
+                        "testurl" =>  SoupWaiter::single()->kitchen_host.'/travel-guide/traveller',
                         "search" => 'Traveller'
                     ]
                 ]
@@ -303,7 +303,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
     public function do_servicecheck(){
 	    session_write_close(); // prevent locking
 
-	    header("Content-type: application/json");
 		try {
             $result = [
                 'success' => true,  // Default to ajax call success
@@ -350,16 +349,17 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
             if (isset($service["url"])){
                 $result["url"] = $service["url"];
             }
-			echo json_encode($result);
 		} catch (\Exception $e){
-			echo json_encode([
+			$result =  [
 				'success' => false,
 				'error' => [
 					'message' => $e->getMessage(),
 					'code' => $e->getCode()
 				]
-			]);
+			];
 		}
+	    header("Content-type: application/json");
+	    echo json_encode($result);
 		wp_die();
 	}
 	/**
