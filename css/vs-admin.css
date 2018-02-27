@@ -198,6 +198,14 @@ DIV.media-selector {
 #scheduler #draft, #preview {
     display: inline-block !important;
 }
+#scheduler INPUT.disabled {
+    mask: url(../img/loading.svg) center no-repeat !important;
+    -webkit-mask: url(../img/loading.svg) center no-repeat !important;
+    background-color: black !important;
+    border-color: black !important;
+    color: black !important;
+    text-shadow: none !important;
+}
 
 DIV.field LABEL{
     min-width: 20%;
@@ -561,4 +569,7 @@ BUTTON.noresync:disabled {
 .margin_5_ {
     margin-top: 5px;
     margin-bot: 5px;
+}
+#scheduler .obsolete .soup-submit {
+    background: url(../img/loading.svg) center no-repeat !important;
 }

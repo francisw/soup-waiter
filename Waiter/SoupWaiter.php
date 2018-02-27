@@ -377,6 +377,7 @@ class SoupWaiter extends SitePersistedSingleton {
 
 	/**
 	 * @return string[] Options needed
+	 * @throws Exception
 	 */
 	public function std_options(){
 		$options =  [
@@ -431,8 +432,9 @@ class SoupWaiter extends SitePersistedSingleton {
 		$response = wp_remote_request($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
-			throw new \Exception ("postToKitchen({$rri}): ".
-			                      $this->api_error_message($response));
+		    // Ignore delete errors, nothing we can do anyway (like 'already deleted post')
+			// throw new \Exception ("postToKitchen({$rri}): ".
+			//                      $this->api_error_message($response));
 		}
 
 		return json_decode( wp_remote_retrieve_body( $response ) );
@@ -511,7 +513,7 @@ class SoupWaiter extends SitePersistedSingleton {
 
 				$detail = " <span title='$notice[2]'><b>".ucfirst($notice[0])."</b>:</span>";
 			}
-			echo "<div class='notice notice-{$notice[0]} is-dismissible'>
+			echo "<div class='notice soup notice-{$notice[0]} is-dismissible'>
              <p>{$detail} {$notice[1]}</p>
              
          	</div>";

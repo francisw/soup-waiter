@@ -206,9 +206,7 @@
                         jQuery("#trending-topics").append('<li>'+$input+$label+'</li>');
                     });
 
-                    {% if new_post.post_title  %}
-                        showTags();
-                    {%  else  %}
+                    {% if not new_post.post_title  %}
                         // No prev title/topic so generate one
                         var randomTopic = Math.floor((Math.random() * (k_topics.length-1)));
                         jQuery('INPUT[name="trending_topics"]')[randomTopic].checked = true;
@@ -262,10 +260,10 @@
     var fixedTags = ["whatson",
         "whattodo",
         "whattosee",
-        "wheretostay",
+        "beaches",
         "foodie",
         "cycling",
-        "hiking",
+        "hikers",
         "golf"];
     var newTags = [];
     var permTags = {{ permTags|json_encode|raw }};
@@ -362,6 +360,7 @@
             .removeClass('error')
             .html('');
 
+
         $recent_titles.each(function (){
             if (jQuery( this ).text() === $title.val()){
                 retval = false;
@@ -372,6 +371,8 @@
                 .addClass('error')
                 .append("<b>Error:</b> A post with that title exists");
             e.preventDefault();
+        } else {
+            jQuery(e.target).addClass('disabled');
         }
         return retval;
 
@@ -415,6 +416,9 @@
         Setup the page once it's loaded
      */
     jQuery(function(){
+        {% if new_post.post_title  %}
+        showTags();
+        {%  endif  %}
         getMOTD();
         getTrendingTopics();
         jQuery( ".datepicker" ).datepicker({
@@ -503,7 +507,8 @@
     .mag-tag {
         margin-bottom: 10px;
     }
-    .notice { display: none; } /* Hide system notices */
+    .notice { display: none; } /* Hide system notices, they will have already seen and ignored them */
+    .notice.soup { display: block; } /* Show our notices */
     .tease-post I.fa {
         font-size: 2em;
         color: white;
@@ -658,18 +663,20 @@
                        id="preview"
                        class="button button-secondary button-large"
                        value="preview"></a>
+                <div class="soup-submit">
                 <input type="submit"
                        name="post_status"
                        id="save-post"
                        class="button button-secondary button-large"
                        onclick="return doDraftValidation(event);"
-                       value="draft">
+                       value="draft"></div>
+                <div class="soup-submit">
                 <input type="submit"
                        name="post_status"
                        id="publish"
                        class="button button-primary button-large"
                        onclick="return doPublishValidation(event);"
-                       value="publish">
+                       value="publish"></div>
                 <div class="vs-field">
                     <select id="when" onchange="
                            setPostDateAndStatus();
