@@ -559,7 +559,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		$postId = wp_insert_post($newpost,$error_obj);
 		if (!is_wp_error($postId)){
 			wp_set_post_tags($postId, $_POST['tags']);
-			wp_set_post_categories( $postId, $_POST['cats']);
+			wp_set_post_categories( $postId, $_POST['post_category']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
 			$latitude = $_POST['latitude'];

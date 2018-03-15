@@ -649,11 +649,13 @@
             </div>
             <div id="scheduler" class="col-md-4 col-sm-12">
                 <h2>Categories</h2>
-                {{ function('wp_dropdown_categories','show_count=1&hierarchical=1&echo=0&hide_empty=0&name=cats[]&multiple=1') }}
+                <ul>
+                    {{ function('wp_category_checklist',new_post.ID) }}
+                </ul>
 
                 <h2>Post Location</h2>
-                <input type="text" title="Latitude" placeholder="Latitude" name="latitude_entry" id="latitude_entry" value="{{ new_post.latitude_entry }}"/>
-                <input type="text" title="Longitude" placeholder="Longitude" name="longitude_entry" id="longitude_entry" value="{{ new_post.longitude_entry }}"/>
+                <input type="number" title="Latitude" step="any" min="-85" max="85" placeholder="Latitude" name="latitude_entry" id="latitude_entry" value="{{ new_post.latitude_entry }}"/>
+                <input type="number" title="Longitude" step="any" min="-180" max="180"  placeholder="Longitude" name="longitude_entry" id="longitude_entry" value="{{ new_post.longitude_entry }}"/>
 
                 <h2><label for="when">Schedule</label></h2>
                 <div id="publish_error" class=""></div>

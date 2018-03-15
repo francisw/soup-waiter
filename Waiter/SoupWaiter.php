@@ -653,6 +653,14 @@ class SoupWaiter extends SitePersistedSingleton {
 			$status = 'pending';
 		}
 
+		$default = Property::findOne(0);
+		$latitude = get_post_meta($post->ID,'latitude',true);
+		$longitude = get_post_meta($post->ID,'longitude',true);
+		if (!$latitude || !$longitude){
+			update_post_meta($post->ID,'latitude',$default->latitude);
+			update_post_meta($post->ID,'longitude',$default->longitude);
+		}
+
 		$kitchen['status'] = $status;
 		$kitchen['tags_list'] = $tags;
 		$kitchen['waiter_url'] = get_post_permalink($post);
@@ -725,18 +733,14 @@ class SoupWaiter extends SitePersistedSingleton {
 		return $total;
 	}
 	/**
+     *
+     * With the 1-per-page slow sync, this now only ever syncs 1 post
 	 * @param bool $force
 	 *
 	 * @return int number of posts sent
 	 * @throws Exception
 	 */
 	public function syndicate_some_posts($force=true) {
-        $posts_count = $this->needs_syndication();
-        $progress = [
-            'total'=>$posts_count->post_count,
-            'processed'=>0,
-            'progress'=>($posts_count->post_count)?0:100
-        ];
 
 		$default = Property::findOne(0);
 
@@ -760,10 +764,6 @@ class SoupWaiter extends SitePersistedSingleton {
 		];
 		$allposts = new \WP_Query( $args );
 
-		$total = $progress['total'];
-		$processed = $progress['processed'];
-		$reported = 0;
-
 		foreach ( $allposts->posts as $post ) {
 			$latitude = get_post_meta($post->ID,'latitude',true);
 			$longitude = get_post_meta($post->ID,'longitude',true);
@@ -772,23 +772,8 @@ class SoupWaiter extends SitePersistedSingleton {
 				update_post_meta($post->ID,'longitude',$default->longitude);
 			}
 			$this->syndicate_post( $post, $force );
-			$progress_pct=intval(++$processed*100/$total);
-			if ($reported < $progress_pct){
-				$reported = $progress_pct;
-				update_option('vs-resynch-progress',[
-					'total'=>$total,
-					'processed'=>$processed,
-					'progress'=>$progress_pct
-				],true);
-				@set_time_limit(30); // Try to stop us timing out
-			}
 		}
-		update_option('vs-resynch-progress',[
-			'total'=>$total,
-			'processed'=>$processed,
-			'progress'=>$progress_pct
-		],true);
-		return $processed;
+		return count($allposts->posts);
 	}
 	/**
 	 * echo Javascript to trigger kitchenSync

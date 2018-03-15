@@ -206,6 +206,9 @@ DIV.media-selector {
     color: black !important;
     text-shadow: none !important;
 }
+#scheduler UL.children {
+    margin-left: 20px;
+}
 
 DIV.field LABEL{
     min-width: 20%;
