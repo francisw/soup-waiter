@@ -350,6 +350,7 @@
         }
 
     };
+    var haveWarnedOfShortcodes = false;
     var doDraftValidation = function(e){
         var $recent_titles = jQuery('.recent_post_title');
         var $title = jQuery('#post_title');
@@ -366,16 +367,29 @@
                 retval = false;
             };
         });
+
         if (!retval){
             $notify
                 .addClass('error')
-                .append("<b>Error:</b> A post with that title exists");
+                .append("<b>Error:</b> A post with that title already exists");
+        }
+
+        if ( !haveWarnedOfShortcodes &&
+            jQuery('#post_content').val().search('[') !== -1){
+            haveWarnedOfShortcodes = true;
+            $notify
+                .addClass('error')
+                .append("<b>Warning:</b> Your post may contain shortcodes that fail when syndicated<br />Click draft/publish again to ignore warning.");
             e.preventDefault();
-        } else {
+            return false;
+        }
+
+        if (retval) {
             jQuery(e.target).addClass('disabled');
+        } else {
+            e.preventDefault();
         }
         return retval;
-
     };
     var haveWarnedOfShortPost = false;
     var doPublishValidation = function(e){
@@ -524,12 +538,22 @@
         background: rgba(0,0,0,0.9);
         transition: all 0.15s ease-in;
     }
-    .tease-post I.fa.fa-edit {
-        left: 19px;
+    .tease-post #edit_recent {
+        margin-left: 4px;
     }
-    .tease-post I.fa.fa-eye {
+    .tease-post #preview_local I.fa.fa-eye {
         right: 4px;
         top: 4px;
+    }
+    .tease-post #preview_remote I.fa.fa-eye {
+        color: #f08237;
+        background: rgba(255,255,255,0.4);
+        left: 50%;
+        transform: translateX(-35%);
+    }
+    .tease-post #preview_remote I.fa:hover {
+        color: black;
+        background: #f08237;
     }
     #post-lister-content.to-do-when-designed {
         height: 700px;

@@ -3,15 +3,19 @@
 {% block content %}
     <div class="col-xl-4 col-lg-12 col-sm-4 img">
         {% if post.thumbnail.src %}
-            <img src="{{ post.thumbnail.src('thumbnail')|tojpg }}"
+            <img src="{{ post.thumbnail.src('thumbnail') }}"
                  alt="{{ post.thumbnail.alt }}"
                  title="{{ post.thumbnail.title }}"
             />
         {% else %}
             <img src="{{ soup.image_url }}/placeholder-square.jpg"/>
         {% endif %}
-        <div onclick='autosaveRedirect = "?page=vacation-soup-admin&tab=create&p="+{{ post.ID }};doAutosave();' title="Edit"><i class="dismiss fa fa-edit"></i></div>
-        <a href="{{ fn('get_home_url') }}?p={{ post.ID }}&preview=true" target="_blank" title="View (new tab)"><i class="dismiss fa fa-eye"></i></a>
+        <div id="edit_recent" onclick='autosaveRedirect = "?page=vacation-soup-admin&tab=create&p={{ post.ID }}";doAutosave();' title="Edit"><i class="dismiss fa fa-edit"></i></div>
+        <a href="{{ fn('get_home_url') }}?p={{ post.ID }}&preview=true" target="_blank" title="Preview local" id="preview_local"><i class="dismiss fa fa-eye"></i></a>
+        {% set kitchen_url = fn('get_post_meta',post.ID,'kitchen_url',1) %}
+        {% if kitchen_url %}
+        <a href="{{ kitchen_url }}" target="_blank" title="View in Soup" id="preview_remote"><i class="dismiss fa fa-eye"></i></a>
+        {% endif %}
     </div>
     <div class="col-xl-8 col-lg-12 col-sm-8">
         <h4 class="h2">
