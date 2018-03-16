@@ -21,7 +21,7 @@
         <h4 class="h2">
             <span class="align-left recent_post_title">{{post.title}}</span>
         </h4>
-        <p class="align-left">{{ post.get_preview(30,true,'') }}
+        <p class="align-left">{{ post.get_preview(20,true,'') }}
         <span class="align-right">
                 {{ post.status=='draft'? 'draft': post.date|time_ago }}
         </span></p>

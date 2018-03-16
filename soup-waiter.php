@@ -17,7 +17,7 @@ namespace Waiter;
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           1.0.15
+ * Version:           1.0.16
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+
@@ -40,23 +40,16 @@ require_once dirname( __FILE__ ) . '/class-tgm-plugin-activation.php';
 add_action( 'tgmpa_register', 'Waiter\soup_waiter_register_required_plugins' );
 
 function soup_waiter_register_required_plugins() {
-	$plugins = [
-		[
+	$plugins = array(
+		array(
 			'name'      => 'Timber',
 			'slug'      => 'timber-library',
 			'required'  => true,
 			'version'            => '1.4.1', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
-		],
-/*		[
-			'name'      => 'WP Google Maps',
-			'slug'      => 'wp-google-maps',
-			'required'  => true,
-			'version'            => '6.4.0', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
-			'force_activation'   => true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
-		]
-*/	];
-	$config = [
+		)
+	);
+	$config = array(
 		'id'           => 'soup-waiter',                 // Unique ID for hashing notices for multiple instances of TGMPA.
 		'default_path' => __FILE__.'/..',                      // Default absolute path to bundled plugins.
 		'menu'         => 'tgmpa-install-plugins',  // Menu slug.
@@ -67,7 +60,7 @@ function soup_waiter_register_required_plugins() {
 		//'dismiss_msg'  => 'Vacation Soup for VR Owners plugin cannot start without some additional plugins.',                      // If 'dismissable' is false, this message will be output at top of nag.
 		'is_automatic' => true,                   // Automatically activate plugins after installation or not.
 		'message'      => ''                      // Message to output right before the plugins table.
-	];
+	);
 	// This should ensure the plugin gets installed
 	tgmpa( $plugins, $config );
 }

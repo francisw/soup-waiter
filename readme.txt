@@ -2,7 +2,7 @@
 Contributors: vacationsoup
 Tags: vacationrental, vr, vacation, autopost
 Requires at least: 4.7.0
-Tested up to: 4.9.1
+Tested up to: 4.9.4
 Requires PHP: 5.4.0
 Stable tag: trunk
 License: GPL3

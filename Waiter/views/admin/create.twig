@@ -426,6 +426,47 @@
         }
         return doDraftValidation(e);
     };
+    jQuery.fn.isOnScreen = function(){
+
+        var win = jQuery(window);
+
+        var viewport = {
+            top : win.scrollTop(),
+            left : win.scrollLeft()
+        };
+        viewport.right = viewport.left + win.width();
+        viewport.bottom = viewport.top + win.height();
+
+        var bounds = this.offset();
+        bounds.right = bounds.left + this.outerWidth();
+        bounds.bottom = bounds.top + this.outerHeight();
+
+        return (!(viewport.right < bounds.left || viewport.left > bounds.right || viewport.bottom < bounds.top || viewport.top > bounds.bottom));
+
+    };
+    var doRecentTrigger = function(){
+        var trigger = jQuery('.recent_trigger');
+        var page = parseInt(trigger.data('page'));
+        if (page && trigger.isOnScreen()) {
+            trigger.data('page',0);
+            var ajax = {
+                url: ajaxurl,
+                type: "get",
+                dataType: "html",
+                context: trigger,
+                data: {
+                    action: 'soup_recent',
+                    _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
+                    p: page
+                }
+            }
+            jQuery.ajax(ajax).done(function(response){
+                this.parent().append(response);
+                this.remove();
+                doRecentTrigger();
+            });
+        }
+    }
     /*
         Setup the page once it's loaded
      */
@@ -435,6 +476,10 @@
         {%  endif  %}
         getMOTD();
         getTrendingTopics();
+
+        jQuery(window).scroll(doRecentTrigger);
+        doRecentTrigger();
+
         jQuery( ".datepicker" ).datepicker({
             dateFormat : "yy-mm-dd"
         });
@@ -524,7 +569,7 @@
     .notice { display: none; } /* Hide system notices, they will have already seen and ignored them */
     .notice.soup { display: block; } /* Show our notices */
     .tease-post I.fa {
-        font-size: 2em;
+        font-size: 1.6em;
         color: white;
         position: absolute;
         top: 4px;
@@ -734,11 +779,11 @@
                 <h1>Your recent posts</h1>
                 <div id="post-lister-content">
                     <ul>
-                        {% for post in posts %}
-                            {% include "tease-post.twig" %}
-                        {% else %}
-                            <li>No posts available</li>
-                        {% endfor %}
+                        <li class="recent_trigger" data-page="1">
+                            <img src="{{ soup.image_url }}/loading.svg"
+                                 title="More Recent Properties"
+                                 alt="More Recent Properties">
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -1,0 +1,13 @@
+{% for post in posts %}
+    {% include "admin/tease-post.twig" %}
+    {% if loop.revindex == 1 %}
+        <li class="recent_trigger" data-page="{{ next_posts }}">
+            <img src="{{ soup.image_url }}/loading.svg"
+                                        title="More Recent Properties"
+                                        alt="More Recent Properties">
+        </li>
+    {% endif %}
+{% else %}
+    <li>No more posts available</li>
+{% endfor %}
+

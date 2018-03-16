@@ -62,6 +62,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
 		add_action( 'wp_ajax_soup_resync', [ $this, 'do_priv_soup_resync' ] );
 		add_action( 'wp_ajax_soup_create', [ $this, 'do_ajax_create_data' ] );
+		add_action( 'wp_ajax_soup_recent', [ $this, 'do_ajax_recent_posts' ] );
 		add_action( 'wp_ajax_soup_new_edit', [ $this, 'do_ajax_new_edit' ] );
 		add_action( 'wp_ajax_nopriv_soup_resync', [ $this, 'do_nopriv_soup_resync' ] );
 		add_action( 'wp_ajax_soup_resync_progress', [ $this, 'do_soup_resync_progress' ] );
@@ -705,16 +706,10 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		add_filter('tiny_mce_before_init', [$this,'mce_autosave_mod']);
 		add_filter('wp_dropdown_cats',[$this,'make_select_multiple'],10,2);
-		$args = array(
-			'numberposts' => 8,
-			'orderby' => 'post_date',
-			'order' => 'DESC',
-			'post__not_in' => [$new_post_id],
-			'post_type' => 'post',
-			'post_status' => 'draft, publish, future',
-			'suppress_filters' => true
-		);
-		$context['posts'] = Timber::get_posts( $args );
+
+		$context['posts'] = $this->get_recent_posts(1);
+		$context['next_posts'] = 2;
+
 		$context['recent_topics']=[];
 		foreach ($context['posts'] as $post){
 			if (isset($post->topic) && $post->topic > 0 && !is_array($post->topic)){
@@ -724,6 +719,32 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 
 		return $context;
 	}
+	public function do_ajax_recent_posts(){
+		check_admin_referer( 'vacation-soup','_vs_nonce' );
+		$context = $this->get_context('create');
+
+		$context['posts'] = $this->get_recent_posts($_GET['p']);
+		$context['next_posts'] = 1 + $_GET['p'];
+
+		Timber::render( array( "admin/recent_posts.twig" ), $context );
+
+		wp_die();
+	}
+	private function get_recent_posts($page) {
+		$new_post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
+		$args = array(
+			'posts_per_page' => 6,
+			'paged' => $page,
+			'orderby' => 'post_date',
+			'order' => 'DESC',
+			'post__not_in' => [$new_post_id],
+			'post_type' => 'post',
+			'post_status' => 'draft, publish, future',
+			'suppress_filters' => true
+		);
+		return Timber::get_posts( $args );
+	}
+
 	public function mce_autosave_mod( $init ) {
 		$init['setup'] = "function(ed){ ed.on( 'NodeChange', function(e){ setFeaturedImage(ed) } ) }";
 		return $init;

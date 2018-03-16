@@ -1,18 +1,26 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.16 (2018.03.15)
+
+* **Enhancements**:
+- Added eternal scrolling to recent posts
+
 ## 1.0.15 (2018.02.23)
 
 * **Enhancements**:
-- Less than 100 words to pending & warn
+- Less than 100 words in a post warn and make pending in soup
 - Validate for Re-used Title
 - Validate for no Image
-- Improved Featured handling (inserting new media)
-- Added Preview
-- Added Autosave on Post
+- Improved Featured Image handling (inserting new media)
+- Added Local Preview
+- Added Autosave 
 - Added Lat & Long to post
 - Added tags for magazines
 - Added Synchronising one at a time
-- Add edit/view buttons on recent posts in create
+- Made Social service check report correctly
+- Added "View in Soup" to each post
+- Enabled multiple categories
+- Added syndicated status to posts (View in Soup only if synced)
 - Change the Create title text to 'Edit' when appropriate
 - Allow editing published posts
 - Change the Create title text to show if published
