@@ -414,7 +414,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	 */
 	private function sanitisedTab($tab=null){
 		$default =  'create';
-		$tabs = ['create','owner','property','connect'];
+		$tabs = ['create','owner','property','connect','release'];
 		$this->tab_message = '';
 		$required = [];
 		SoupWaiter::single()->needs_syndication(); // Checks for and sets members
@@ -436,7 +436,13 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Now lets see if that tab is allowed
 		if ('create'==$tab){ // create needs everything else to be completed
 			$w = SoupWaiter::single();
-			if (empty($w->owner_name)) {
+			if (!get_user_meta(get_current_user_id(),'vs-waiter-1-0-16',true)) {
+				$tab = 'release';
+				$required = [];
+				$msg = "You have installed the new Waiter plugin";
+				update_user_meta(get_current_user_id(),'vs-waiter-1-0-16',true);
+			}
+			elseif (empty($w->owner_name)) {
 				$tab = 'owner';
 				$required = ['owner_name'];
 				$msg = "the Owner's name is needed for posts";
@@ -782,6 +788,15 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	private function get_owner_context(){
 		// Grab the basics
 		$context = $this->get_context('owner');
+
+		return $context;
+	}
+	/**
+	 * @returns mixed[] The context for this tab
+	 */
+	private function get_release_context(){
+		// Grab the basics
+		$context = $this->get_context('release');
 
 		return $context;
 	}

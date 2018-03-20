@@ -38,6 +38,11 @@
     padding-right: 10px;
 }
 
+.vs-panel IFRAME {
+    width: 100%;
+    height: 80vh;
+}
+
 #main_panel.vs-panel {
     min-height: 1320px;
 }
