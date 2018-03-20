@@ -32,6 +32,6 @@ class Property extends SitePersistedMultiton
     }
 
     public function onCreate($key){
-        SoupWaiter::single()->property_count++;
+
     }
 }

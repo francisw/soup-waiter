@@ -2,7 +2,7 @@
 Contributors: vacationsoup
 Tags: vacationrental, vr, vacation, autopost
 Requires at least: 4.7.0
-Tested up to: 4.9.1
+Tested up to: 4.9.4
 Requires PHP: 5.4.0
 Stable tag: trunk
 License: GPL3
@@ -23,11 +23,10 @@ What traveller starts their dream vacation by looking for a 4-bed 2-bath propert
 
 With this plugin you will be coached with ideas to get your words flowing, topics that are trending right now with travellers, one-click royalty-free jaw-dropping photos from [Pixabay](https://pixabay.com "Pixabay") and, most important of all, you will be **creating** the content of Vacation Soup itself.
 
-
 == Changelog ==
 See [the change history](https://github.com/francisw/soup-waiter/blob/release/CHANGELOG.md "Change Log")
 
 == Upgrade Notice ==
 We are continually actively updating the plugin, adding new features (and of course removing any bugs), improving security and making sure your Vacation Rental website gets seen by the most people.
 
-As one of the waiter's jobs is to link you to the Soup kitchen, sharing your posts around the world, you must upgrade to the latest version whenever prompted to. We recommend you install an auto-update plugin for all WordPress sites.
+As one of the waiter's jobs is to link you to the Soup kitchen, sharing your posts around the world, you ***must*** upgrade to the latest version whenever prompted to. We recommend you install an auto-update plugin for all WordPress sites.

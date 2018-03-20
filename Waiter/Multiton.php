@@ -16,27 +16,53 @@ class Multiton extends Base  {
      * Get a singleton of this class.
      *
      * @param $key string
+     * @oparam $create bool (default True) If False, return null if key not found
      * @return mixed
      */
-	static function findOne($key){
-		static $single = [];
+	static function findOne($key,$create=true){
+		global $SoupMultitonCache;
+
 		$class = get_called_class();
 
-		if (!isset($single[$class])){
-            $single[$class] = [];
+		if (!isset($SoupMultitonCache[$class])){
+			$SoupMultitonCache[$class] = [];
         }
 
-		if( empty($single[$class][$key]) ) {
-			$single[$class][$key] = static::getPersisted($key);
-			if (!$single[$class][$key]) {
-				$single[$class][$key] = new $class();
-                $single[$class][$key]->registerMultiton($key);
+		if( empty($SoupMultitonCache[$class][$key]) ) {
+			$SoupMultitonCache[$class][$key] = static::getPersisted($key);
+			if (!$SoupMultitonCache[$class][$key]) {
+				if ($create){
+					$SoupMultitonCache[$class][$key] = new $class();
+					$SoupMultitonCache[$class][$key]->registerMultiton($key);
+				} else {
+					unset($SoupMultitonCache[$class][$key]);
+				}
 			}
 		}
-		return $single[$class][$key];
+		return $SoupMultitonCache[$class][$key];
 	}
+
+	static function findAll(){
+		global $SoupMultitonCache;
+		$i = 0;
+		$class = get_called_class();
+
+		if (    !$SoupMultitonCache ||
+		        !$SoupMultitonCache[$class] ||
+		        !$SoupMultitonCache[$class][0]) {
+			while (static::findOne($i,false)){
+				$i++;
+			}
+		}
+		return $SoupMultitonCache[$class];
+	}
+
+	static function count(){
+		return count(static::findAll());
+	}
+
 	protected function registerMultiton($key){
-	    // may get overlayed by child
+	    // may get overlayed by child class
         $this->id = $key;
         $this->created = true;
     }

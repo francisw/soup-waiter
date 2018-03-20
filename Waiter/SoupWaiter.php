@@ -15,10 +15,10 @@ class SoupWaiter extends SitePersistedSingleton {
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS  = 'OpenDoor';
 	const SSL_VERIFY    = false; // make true on production
-	const TIMEOUT       = 500; // ms
+	const TIMEOUT       = 30000; // ms
 
 	const SOUP_KITCHEN  = 'https://vacationsoup.com';
-	// const SOUP_KITCHEN  = 'https://soup.freevacationrentalwebsite.com';
+	//const SOUP_KITCHEN  = 'https://soup.freevacationrentalwebsite.com';
 
 	/**
 	 * @var string $kitchen_host Base URL of host providing SoupKitchen
@@ -57,9 +57,9 @@ class SoupWaiter extends SitePersistedSingleton {
      */
     protected $next_topic;
     /**
-     * @var number $property_count The number of properties
+     * @ var number $property_count The number of properties
      */
-    protected $property_count;
+    //protected $property_count;
     /**
      * @var string[] $joins the Joining words to use in topics (first is default), e.g. Best beaches ON Bornholm
      */
@@ -67,20 +67,38 @@ class SoupWaiter extends SitePersistedSingleton {
     /**
      * @var string[] $destinations the Destinations to use in topics (first is default), e.g. Best beaches on BORNHOLM
      */
-    protected $destinations;
+	protected $destinations;
+	/**
+	 * @var int $destinations the Destinations to use in topics (first is default), e.g. Best beaches on BORNHOLM
+	 */
+	protected $current_destination;
 
 	/**
 	 * @var boolean Whether to skip automnatic post syndicating. Hack to prevent double saving
 	 */
 	protected $skipSyndicate;
+	/**
+	 * @var string|null $kitchen_sync the count of posts that need synch
+	 */
+	protected $kitchen_sync;
 
-	protected function get_current_destination(){
-		$id=0; // Default
-		if (isset($_REQUEST['destination_id'])){
-			$id = intval($_REQUEST['destination_id']);
-		}
-		return $id;
+	/**
+	 * @return int
+	 */
+	public function get_current_destination(){
+		if (!$this->current_destination){
+			if (isset($_REQUEST['destination_id'])){
+				$this->current_destination = intval($_REQUEST['destination_id']);
+			} else {
+				$this->current_destination = 0;
+            }
+        }
+		return $this->current_destination;
 	}
+
+	/**
+	 * @return string[]
+	 */
 	public function get_destination(){
 		return $this->destinations[$this->get_current_destination()];
 	}
@@ -228,33 +246,45 @@ class SoupWaiter extends SitePersistedSingleton {
 	 *
 	 */
 	public function init(){
+	    static $already_called = false;
+	    if ($already_called || !is_user_logged_in()){
+	        return;
+        } else {
+	        $already_called = true;
+        }
+
+        $this->kitchen_sync = null;
 		if (!$this->kitchen_api){
 			$this->set_kitchen_host(self::SOUP_KITCHEN);
 			$this->kitchen_api = 'wp-json/wp/v2';
 			$this->kitchen_jwt_api = 'wp-json/jwt-auth/v1';
 			$this->nextMOTD = 0;
 			$this->next_topic = 0; // This is an offset, not a page number
-			$this->property_count = 0;
 		}
 		if(!session_id()) session_start();
 		if (!isset($_SESSION['soup-kitchen-notices'])){
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
 
-		// $myvar = strcmp($this->kitchen_host,self::SOUP_KITCHEN);
+		/*// $myvar = strcmp($this->kitchen_host,self::SOUP_KITCHEN);
 		if (0  !==  strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
 			try{
 				$this->set_kitchen_host(self::SOUP_KITCHEN);
-				$this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials on the <so>connect</so> tab of Vacation Soup");
+				// $this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials on the <so>connect</so> tab of Vacation Soup");
 			} catch (\Exception $e){
-				$this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
+				// $this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
 			}
-		}
+		}*/
+
+		$wp_footer = 'wp_footer';
+		if (is_admin()){
+		    $wp_footer = 'admin_footer';
+        }
 
 		add_action( 'save_post', [$this, 'wp_async_save_post'],10,2 );
 		add_action( 'before_delete_post', [$this, 'async_delete_post'],10,1 );
 		add_action( 'trash_post', [$this, 'async_delete_post'],10,1 );
-		// new SoupAsync(); // Asynchronous post saving
+		add_action(  $wp_footer, [$this,'do_kitchen_sync'],10);
 
 		// Now install the admin screens if needed
 		if (is_admin()) {
@@ -347,6 +377,7 @@ class SoupWaiter extends SitePersistedSingleton {
 
 	/**
 	 * @return string[] Options needed
+	 * @throws Exception
 	 */
 	public function std_options(){
 		$options =  [
@@ -401,8 +432,9 @@ class SoupWaiter extends SitePersistedSingleton {
 		$response = wp_remote_request($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
 		if (!$this->api_success($response)) {
-			throw new \Exception ("postToKitchen({$rri}): ".
-			                      $this->api_error_message($response));
+		    // Ignore delete errors, nothing we can do anyway (like 'already deleted post')
+			// throw new \Exception ("postToKitchen({$rri}): ".
+			//                      $this->api_error_message($response));
 		}
 
 		return json_decode( wp_remote_retrieve_body( $response ) );
@@ -481,7 +513,7 @@ class SoupWaiter extends SitePersistedSingleton {
 
 				$detail = " <span title='$notice[2]'><b>".ucfirst($notice[0])."</b>:</span>";
 			}
-			echo "<div class='notice notice-{$notice[0]} is-dismissible'>
+			echo "<div class='notice soup notice-{$notice[0]} is-dismissible'>
              <p>{$detail} {$notice[1]}</p>
              
          	</div>";
@@ -549,10 +581,9 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws Exception
 	 */
 	public function syndicate_post(WP_Post $post, $force=false){
-		if (!in_array($post->post_status ,['publish','future','draft'])){
+		if (!in_array($post->post_status ,['draft','publish','future'])){
 			return false;
 		}
-
 
 		$featured_image = get_post_thumbnail_id($post->ID);
 		if (!$featured_image){
@@ -580,18 +611,26 @@ class SoupWaiter extends SitePersistedSingleton {
 		     $featured_image !== $kitchen_featured_image){      // or the featured image has changed
 			update_post_meta($post->ID,'soup_local_image_id',$featured_image);
 
-			$rri = '/media';
-			$kitchen_media = $this->imagePostToKitchen($rri,get_attached_file($featured_image));
-			update_post_meta($post->ID,'kitchen_image_id',$kitchen_media->id);
+			try {
+				$rri           = '/media';
+				$kitchen_media = $this->imagePostToKitchen( $rri, get_attached_file( $featured_image ) );
+				if ( ! $kitchen_media ) {
+					return false;
+				}
+				update_post_meta( $post->ID, 'kitchen_image_id', $kitchen_media->id );
 
-			$kitchen_image = 			[
-				'date_gmt' => $post->post_date_gmt,
-				'slug'     => $post->post_name,
-				'status'   => $post->post_status,
-				'title'    => get_the_title($featured_image),
-			];
-			$this->postToKitchen( $rri.'/'.$kitchen_media->id,$kitchen_image );
-			$kitchen['featured_media'] = $kitchen_media->id;
+				$kitchen_image = [
+					'date_gmt' => $post->post_date_gmt,
+					'slug'     => $post->post_name,
+					'status'   => $post->post_status,
+					'title'    => get_the_title( $featured_image ),
+				];
+				$this->postToKitchen( $rri . '/' . $kitchen_media->id, $kitchen_image );
+				$kitchen['featured_media'] = $kitchen_media->id;
+			} catch (\Exception $e){
+
+				return false;
+			}
 		}
 
 		if ($force) {
@@ -608,6 +647,21 @@ class SoupWaiter extends SitePersistedSingleton {
 		foreach ($postTags as $postTag){
 			$tags[] = $postTag->name;
 		}
+
+		$status = $post->post_status;
+		if (str_word_count($post->post_content) < 100){
+			$status = 'pending';
+		}
+
+		$default = Property::findOne(0);
+		$latitude = get_post_meta($post->ID,'latitude',true);
+		$longitude = get_post_meta($post->ID,'longitude',true);
+		if (!$latitude || !$longitude){
+			update_post_meta($post->ID,'latitude',$default->latitude);
+			update_post_meta($post->ID,'longitude',$default->longitude);
+		}
+
+		$kitchen['status'] = $status;
 		$kitchen['tags_list'] = $tags;
 		$kitchen['waiter_url'] = get_post_permalink($post);
 		$kitchen['waiter_id'] = $post->ID;
@@ -679,49 +733,14 @@ class SoupWaiter extends SitePersistedSingleton {
 		return $total;
 	}
 	/**
+     *
+     * With the 1-per-page slow sync, this now only ever syncs 1 post
 	 * @param bool $force
 	 *
 	 * @return int number of posts sent
 	 * @throws Exception
 	 */
 	public function syndicate_some_posts($force=true) {
-		if ($_REQUEST['init']){
-			delete_option('vs-resynch-progress');
-			$progress = null;
-		}else {
-			$progress = get_option('vs-resynch-progress');
-		}
-		$progress_pct = 0;
-		if (!$progress || 100 == $progress['progress'] || 0 == $progress['total']){
-			$args     = [
-				'post_status' => 'publish',
-				'post_type'   => 'post',
-				'posts_per_page' => -1,
-				'fields' => 'ids',
-				'no_found_rows' => true,
-				'meta_query' => [
-					'relation' => 'AND',
-					[
-						'key' => 'kitchen_id',
-						'compare' => 'NOT EXISTS'
-					],
-					[
-					'key' => '_thumbnail_id',
-					'compare' => 'EXISTS'
-					]
-				]
-			];
-			$posts_count = new \WP_Query( $args );
-			$progress = [
-				'total'=>$posts_count->post_count,
-				'processed'=>0,
-				'progress'=>($posts_count->post_count)?0:100
-			];
-			update_option('vs-resynch-progress',$progress,true);
-		}
-		if (0 == $progress['total']){ // If they have 2 or more threads running, and one finished
-			return ($progress);
-		}
 
 		$default = Property::findOne(0);
 
@@ -730,7 +749,7 @@ class SoupWaiter extends SitePersistedSingleton {
 			'post_type'   => 'post',
 			'orderby'     => 'date',
 			'order'       => 'DESC',
-			'posts_per_page' => 20,
+			'posts_per_page' => 1,
 			'meta_query' => [
 				'relation' => 'AND',
 				[
@@ -745,10 +764,6 @@ class SoupWaiter extends SitePersistedSingleton {
 		];
 		$allposts = new \WP_Query( $args );
 
-		$total = $progress['total'];
-		$processed = $progress['processed'];
-		$reported = 0;
-
 		foreach ( $allposts->posts as $post ) {
 			$latitude = get_post_meta($post->ID,'latitude',true);
 			$longitude = get_post_meta($post->ID,'longitude',true);
@@ -757,23 +772,64 @@ class SoupWaiter extends SitePersistedSingleton {
 				update_post_meta($post->ID,'longitude',$default->longitude);
 			}
 			$this->syndicate_post( $post, $force );
-			$progress_pct=intval(++$processed*100/$total);
-			if ($reported < $progress_pct){
-				$reported = $progress_pct;
-				update_option('vs-resynch-progress',[
-					'total'=>$total,
-					'processed'=>$processed,
-					'progress'=>$progress_pct
-				],true);
-				@set_time_limit(30); // Try to stop us timing out
+		}
+		return count($allposts->posts);
+	}
+	/**
+	 * echo Javascript to trigger kitchenSync
+	 */
+	public function do_kitchen_sync() {
+		if ($this->needs_syndication()) { // If there are posts to synch
+			?>
+            <script>  // do_kitchen_sync
+                jQuery(function () {
+                    jQuery.ajax({
+                        type: "post",
+                        context: this,
+                        url: ajaxurl,
+                        data: {
+                            'action': 'soup_resync',
+                            _vs_nonce: '<?php echo wp_create_nonce("vacation-soup"); ?>'
+                        }
+                    });
+                });
+            </script>
+			<?php
+		}
+	}
+
+	/**
+	 * Find out if there are any posts to synch
+	 */
+	public function needs_syndication(){
+		global $wpdb;
+		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
+			$args     = [
+				'post_status' => 'publish',
+				'post_type'   => 'post',
+				'posts_per_page' => -1,
+				'fields' => 'ids',
+				'no_found_rows' => true,
+				'meta_query' => [
+					'relation' => 'AND',
+					[
+						'key' => 'kitchen_id',
+						'compare' => 'NOT EXISTS'
+					],
+					[
+						'key' => '_thumbnail_id',
+						'compare' => 'EXISTS'
+					]
+				]
+			];
+			$posts_count = new \WP_Query( $args );
+
+			if (isset($posts_count)){
+				$this->kitchen_sync = $posts_count->post_count;
 			}
 		}
-		update_option('vs-resynch-progress',[
-			'total'=>$total,
-			'processed'=>$processed,
-			'progress'=>$progress_pct
-		],true);
-		return $processed;
+		return $this->kitchen_sync;
 	}
+
 }
 

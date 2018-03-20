@@ -1,15 +1,53 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.16 (2018.03.15)
+
+* **Enhancements**:
+- Added eternal scrolling to recent posts
+- Added release notes within the Soup 
+
+## 1.0.15 (2018.02.23)
+
+* **Enhancements**:
+- Less than 100 words in a post warn and make pending in soup
+- Validate for Re-used Title
+- Validate for no Image
+- Improved Featured Image handling (inserting new media)
+- Added Local Preview
+- Added Autosave 
+- Added Lat & Long to post
+- Added tags for magazines
+- Added Synchronising one at a time
+- Made Social service check report correctly
+- Added "View in Soup" to each post
+- Enabled multiple categories
+- Added syndicated status to posts (View in Soup only if synced)
+- Change the Create title text to 'Edit' when appropriate
+- Allow editing published posts
+- Change the Create title text to show if published
+- Added margin below magazine tags
+
+* **Bug Fixes**:
+
+
+## 1.0.14 (2018.01.09)
+
+* **Bug Fixes**:
+  - Removed "You have no properties" error on plugin update
+
 ## 1.0.12 (2018.01.06)
+
 * **Bug Fixes**:
   - Removed attempt to force synchronization
 
 ## 1.0.11 (2018.01.06 )
+
 * **Bug Fixes**:
   - Removed synchronisation for stability
   - Improved Password setting
 
 ## 1.0.9 (2018.01.03)
+
 * **Bug Fixes**:
   - Connect password issues fixed
 

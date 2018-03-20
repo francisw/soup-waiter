@@ -1,0 +1,18 @@
+{% extends 'admin/vacation-soup.twig' %}
+{% block content %}
+    {% embed 'admin/form.twig' %}
+        {% block form_name %}dash{% endblock form_name %}
+        {% block form_content %}
+            <div class="vs-content tab-dash row">
+                <div class="col-lg-8 col-sm-12">
+                    <div class="vs-panel row">
+                        <div id="title" class="col-sm-12">
+                            <h1>Waiter 1.0.16 Release Notes</h1>
+                            <iframe src="https://vacationsoup.com/waiter-1-0-16/"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endblock form_content %}
+    {% endembed %}
+{% endblock content %}

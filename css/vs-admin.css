@@ -38,6 +38,18 @@
     padding-right: 10px;
 }
 
+.vs-panel IFRAME {
+    width: 100%;
+    height: 80vh;
+}
+
+#main_panel.vs-panel {
+    min-height: 1320px;
+}
+#tagger IMG {
+    width: 100%;
+}
+
 ARTICLE.tease {
     padding-bottom: 2px;
     padding-top: 2px;
@@ -157,6 +169,10 @@ DIV.media-selector {
 .checklist-item INPUT[type="checkbox"],
 .checklist-item INPUT[type="radio"] {
     margin: 0 5px 0 0;
+    float: left;
+}
+.checklist-item LABEL {
+    /* float: right; */
 }
 
 .tags-container .checklist-item {
@@ -182,7 +198,21 @@ DIV.media-selector {
     width: 100px;
     display: block;
     clear: left;
-    margin: 10px 0;
+    margin: 5px 20px 10px 0;
+}
+#scheduler #draft, #preview {
+    display: inline-block !important;
+}
+#scheduler INPUT.disabled {
+    mask: url(../img/loading.svg) center no-repeat !important;
+    -webkit-mask: url(../img/loading.svg) center no-repeat !important;
+    background-color: black !important;
+    border-color: black !important;
+    color: black !important;
+    text-shadow: none !important;
+}
+#scheduler UL.children {
+    margin-left: 20px;
 }
 
 DIV.field LABEL{
@@ -449,7 +479,7 @@ DIV.field-container.currently-editing  INPUT
 .servicecheck.fail I {
     color: rgba(255, 0, 0, 1.0) !important;
 }
-#alter-destination {
+#title SELECT {
     font-size: inherit;
     height: inherit;
     background: inherit;
@@ -547,4 +577,7 @@ BUTTON.noresync:disabled {
 .margin_5_ {
     margin-top: 5px;
     margin-bot: 5px;
+}
+#scheduler .obsolete .soup-submit {
+    background: url(../img/loading.svg) center no-repeat !important;
 }

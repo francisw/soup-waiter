@@ -3,8 +3,8 @@
 {% embed 'admin/form.twig' %}
 {% block form_name %}connect{% endblock form_name %}
 {% block form_content %}
-    {% if soup.connected and admin.kitchen_sync %}
-        {% set autoSync = 0 %} <!--admin.kitchen_sync %}-->
+    {% if soup.connected and soup.kitchen_sync %}
+        {% set autoSync = soup.kitchen_sync %}
     {% else %}
         {% set autoSync = 0 %}
     {% endif %}
@@ -20,7 +20,7 @@
                 var ServiceAjaxCall = {
                     type: "post",
                     dataType: "json",
-                    timeout: 15000,
+                    timeout: 30000,
                     context: this,
                     url: ajaxurl,
                     data: {
@@ -142,7 +142,7 @@
         <div id="connect-params" class="vs-panel row field-container">
             <div id="title" class="col-sm-12">
                 <h1>The Soup Settings</h1>
-                <p>Please enter the username (email) and password you <a href="https://learn.vacationsoup.com/register" target="_blank">registered with Vacation Soup</a>. Once set, you cannot change your username. </p>
+                <p>Please enter the username (email) and password you <a href="https://vacationsoup.com/owners-area/#login" target="_blank">registered with Vacation Soup</a>. Once set, you cannot change your username. </p>
                 {% if admin.error_msg %}
                     <div id="error-message" class="error">{{ admin.error_msg }}</div>
                 {% endif %}
@@ -161,15 +161,9 @@
                 </div>
                 <div class="label-indent">
                     {% if autoSync %}
-                        <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. Click Re-Synch to send {{ autoSync > 1 ? 'them':'it' }}</div>
+                        <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. {{ autoSync > 1 ? 'They':'It' }} will synchronize in the background.</div>
                     {% endif %}
                     <input type="submit" value="submit" class="margin_5_ no-unload" id="no-done">
-                    {% if soup.connected and autoSync %}
-                        <button id="sync_kitchen"  class="margin_5_ resync {{ autoSync? 'notauto' }}">Re-Synch</button>
-                        <a href="?page=vacation-soup-admin&tab=create&bypass">
-                            <button id="no_sync_kitchen"  class="margin_5_  noresync">Not Now</button>
-                        </a>
-                    {% endif %}
                 </div>
                 <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
                 <div class="field">
