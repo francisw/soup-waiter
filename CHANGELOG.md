@@ -4,7 +4,7 @@
 
 * **Enhancements**:
 - Added eternal scrolling to recent posts
-- Added release notes within the Soup
+- Added release notes within the Soup 
 
 ## 1.0.15 (2018.02.23)
 
