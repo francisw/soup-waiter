@@ -581,3 +581,7 @@ BUTTON.noresync:disabled {
 #scheduler .obsolete .soup-submit {
     background: url(../img/loading.svg) center no-repeat !important;
 }
+#scheduler #categories {
+    height: 200px;
+    overflow: scroll;
+}
