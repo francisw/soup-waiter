@@ -786,7 +786,7 @@ class SoupWaiter extends SitePersistedSingleton {
                     jQuery.ajax({
                         type: "post",
                         context: this,
-                        url: ajaxurl,
+                        url: (typeof(ajaxurl) !== 'undefined')?ajaxurl:'wp-admin/admin-ajax.php',
                         data: {
                             'action': 'soup_resync',
                             _vs_nonce: '<?php echo wp_create_nonce("vacation-soup"); ?>'

@@ -1,5 +1,10 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.17 (2018.03.23)
+
+* **Bug Fixes**:
+- Fixed conflict with WordFence
+
 ## 1.0.16 (2018.03.15)
 
 * **Enhancements**:

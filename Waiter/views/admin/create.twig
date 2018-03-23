@@ -718,9 +718,11 @@
             </div>
             <div id="scheduler" class="col-md-4 col-sm-12">
                 <h2>Categories</h2>
-                <ul>
-                    {{ function('wp_category_checklist',new_post.ID) }}
-                </ul>
+                <div id="categories">
+                    <ul>
+                        {{ function('wp_category_checklist',new_post.ID) }}
+                    </ul>
+                </div>
 
                 <h2>Post Location</h2>
                 <input type="number" title="Latitude" step="any" min="-85" max="85" placeholder="Latitude" name="latitude_entry" id="latitude_entry" value="{{ new_post.latitude_entry }}"/>
