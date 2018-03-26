@@ -1,5 +1,10 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.0.18 (2018.03.26)
+
+* **Bug Fixes**:
+- Upgraded Pixabay API to match remote changes
+
 ## 1.0.17 (2018.03.23)
 
 * **Bug Fixes**:
