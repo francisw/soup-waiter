@@ -584,6 +584,12 @@ class SoupWaiter extends SitePersistedSingleton {
 		if (!in_array($post->post_status ,['draft','publish','future'])){
 			return false;
 		}
+		if (get_post_meta($post->ID,'conceal',true)){
+		    if (get_post_meta($post->ID,'kitchen_id',true)){
+		        $this->async_delete_post($post->ID);
+            }
+		    return false;
+        }
 
 		$featured_image = get_post_thumbnail_id($post->ID);
 		if (!$featured_image){

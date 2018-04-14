@@ -606,6 +606,26 @@
         margin: 0;
         padding: 0;
     }
+    #confirm_conceal {
+        height: auto;
+        overflow: hidden;
+        transition: all 0.5s ease-in;
+    }
+    #confirm_conceal.hide {
+        height: 0;
+    }
+    #conceal_checkbox_inverse{
+        display: none;
+    }
+    .lefty {
+        float: left;
+    }
+    .righty {
+        float: right;
+    }
+    #when {
+        width: 100%;
+    }
 </style>
 {% embed 'admin/post-form.twig' %}{% block form_content %}
     <input type="hidden" id="latitude" name="latitude" value="{{ new_post.latitude }}">
@@ -731,18 +751,36 @@
                 <h2><label for="when">Schedule</label></h2>
                 <div id="publish_error" class=""></div>
                 <a href="{{ fn('get_home_url') }}?p={{ new_post.ID }}&preview=true" target="_blank">
-                <input type="button"
-                       name="preview"
-                       id="preview"
-                       class="button button-secondary button-large"
-                       value="preview"></a>
+                    <div class="soup-submit col-xs-6 lefty">
+                        <input type="button"
+                               name="preview"
+                               id="preview"
+                               class="button button-secondary button-large"
+                               value="preview">
+                    </div>
+                </a>
+                <div class="soup-submit col-xs-6 righty">
+                    <input type="button"
+                           name="conceal"
+                           id="conceal"
+                           class="button button-secondary button-large"
+                           onclick="jQuery('#confirm_conceal').toggleClass('hide')"
+                           value="conceal">
+                </div>
+                <div id="confirm_conceal" class="hide col-sm-12">
+                    <label for="conceal_checkbox">Only check this if you don't want your post to go to Vacation Soup, or if it promotes your property in a way The Soup will not allow</label>
+                    <input type="checkbox" name="conceal" id="conceal_checkbox" value="1"
+                           onchange="jQuery('#conceal_checkbox_inverse').prop('checked',!jQuery('#conceal_checkbox').prop('checked'))"/>
+                    <input type="checkbox" name="conceal" id="conceal_checkbox_inverse" value="0"/>
+                </div>
                 <div class="soup-submit">
-                <input type="submit"
-                       name="post_status"
-                       id="save-post"
-                       class="button button-secondary button-large"
-                       onclick="return doDraftValidation(event);"
-                       value="draft"></div>
+                    <input type="submit"
+                           name="post_status"
+                           id="save-post"
+                           class="button button-secondary button-large"
+                           onclick="return doDraftValidation(event);"
+                           value="draft">
+                </div>
                 <div class="soup-submit">
                 <input type="submit"
                        name="post_status"

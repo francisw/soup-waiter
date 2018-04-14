@@ -436,11 +436,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Now lets see if that tab is allowed
 		if ('create'==$tab){ // create needs everything else to be completed
 			$w = SoupWaiter::single();
-			if (!get_user_meta(get_current_user_id(),'vs-waiter-1-0-16',true)) {
+			$version = str_replace('.','-',file_get_contents(SOUP_PATH.'VERSION'));
+			if (!get_user_meta(get_current_user_id(),'vs-waiter-'.$version,true)) {
 				$tab = 'release';
 				$required = [];
 				$msg = "You have installed the new Waiter plugin";
-				update_user_meta(get_current_user_id(),'vs-waiter-1-0-16',true);
+				update_user_meta(get_current_user_id(),'vs-waiter-'.$version,true);
 			}
 			elseif (empty($w->owner_name)) {
 				$tab = 'owner';
@@ -569,6 +570,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			wp_set_post_categories( $postId, $_POST['post_category']);
 			set_post_thumbnail($postId,$_POST['featured_image']);
 			update_post_meta($postId,'topic',$_POST['topic']);
+			update_post_meta($postId,'conceal',$_POST['conceal']);
 			$latitude = $_POST['latitude'];
 			$longitude = $_POST['longitude'];
 			if ($_POST['latitude_entry'] && $_POST['longitude_entry']) {
@@ -797,6 +799,8 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 	private function get_release_context(){
 		// Grab the basics
 		$context = $this->get_context('release');
+		$context['version'] = file_get_contents(SOUP_PATH.'VERSION');
+		$context['release_note'] = 'https://vacationsoup.com/waiter-'.str_replace('.','-',$context['version']).'/';
 
 		return $context;
 	}
