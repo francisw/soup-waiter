@@ -767,10 +767,10 @@
                            onclick="jQuery('#confirm_conceal').toggleClass('hide')"
                            value="conceal">
                 </div>
-                <div id="confirm_conceal" class="hide col-sm-12">
+                <div id="confirm_conceal" class="{{ (new_post.conceal)?'':'hide' }} col-sm-12">
                     <label for="conceal_checkbox">Only check this if you don't want your post to go to Vacation Soup, or if it promotes your property in a way The Soup will not allow</label>
                     <input type="checkbox" name="conceal" id="conceal_checkbox" value="1"
-                           onchange="jQuery('#conceal_checkbox_inverse').prop('checked',!jQuery('#conceal_checkbox').prop('checked'))"/>
+                           onchange="jQuery('#conceal_checkbox_inverse').prop('checked',!jQuery('#conceal_checkbox').prop('checked'))" {{ (new_post.conceal)?'checked':'notchecked' }}/>
                     <input type="checkbox" name="conceal" id="conceal_checkbox_inverse" value="0"/>
                 </div>
                 <div class="soup-submit">

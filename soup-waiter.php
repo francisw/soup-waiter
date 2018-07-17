@@ -17,7 +17,7 @@ namespace Waiter;
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           1.0.19
+ * Version:           1.0.20
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+

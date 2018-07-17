@@ -656,6 +656,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 				$new_post['featured_image_img'] = get_the_post_thumbnail( $new_post_id, 'full' );
 			}
 			$topic = get_post_meta($new_post_id,'topic',true);
+			$new_post['conceal'] = get_post_meta($new_post_id,'conceal',true);
 			$new_post['topic'] = $topic;
 			$latitude = get_post_meta($new_post_id,'latitude',true);
 			$longitude = get_post_meta($new_post_id,'longitude',true);
@@ -677,6 +678,7 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 			$new_post['edit_mode'] = 'create';
 			$new_post['tags'] =[];
 			$new_post['cats'] = [];
+			$new_post['conceal'] = 0;
 			$new_post['featured_image'] = '';
 			$new_post['topic'] = 0;
 			$new_post['latitude'] = SoupWaiter::single()->get_destination()['latitude'];

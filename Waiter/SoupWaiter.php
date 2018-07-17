@@ -239,7 +239,7 @@ class SoupWaiter extends SitePersistedSingleton {
 	}
 
 	/**
-	 * Called from the 'init' Wordpress action
+	 * Called from the 'plugins_loaded' Wordpress action
 	 *
 	 * Retrieve Session variables
 	 * add action and filter hooks
@@ -266,16 +266,6 @@ class SoupWaiter extends SitePersistedSingleton {
 			$_SESSION['soup-kitchen-notices'] = [];
 		}
 
-		/*// $myvar = strcmp($this->kitchen_host,self::SOUP_KITCHEN);
-		if (0  !==  strcmp($this->kitchen_host,self::SOUP_KITCHEN)){
-			try{
-				$this->set_kitchen_host(self::SOUP_KITCHEN);
-				// $this->addNotice('success',"You have been connected to a new Soup Kitchen, you will need to re-enter your credentials on the <so>connect</so> tab of Vacation Soup");
-			} catch (\Exception $e){
-				// $this->addNotice('error',"Failed to connect you to the Soup Kitchen",print_r($e,1));
-			}
-		}*/
-
 		$wp_footer = 'wp_footer';
 		if (is_admin()){
 		    $wp_footer = 'admin_footer';
@@ -285,6 +275,7 @@ class SoupWaiter extends SitePersistedSingleton {
 		add_action( 'before_delete_post', [$this, 'async_delete_post'],10,1 );
 		add_action( 'trash_post', [$this, 'async_delete_post'],10,1 );
 		add_action(  $wp_footer, [$this,'do_kitchen_sync'],10);
+		add_action(  'wp_head', [$this,'inject_canonical'],10);
 
 		// Now install the admin screens if needed
 		if (is_admin()) {
@@ -295,6 +286,24 @@ class SoupWaiter extends SitePersistedSingleton {
 		}
 	}
 
+	/**
+	 * If this post was created for the Soup, show the link
+	 */
+	public function inject_canonical (){
+	    global $post;
+	    static $runOnce = true;
+
+	    if ($runOnce && isset($post)){
+	        $runOnce = false;
+	        if (get_post_meta($post->ID,"kitchen_id",true)){
+	            $canonical = get_post_meta($post->ID,"kitchen_url",true);
+	            if ($canonical){
+		            echo "<link rel='canonical' href='{$canonical}' />";
+                }
+            }
+
+	    }
+    }
 
 	/**
 	 * Get the access token connecting us to the SoupKitchen
@@ -402,10 +411,15 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws \Exception
 	 */
 	public function postToKitchen($rri,$body){
+		global $soup_debug;
+		$startTime = time();
+
 		$options = $this->std_options();
 		$options['body'] = json_encode($body);
 		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
 
+		$elapsed = (time() - $startTime);
+		$soup_debug[] = "postToKitchen({$rri}): {$elapsed}";
 		if (!$this->api_success($response)) {
 			throw new \Exception ("postToKitchen({$rri}): ".
 			                      $this->api_error_message($response));
@@ -424,12 +438,18 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws \Exception
 	 */
 	public function deleteFromKitchen($rri,$body=null){
+		global $soup_debug;
+		$startTime = time();
+
 		$options = $this->std_options();
 		//$options['body'] = json_encode($body);
 		$options['method'] = 'DELETE';
 		$options['force'] = 'true';
 		//$rri .= '?force=true';
 		$response = wp_remote_request($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
+
+		$elapsed = (time() - $startTime);
+		$soup_debug[] = "deleteFromKitchen({$rri}): {$elapsed}";
 
 		if (!$this->api_success($response)) {
 		    // Ignore delete errors, nothing we can do anyway (like 'already deleted post')
@@ -449,9 +469,14 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws \Exception
 	 */
 	public function getToKitchen($rri){
+		global $soup_debug;
+		$startTime = time();
 
 		$options = $this->std_options();
 		$response = wp_remote_get($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
+
+		$elapsed = (time() - $startTime);
+		$soup_debug[] = "getToKitchen({$rri}): {$elapsed}";
 
 		if (!$this->api_success($response)) {
 			throw new \Exception ("getToKitchen({$rri}): ".$this->api_error_message($response));
@@ -471,6 +496,8 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @throws \Exception
 	 */
 	public function imagePostToKitchen($rri,$image,$token=null){
+		global $soup_debug;
+        $startTime = time();
 
 		$options = $this->std_options();
 		$image_info = pathinfo($image);
@@ -478,6 +505,9 @@ class SoupWaiter extends SitePersistedSingleton {
 		$options['headers']['Content-disposition'] = 'attachment; filename='.$image_info['basename'];
 		$options['body'] = file_get_contents($image);
 		$response = wp_remote_post($this->kitchen_host.'/'.$this->kitchen_api.$rri,$options);
+
+		$elapsed = (time() - $startTime);
+		$soup_debug[] = "imagePostToKitchen({$rri}): {$elapsed}";
 
 		if (!$this->api_success($response)) {
 			throw new \Exception ("imagePostToKitchen({$rri}): ".$this->api_error_message($response));
@@ -551,6 +581,8 @@ class SoupWaiter extends SitePersistedSingleton {
 	 * @internal param string $oldStatus
 	 */
 	public function wp_async_save_post( $id, \WP_Post $post ) {
+	    global $soup_debug;
+	    $debug = '';
 		static $notice_sent = false;
 		if ($this->skipSyndicate) return;
 		if ($post->post_type == 'post'){
@@ -558,8 +590,11 @@ class SoupWaiter extends SitePersistedSingleton {
 					update_user_meta(get_current_user_id(),"VacationSoup",date("D M j G:i:s T Y"));
 					$post_id = $this->syndicate_post($post);
 					if ($post_id && !$notice_sent){
-						$this->addNotice('info','Syndicated Post to VacationSoup');
-						$notice_sent = true;
+					    if ($soup_debug){
+					        $debug = '<!-- '.print_r($soup_debug,1).' -->';
+                        }
+						$this->addNotice('info','Syndicated Post to VacationSoup'.$debug);
+						//$notice_sent = true;
 					}
 			} catch (Exception $e) {
 				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
@@ -679,7 +714,7 @@ class SoupWaiter extends SitePersistedSingleton {
 		$kitchen_post = $this->postToKitchen( $rri,$kitchen );
 
 		update_post_meta($post->ID,'kitchen_id',$kitchen_post->id);
-		update_post_meta($post->ID,'kitchen_url',$kitchen_post->link);
+		update_post_meta($post->ID,'kitchen_url',$kitchen_post->link); //$this->kitchen_host.'/'.$kitchen_post->slug);
 		return $post->ID;
 	}
 
