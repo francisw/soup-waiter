@@ -1,6 +1,6 @@
 === Vacation Soup for VR Owners ===
 Contributors: vacationsoup
-Tags: vacationrental, vr, vacation, autopost, str, short term rental, airbnb, homeaway, vrbo
+Tags: vacationrental, vr, vacation, autopost, str, short term rental, airbnb, homeaway, vrbo, holiday rentals
 Requires at least: 4.7.0
 Tested up to: 4.9.7
 Requires PHP: 5.4.0
