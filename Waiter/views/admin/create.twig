@@ -63,14 +63,14 @@
             }
         }).statusCode({
             400: function(){ // This means we have gone past the end of the list
-                if (unloading) return;
+                if (document.unloading) return;
                 if (offset.val() !== 0){ // reset back to the start
                     offset.val(0).change();
                     return getMOTD();
                 }
             }
         }).done(function (response) {
-            if (unloading) return;
+            if (document.unloading) return;
             var motd = jQuery("#motd");
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
@@ -87,12 +87,12 @@
                 }
             }
         }).always(function (response) {
-            if (unloading) return;
+            if (document.unloading) return;
             jQuery("#motd").removeClass("checking");
         });
     }
 
-    const topicsPerPage = 5;
+    var topicsPerPage = 5;
     var topicPageAdvanced = false;
     var binEndTopics = []; // temporary storage of last few topics when cycling back to start
     var getTrendingTopics = function(){
@@ -111,7 +111,7 @@
             }
         }).statusCode({
             400: function(){ // Bad Params: normally means we have gone past the end of the list
-                if (unloading) return;
+                if (document.unloading) return;
                 var offset = jQuery('#next_topic');
                 if (offset.val() !== 0){ // reset back to the start, but only once
                     offset.val(0);
@@ -119,10 +119,10 @@
                 }
             }
         }).fail(function(jqXHR,status,error) {
-            if (unloading) return;
+            if (document.unloading) return;
             alert('Error: Waiter failed to contact Kitchen\n'+error);
         }).done(function(response) {
-            if (unloading) return;
+            if (document.unloading) return;
             var html='';
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
@@ -171,14 +171,14 @@
                         per_page: (k_tags.length)?k_tags.length:1
                     }
                 }).always(function(jqXHR,status,error) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     jQuery("#trending-topics").removeClass("checking");
                     jQuery('#topic-refresh').removeClass('active');
                 }).fail(function(jqXHR,status,error) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     alert('Error: Waiter failed to contact Kitchen\n'+error);
                 }).done(function(response) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     var html='';
                     k_tags = [];
                     if (response.error) {
@@ -510,7 +510,7 @@
 
                 jQuery.ajax(ajaxCall) // Not Asynchronous so the window.location waits for completion
                     .fail(function(jqXHR,status,error) {
-                        if (unloading) return;
+                        if (document.unloading) return;
                         console.log('fail (vacation-soup) '+status+' '+error);
                         alert('Error: Could rewind topics\n'+status);
                     });
@@ -593,6 +593,16 @@
     .tease-post #preview_remote I.fa.fa-eye {
         color: #f08237;
         background: rgba(255,255,255,0.4);
+        left: 50%;
+        transform: translateX(-35%);
+    }
+    .tease-post #conceal I.fa.fa-eye {
+        left: 50%;
+        transform: translateX(-35%);
+    }
+    .tease-post #conceal I.fa.fa-ban {
+        color: red;
+        background: none;
         left: 50%;
         transform: translateX(-35%);
     }
