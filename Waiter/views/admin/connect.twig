@@ -31,7 +31,7 @@
                 };
                 jQuery.ajax(ServiceAjaxCall)
                     .fail(function (jqXHR, status, error) {
-                        if (unloading) return;
+                        if (document.unloading) return;
                         console.log('fail (vacation-soup) ' + status + ' ' + error);
                         jQuery(this).addClass('nok fail')
                             .find('I')
@@ -39,7 +39,7 @@
                             .addClass('fa-chain-broken');
                     })
                     .done(function (response) {
-                        if (unloading) return;
+                        if (document.unloading) return;
                         var status,title;
                         if (response.success){
                             status = response.status;
@@ -56,7 +56,7 @@
                             .parent().prop('title',title);
                     })
                     .always(function(){
-                        if (unloading) return;
+                        if (document.unloading) return;
                         jQuery(this).removeClass("checking");
                     });
             });
