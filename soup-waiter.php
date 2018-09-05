@@ -17,7 +17,7 @@ namespace Waiter;
  * Plugin Name:       Vacation Soup for VR Owners
  * Plugin URI:        https://github.com/francisw/soup-waiter
  * Description:       Syndicate and Automate Vacation Rental Posting with Vacation Soup
- * Version:           1.0.21
+ * Version:           1.2.0
  * Author:            Francis Wallinger
  * Author URI:        http://github.com/francisw
  * License:           GPL-3.0+
@@ -69,4 +69,10 @@ define ('SOUP_PATH',plugin_dir_path( __FILE__ ));
 define ('SOUP_URL',plugin_dir_url( __FILE__ ));
 
 require_once("inc/autoloader.php");
-add_action ('plugins_loaded',array(SoupWaiter::single(),'init'));
+/**
+ * We must not instantiate SoupWaiter until USER known
+ */
+function soup_waiter_init(){
+	SoupWaiter::single()->init();
+}
+add_action ('init','Waiter\soup_waiter_init');

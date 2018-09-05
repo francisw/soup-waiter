@@ -8,7 +8,7 @@
 
 namespace Waiter;
 
-class SocialProvider extends SitePersistedSingleton {
+class SocialProvider extends UserPersistedSingleton {
 // Add anything we know we need for all social providers
 
 	/**

@@ -22,7 +22,7 @@ class SitePersistedMultiton extends Multiton  {
 	        unset($this->created);
 	        $this->onCreate($key);
         }
-		$class = get_called_class();
+		$class = stripslashes(get_called_class());
 		update_option("vs-{$class}-{$key}",$this,false);
 		return $this;
 	}
@@ -33,7 +33,7 @@ class SitePersistedMultiton extends Multiton  {
      * @throws \Exception nIf no key is passed
      */
 	static protected function getPersisted($key=null){
-        $class = get_called_class();
+        $class = stripslashes(get_called_class());
         if (null===$key){
             throw new \Exception("Can not retrieve {$class} without a key");
         }

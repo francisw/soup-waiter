@@ -15,11 +15,11 @@ class SitePersistedSingleton extends Singleton  {
      */
 	protected function persist($key=null){
 		$class = get_called_class();
-		update_option("vs-{$class}",$this,false);
+		update_option(stripslashes("vs-{$class}"),$this,false);
 		return $this;
 	}
 	static protected function getPersisted($key=null){
 		$class = get_called_class();
-		return get_option("vs-{$class}");
+		return get_option(stripslashes("vs-{$class}"));
 	}
 }

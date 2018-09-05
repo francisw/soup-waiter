@@ -13,7 +13,7 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
  * Date: 03/07/2017
  * Time: 21:02
  */
-class SoupWaiterAdmin extends SitePersistedSingleton {
+class SoupWaiterAdmin extends UserPersistedSingleton {
 	/**
 	 * @var boolean $hasFeaturedImages
 	 */
@@ -436,12 +436,12 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 		// Now lets see if that tab is allowed
 		if ('create'==$tab){ // create needs everything else to be completed
 			$w = SoupWaiter::single();
-			$version = str_replace('.','-',file_get_contents(SOUP_PATH.'VERSION'));
-			if (!get_user_meta(get_current_user_id(),'vs-waiter-'.$version,true)) {
+			$version = file_get_contents(SOUP_PATH.'VERSION');
+			if ($version !== get_user_meta(get_current_user_id(),'vs-waiter-release',true)) {
 				$tab = 'release';
 				$required = [];
-				$msg = "You have installed the new Waiter plugin";
-				update_user_meta(get_current_user_id(),'vs-waiter-'.$version,true);
+				$msg = "You have installed a new Waiter plugin version";
+				update_user_meta(get_current_user_id(),'vs-waiter-release',$version);
 			}
 			elseif (empty($w->owner_name)) {
 				$tab = 'owner';
@@ -465,11 +465,6 @@ class SoupWaiterAdmin extends SitePersistedSingleton {
 					$required = ['kitchen_user','kitchen_password'];
 					$msg = "you need to enter your Vacation Soup credentials";
 				}
-				/* elseif ($this->needs_syndication()) {
-					$tab = 'connect';
-					$required = ['sync_kitchen'];
-					$msg = "you need to re-synch with the Soup";
-				} */
 			}
 
 			if ($this->requested_tab!=$tab) {

@@ -3,6 +3,7 @@
     {% embed 'admin/form.twig' %}
         {% block form_name %}dash{% endblock form_name %}
         {% block form_content %}
+
             <div class="vs-content tab-owner row">
                 <div class="col-md-8 col-sm-12">
                     <div class="vs-panel row">
@@ -19,9 +20,15 @@
                                        placeholder="Name"
                                        name="SoupWaiter.owner_name"
                                        id="owner_name"
-                                       required value="{{ soup.owner_name}}"/>
+                                       required value="{{ soup.owner_name }}"/>
                             </div>
-                            <input type="submit" class="unload" value="done" onClick="if (document.getElementById('owner_name').validity.valid) window.location.reload()">
+                            <input type="submit" value="next" onClick="
+                            if (document.getElementById('owner_name').validity.valid && !document.unloading)
+                            {
+                                window.location.reload()
+                            } else {
+                                return false
+                            }"/>
                         </div>
                     </div>
                 </div>
@@ -30,7 +37,7 @@
                         <div id="title" class="col-sm-12">
                             <h1>Information</h1>
                         </div>
-                        <p>We will ask you more owner details in a future release before Vacation Soup is launched.</p>
+                        <p>We will ask you more owner details in a future release.</p>
                     </div>
                 </div>
             </div>

@@ -1,9 +1,14 @@
 # Changelog for Vacation Soup Waiter
 
-## 1.0.19 (2018.04.14)
+## 1.2.0 (2018.08.30)
 
 * **Enhancements**:
-- Added 
+- Each WP user now has their own settings
+- Refactored form submission
+
+* **Bug Fixes**:
+- Some forms complained they could not contact the server
+- Removed slashes from meta keys explicitly
 
 ## 1.0.18 (2018.03.26)
 
