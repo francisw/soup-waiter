@@ -9,6 +9,7 @@
 * **Bug Fixes**:
 - Some forms complained they could not contact the server
 - Removed slashes from meta keys explicitly
+- Stopped causing blank posts from being created
 
 ## 1.0.18 (2018.03.26)
 

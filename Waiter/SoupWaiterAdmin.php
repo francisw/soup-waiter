@@ -519,6 +519,13 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		$post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
 		delete_user_meta(get_current_user_id(),'_vs-new-post-id');
 
+		if ('auto-draft' == get_post_status($post_id)){
+			wp_update_post([
+					'ID' => $post_id,
+					'post_status' => 'draft']
+			);
+		}
+
 		header("Content-type: application/json");
 		echo json_encode([
 			'success' => true,
@@ -544,7 +551,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 	 * Create a post using the admin/VS/create page
 	 */
 	public function do_create_data( ){
-		if (!isset($_POST['post_status']) || ('publish'!=$_POST['post_status'] && 'draft'!=$_POST['post_status'])){
+		if (!isset($_POST['post_status']) || !in_array($_POST['post_status'],['publish','draft','auto-draft'])){
 			return null;
 		}
 		$error_obj = true;
@@ -626,8 +633,16 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		if (isset($_GET['p']) && $_GET['p'] > 0) {
 			if ($new_post_id) {
 				$old_post = get_post($new_post_id);
-				if (!$old_post->post_content && !has_post_thumbnail($new_post_id)) {
+				if (empty($old_post->post_content) && !has_post_thumbnail($new_post_id)) {
 					wp_trash_post($new_post_id);
+				} else {
+					if ('auto-draft' == get_post_status($new_post_id)) {
+						wp_update_post( [
+								'ID'          => $new_post_id,
+								'post_status' => 'draft'
+							]
+						);
+					}
 				}
 			}
 			$new_post_id = $_GET['p'];
@@ -667,7 +682,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 			$new_post['destination_id'] = $dest_id;
 		} else {
 			$error_obj = null;
-			$new_post_id = wp_insert_post([],$error_obj);
+			$new_post_id = wp_insert_post(['post_status'=>'auto-draft'],$error_obj);
 			update_user_meta(get_current_user_id(),'_vs-new-post-id',$new_post_id);
 			$new_post = get_post($new_post_id)->to_array();
 			$new_post['edit_mode'] = 'create';
