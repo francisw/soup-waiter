@@ -23,11 +23,11 @@
                         <i class="fa fa-ban error"></i>
                     </a>
                 {% elseif kitchen_url %}
-                    <a href="{{ kitchen_url }}" target="_blank" title="View in Soup" id="preview_remote"><i class="dismiss fa fa-eye"></i></a>
+                    <a href="{{ kitchen_url }}" target="_blank" title="View in Soup [new tab]" id="preview_remote"><i class="dismiss fa fa-eye"></i></a>
                 {% endif %}
             </div>
             <div class="deface right">
-                <a href="{{ fn('get_home_url') }}?p={{ post.ID }}&preview=true" target="_blank" title="Preview local" id="preview_local">
+                <a href="{{ fn('get_home_url') }}?p={{ post.ID }}&preview=true" target="_blank" title="View locally [new tab]" id="preview_local">
                     <i class="dismiss fa fa-eye"></i>
                 </a>
             </div>
