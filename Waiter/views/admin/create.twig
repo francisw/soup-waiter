@@ -568,48 +568,47 @@
     }
     .notice { display: none; } /* Hide system notices, they will have already seen and ignored them */
     .notice.soup { display: block; } /* Show our notices */
-    .tease-post I.fa {
-        font-size: 1.6em;
+
+    .tease-post .deface I.fa {
+        font-size: 1.2em;
         color: white;
-        position: absolute;
         top: 4px;
         width: inherit;
         padding: 6px;
         border-radius: 2px;
         background: rgba(0,0,0,0.2);
+        text-align: center;
+        display: inline;
     }
-    .tease-post .fa:hover {
+    .tease-post .deface I.fa:hover {
         color: #f08237;
         background: rgba(0,0,0,0.9);
         transition: all 0.15s ease-in;
     }
-    .tease-post #edit_recent {
-        margin-left: 4px;
+
+    .tease-post .deface-container {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        padding-left: 19px;
+        width:100%;
     }
-    .tease-post #preview_local I.fa.fa-eye {
-        right: 4px;
-        top: 4px;
+    .tease-post .deface {
+        position: relative;
+        margin: auto;
+        float: left;
+        display: inline-block;
+        width: 33%;
     }
-    .tease-post #preview_remote I.fa.fa-eye {
-        color: #f08237;
-        background: rgba(255,255,255,0.4);
-        left: 50%;
-        transform: translateX(-35%);
+    .tease-post .deface.left {
     }
-    .tease-post #conceal I.fa.fa-eye {
-        left: 50%;
-        transform: translateX(-35%);
+    .tease-post .deface.right {
+        float: right;
     }
-    .tease-post #conceal I.fa.fa-ban {
-        color: red;
-        background: none;
-        left: 50%;
-        transform: translateX(-35%);
+    .tease-post .deface.centre {
     }
-    .tease-post #preview_remote I.fa:hover {
-        color: black;
-        background: #f08237;
-    }
+
+
     #post-lister-content.to-do-when-designed {
         height: 700px;
         overflow: scroll;
