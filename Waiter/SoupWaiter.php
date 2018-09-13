@@ -843,7 +843,7 @@ class SoupWaiter extends UserPersistedSingleton {
 		global $wpdb,$table_prefix;
 
 		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
-            // Faster version than WP_Query generates. Speed caused problems for Terry
+            // Faster version than WP_Query generates. Slow speed caused problems for Terry
 			$query = "
 SELECT  count(*)
 FROM {$table_prefix}posts AS p
