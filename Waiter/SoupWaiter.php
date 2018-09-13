@@ -235,7 +235,7 @@ class SoupWaiter extends UserPersistedSingleton {
 	 * @param $detail string|null Further detail on alt-text
 	 */
 	public function addNotice($level,$notice,$detail=null) {
-		$_SESSION['soup-kitchen-notices'][] = [$level,$notice,htmlentities($detail)];
+		$_COOKIE['soup-kitchen-notices'][] = [$level,$notice,htmlentities($detail)];
 	}
 
 	/**
@@ -305,9 +305,9 @@ class SoupWaiter extends UserPersistedSingleton {
 	/**
 	 * Get the access token connecting us to the SoupKitchen
 	 *
-	 * Return the $_SESSION token if set, otherwise request it
+	 * Return the token if set, otherwise request it
 	 * from the SoupKitchen, creating the user if needed, and
-	 * caching the token in $_SESSION.
+	 * caching the token in $_COOKIE.
 	 *
 	 * Admin NOTICE on Creating the account (should be once only)
 	 * @param $password string|null The password
@@ -518,8 +518,8 @@ class SoupWaiter extends UserPersistedSingleton {
 
 	/**
 	 *
-	 * Print in HTML any notices in $_SESSION storage, and clear them from $_SESSION.
-	 * $_SESSION['soup-kitchen-notices'] is an array of notices created by addNotice,
+	 * Print in HTML any notices in $_COOKIE storage, and clear them from $_COOKIE.
+	 * $_COOKIE['soup-kitchen-notices'] is an array of notices created by addNotice,
 	 * each notice of the form
 	 *      array( severity, notice [, notice_detail] )
 	 * For example:
@@ -534,7 +534,7 @@ class SoupWaiter extends UserPersistedSingleton {
 	 * Action admin-notices entry point
 	 */
 	public function general_admin_notice(){
-		while ($notice = array_shift($_SESSION['soup-kitchen-notices'])) {
+		while ($notice = array_shift($_COOKIE['soup-kitchen-notices'])) {
 			$detail = '';
 			if (isset($notice[2])) {
 
@@ -578,20 +578,14 @@ class SoupWaiter extends UserPersistedSingleton {
 	 * @internal param string $oldStatus
 	 */
 	public function wp_async_save_post( $id, \WP_Post $post ) {
-	    global $soup_debug;
-	    $debug = '';
 		static $notice_sent = false;
 		if ($this->skipSyndicate) return;
 		if ($post->post_type == 'post'){
 			try {
 					update_user_meta(get_current_user_id(),"VacationSoup",date("D M j G:i:s T Y"));
 					$post_id = $this->syndicate_post($post);
-					if ($post_id && !$notice_sent){
-					    if ($soup_debug){
-					        $debug = '<!-- '.print_r($soup_debug,1).' -->';
-                        }
-						$this->addNotice('info','Syndicated Post to VacationSoup'.$debug);
-						//$notice_sent = true;
+					if ($post_id){
+						$this->addNotice('info','Syndicated Post to VacationSoup');
 					}
 			} catch (Exception $e) {
 				$this->addNotice('error','Failed to syndicate Post', $e->getMessage());
@@ -617,11 +611,17 @@ class SoupWaiter extends UserPersistedSingleton {
 			return false;
 		}
 		if (get_post_meta($post->ID,'conceal',true)){
-		    if (get_post_meta($post->ID,'kitchen_id',true)){
-		        $this->async_delete_post($post->ID);
-            }
-		    return false;
-        }
+			if (get_post_meta($post->ID,'kitchen_id',true)){
+				$this->async_delete_post($post->ID);
+			}
+			return false;
+		}
+		if ( 'draft' === $post->post_status ){
+			if (get_post_meta($post->ID,'kitchen_id',true)){
+				$this->async_delete_post($post->ID);
+			}
+			return false;
+		}
 
 		$featured_image = get_post_thumbnail_id($post->ID);
 		if (!$featured_image){
@@ -840,9 +840,29 @@ class SoupWaiter extends UserPersistedSingleton {
 	 * Find out if there are any posts to synch
 	 */
 	public function needs_syndication(){
-		global $wpdb;
+		global $wpdb,$table_prefix;
+
 		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
-			$args     = [
+            // Faster version than WP_Query generates. Speed caused problems for Terry
+			$query = "
+SELECT  count(*)
+FROM {$table_prefix}posts AS p
+  LEFT JOIN {$table_prefix}postmeta AS pm_kid ON (
+    pm_kid.post_id = p.ID AND
+    pm_kid.meta_key = 'kitchen_id'
+    )
+  LEFT JOIN {$table_prefix}postmeta AS pm_tid ON (
+    pm_tid.post_id = p.ID AND
+    pm_tid.meta_key = '_thumbnail_id'
+    )
+WHERE ( pm_kid.post_id IS NULL AND 
+        pm_tid.post_id IS NOT NULL)
+      AND p.post_type = 'post'
+      AND p.post_status = 'publish'";
+
+			$this->kitchen_sync = $wpdb->get_var($query);
+
+			/* $args     = [
 				'post_status' => 'publish',
 				'post_type'   => 'post',
 				'posts_per_page' => -1,
@@ -864,7 +884,7 @@ class SoupWaiter extends UserPersistedSingleton {
 
 			if (isset($posts_count)){
 				$this->kitchen_sync = $posts_count->post_count;
-			}
+			}*/
 		}
 		return $this->kitchen_sync;
 	}

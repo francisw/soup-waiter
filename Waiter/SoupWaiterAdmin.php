@@ -76,9 +76,8 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		add_filter('wp_insert_post_data', [ $this, 'unmask_empty']);
 		add_filter('query_vars', [ $this, 'add_query_vars']);
 
-		if(!session_id()) session_start();
-		if (!isset($_SESSION['soup-kitchen-notices'])){
-			$_SESSION['soup-kitchen-notices'] = [];
+		if (!isset($_COOKIE['soup-kitchen-notices'])){
+			$_COOKIE['soup-kitchen-notices'] = [];
 		}
 	}
 
