@@ -58,6 +58,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		$this->add_header_cors();
 
 		add_action( 'admin_init', [$this,'process_post_data']);
+		add_action( 'admin_init', [$this,'remove_menu_pages']);
 		add_action( 'wp_ajax_soup', [ $this, 'ajax_controller' ] );
 		add_action( 'wp_ajax_servicecheck', [ $this, 'do_servicecheck' ] );
 		add_action( 'wp_ajax_soup_resync', [ $this, 'do_priv_soup_resync' ] );
@@ -74,7 +75,29 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		add_filter('pre_post_content', [ $this, 'mask_empty']);
 		add_filter('wp_insert_post_data', [ $this, 'unmask_empty']);
 		add_filter('query_vars', [ $this, 'add_query_vars']);
+
+		if(!session_id()) session_start();
+		if (!isset($_SESSION['soup-kitchen-notices'])){
+			$_SESSION['soup-kitchen-notices'] = [];
+		}
 	}
+
+	public function remove_menu_pages() {
+		global $menu;
+
+		if (is_admin() && current_user_can('author')){
+			foreach ($menu as $menu_item){
+				switch($menu_item[2]){
+					case 'vacation-soup-admin':
+					case 'index.php':
+						break;
+					default:
+						remove_menu_page($menu_item[2]);
+				}
+			}
+		}
+	}
+
 	public function add_query_vars($aVars) {
 		$aVars[] = "edit_mode"; // represents the name of the product category as shown in the URL
 		return $aVars;
@@ -368,7 +391,9 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 	 * If the POST array is populated form Vacation Soup, process it
 	 */
 	public function process_post_data(){
-		if (is_admin() && !wp_doing_ajax() &&
+		if ($_REQUEST['page'] && $_REQUEST['page']==='vacation-soup-admin' &&
+		    $_REQUEST['tab'] &&
+		    !wp_doing_ajax() &&
 		    !empty($_POST) &&
 		    !empty($_POST['_vs_nonce'])) {
 
@@ -389,7 +414,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		$page = add_menu_page(
 			'Vacation Soup',
 			'Vacation Soup',
-			'manage_options',
+			'publish_posts',
 			'vacation-soup-admin',
 			array( $this, 'create_admin_page' ),
 			'dashicons-admin-site',

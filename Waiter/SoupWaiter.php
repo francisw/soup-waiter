@@ -261,10 +261,6 @@ class SoupWaiter extends UserPersistedSingleton {
 			$this->nextMOTD = 0;
 			$this->next_topic = 0; // This is an offset, not a page number
 		}
-		if(!session_id()) session_start();
-		if (!isset($_SESSION['soup-kitchen-notices'])){
-			$_SESSION['soup-kitchen-notices'] = [];
-		}
 
 		$wp_footer = 'wp_footer';
 		if (is_admin()){
@@ -283,6 +279,7 @@ class SoupWaiter extends UserPersistedSingleton {
 			if (defined('TIMBER_LOADED')) {
 				SoupWaiterAdmin::single()->init();
 			}
+			Shortcode::single()->init();
 		}
 	}
 
