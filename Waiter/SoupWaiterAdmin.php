@@ -493,7 +493,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 
 			if ($this->requested_tab!=$tab) {
 				$this->required = $required;
-				if ($msg) $this->tab_message = "You have been redirected here because {$msg}.";
+				if ($msg) $this->tab_message = "you have been redirected here because {$msg}.";
 			} else {
 				$this->requested_tab = null;
 			}
