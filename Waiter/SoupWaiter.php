@@ -534,7 +534,9 @@ class SoupWaiter extends UserPersistedSingleton {
 	 * Action admin-notices entry point
 	 */
 	public function general_admin_notice(){
-		while ($notice = array_shift($_COOKIE['soup-kitchen-notices'])) {
+	    $notices = @$_COOKIE['soup-kitchen-notices']?:[];
+
+		while ($notice = array_shift($notices)) {
 			$detail = '';
 			if (isset($notice[2])) {
 
