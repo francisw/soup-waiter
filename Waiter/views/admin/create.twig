@@ -16,7 +16,7 @@
     var autosaveRedirect = null;
     var doAutosave = function(e){
         jQuery('INPUT[type=submit]').prop('disabled',true);
-        tinyMCE.triggerSave();
+        tinyMCE.triggerSave(); // move editor buffer to post_content
         jQuery.post( ajaxurl+'?action=soup_create',
             jQuery('FORM.tab-create').serialize(),
             function(data) {
@@ -36,6 +36,14 @@
 
     // Autosubmit form on each field
     jQuery(function(){
+        tinyMCE.init({
+            selector: "textarea",
+            setup: function (editor) {
+                editor.on('change', function () {
+                    editor.save();
+                });
+            }
+        });
         jQuery('FORM.tab-create *')
             .filter(':input:visible')
             .filter(':not(#create-or-edit)')
@@ -687,7 +695,27 @@
             </div>
             <div class="col-sm-12">
                 <div id="wp-content-editor-container">
-                    {{ fn('wp_editor',new_post.post_content,'post_content') }}
+                    {{ fn('wp_editor',new_post.post_content,'post_content',
+                        { tinymce:
+                            {
+                                setup: "function (editor) {
+                                    editor.on('change', function () {
+                                        editor.save();
+                                    });
+                                }"
+                            }
+                        }
+                    ) }}
+                    <!--script>
+                        'tinymce'       => array(
+                            setup: function (editor) {
+                            editor.on('change', function () {
+                                editor.save();
+                            });
+                        }
+                        ),
+
+                    </script-->
                 </div>
             </div>
             {#- Layout the tags in a centered column (lg) or on its own (sm) -#}
@@ -809,7 +837,11 @@
                            jQuery('.vs-field.vs-'+this.options[this.selectedIndex].value).removeClass('hidden'); // e.g. unhide .vs-days input
                            jQuery('.vs-field.vs-'+this.options[this.selectedIndex].value+' INPUT').prop('autofocus',true).focus();
                         ">
+                        {% if (new_post.post_date|length > 0)  %}
+                        <option value="" selected>{{ new_post.date|length }}</option>
+                        {% else %}
                         <option value="" selected>Now</option>
+                        {% endif %}
                         <option value="tomorrow">Tomorrow</option>
                         <option value="days">Wait a number of days</option>
                         <option value="date">Select date</option>

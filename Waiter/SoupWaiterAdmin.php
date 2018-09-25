@@ -390,11 +390,10 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 	 * If the POST array is populated form Vacation Soup, process it
 	 */
 	public function process_post_data(){
-		if ($_REQUEST['page'] && $_REQUEST['page']==='vacation-soup-admin' &&
-		    $_REQUEST['tab'] &&
+		if (isset($_REQUEST['page']) && $_REQUEST['page']==='vacation-soup-admin' &&
+		    isset($_REQUEST['tab']) &&
 		    !wp_doing_ajax() &&
-		    !empty($_POST) &&
-		    !empty($_POST['_vs_nonce'])) {
+		    !empty($_POST)) {
 
 			check_admin_referer( 'vacation-soup','_vs_nonce' );
 
@@ -493,7 +492,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 
 			if ($this->requested_tab!=$tab) {
 				$this->required = $required;
-				if ($msg) $this->tab_message = "you have been redirected here because {$msg}.";
+				if (isset($msg)) $this->tab_message = "you have been redirected here because {$msg}.";
 			} else {
 				$this->requested_tab = null;
 			}
