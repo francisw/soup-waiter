@@ -527,7 +527,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		$postId = wp_insert_post($_POST,false);
 		delete_user_meta(get_current_user_id(),'_vs-new-post-id');
 		// SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
-		if ($_GET['p']){ // if it was an edit, remove the query param
+		if (isset($_GET['p'])){ // if it was an edit, remove the query param
 			header("Location: {$_SERVER['PHP_SELF']}?page=vacation-soup-admin&tab=create");
 			exit;
 		}
@@ -680,7 +680,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 				$new_post = null; // Force create new
 			}
 		}
-		if ($new_post) {
+		if (isset($new_post)) {
 			$new_post['edit_mode'] = 'edit';
 			$new_post['tags'] = wp_get_post_tags( $new_post_id, array( 'fields' => 'names' ) );
 			$new_post['cats'] = wp_get_post_categories( $new_post_id, array( 'fields' => 'ids' ) );
