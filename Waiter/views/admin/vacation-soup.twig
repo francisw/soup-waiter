@@ -1,2 +1,19 @@
+<script>
+    var createCookie = function(name, value, days) {
+        var expires;
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toGMTString();
+        }
+        else {
+            expires = "";
+        }
+        document.cookie = name + "=" + value + expires + "; path=/";
+    }
+
+    document.offsetTZ = (new Date()).getTimezoneOffset();
+    createCookie('offsetTZ',document.offsetTZ);
+</script>
 {% include 'admin/admin-tabs.twig' %}
 {% block content %}{% endblock content %}

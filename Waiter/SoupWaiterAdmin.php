@@ -615,7 +615,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 
 	public function process_owner_data(){}
 	public function process_connect_data(){
-		if ($_REQUEST['action'] && 'servicecheck' == $_REQUEST['action']) return;
+		if (isset($_REQUEST['action']) && 'servicecheck' == $_REQUEST['action']) return;
 		try {
 			foreach (['kitchen_user','kitchen_password'] as $field){
 				if (isset($_REQUEST['SoupWaiter_'.$field])){
@@ -642,6 +642,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		$context['soup'] = SoupWaiter::single();   // Exposing the waiter and soup.admin (in twig) is the SoupWaiterAdmin
 		$context['admin'] = $this;
 		$context['current_user'] = new \Timber\User();
+		$context['offsetTZ'] = isset($_COOKIE['offsetTZ'])?$_COOKIE['offsetTZ']:0;
 		return $context;
 	}
 

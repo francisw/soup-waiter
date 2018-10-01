@@ -1,11 +1,11 @@
 <script>
+    document.unloading = false;
+    jQuery(window).unload(function(){
+        document.unloading = true;
+    });
 
     jQuery(function(){
-        document.unloading = false;
-        jQuery(window).unload(function(){
-            document.unloading = true;
-        });
-
+        
         jQuery('FORM').on('submit',function(e){
             // Prevent form submit if fields are already submitted
             var busy = jQuery(this).attr('submitting');
@@ -116,6 +116,7 @@
     <input type="hidden" id="tab" name="tab" value="{{ tab }}">
     <input type="hidden" id="requested-tab" name="requested-tab" value="{{ admin.requested_tab }}">
     <input type="hidden" id="user-id" name="user_ID" value="{{ user.id }}">
+    <input type="hidden" id="tzoffset" name="tzoffset">
     {% block form_header %}{% endblock form_header %}
     {% block form_content %}{% endblock form_content %}
 </form>

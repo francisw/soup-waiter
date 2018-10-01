@@ -1,0 +1,13 @@
+{% if new_post.post_date|length  %}
+    {#
+{% include 'debug.twig' %}
+    #}
+{#
+<pre>
+    {{ fn('print_r',new_post) }}
+</pre>
+#}
+<script>
+    alert ( (new Date).getTimezoneOffset());
+</script>
+{% endif %}
