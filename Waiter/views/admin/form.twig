@@ -1,6 +1,6 @@
 <script>
     document.unloading = false;
-    jQuery(window).unload(function(){
+    jQuery(window).on('beforeunload',function(){
         document.unloading = true;
     });
 

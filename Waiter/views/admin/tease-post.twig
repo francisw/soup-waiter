@@ -12,8 +12,8 @@
         {% endif %}
         <div class="deface-container">
 
-            <div id="edit_recent" class="deface left" onclick='autosaveRedirect = "?page=vacation-soup-admin&tab=create&p={{ post.ID }}";doAutosave();' title="Edit">
-                <i class="dismiss fa fa-edit"></i>
+            <div id="edit_recent" class="deface left" wasonclick='autosaveRedirect = "?page=vacation-soup-admin&tab=create&p={{ post.ID }}";doAutosave(this);' title="Edit">
+                <a href="?page=vacation-soup-admin&tab=create&p={{ post.ID }}"><i class="dismiss fa fa-edit"></i></a>
             </div>
             <div class="deface centre">
                 {% set kitchen_url = fn('get_post_meta',post.ID,'kitchen_url',1) %}

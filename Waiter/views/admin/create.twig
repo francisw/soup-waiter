@@ -15,8 +15,13 @@
 
     var autosaveRedirect = null;
     var doAutosave = function(e){
+
         jQuery('INPUT[type=submit]').prop('disabled',true);
-        tinyMCE.triggerSave(); // move editor buffer to post_content
+        //tinyMCE.triggerSave(); // move editor buffer to post_content
+        if (autosaveRedirect && e) {
+            e.preventDefault();
+            document.unloading = true;
+        }
         jQuery.post( ajaxurl+'?action=soup_create',
             jQuery('FORM.tab-create').serialize(),
             function(data) {
@@ -691,11 +696,14 @@
     #conceal_checkbox_inverse{
         display: none;
     }
-    .margin-top {
+    .soup-submit.margin-top {
         margin-top: 15px;
     }
     .row.actions {
         overflow: scroll;
+    }
+    .soup-submit {
+        margin: auto;
     }
 </style>
     {%- set published = new_post.post_status in [ 'publish','future'] -%}
@@ -835,17 +843,17 @@
                 <h2><label for="when">Actions</label></h2>
                 <div class="row actions">
                     <div id="publish_error" class=""></div>
-                    <a href="{{ fn('get_home_url') }}?p={{ new_post.ID }}&preview=true" target="_blank">
-                        <div class="soup-submit col-sm-4 ">
-                            <button type="button"
-                                   name="preview"
-                                   id="preview"
-                                   class="button button-secondary button-large"
-                                    value="preview">{{ future or not published ? 'pre' }}view</button>
-                        </div>
-                    </a>
+                    <div class="soup-submit">
+                        <a href="{{ fn('get_home_url') }}?p={{ new_post.ID }}&preview=true" target="_blank">
+                        <button type="button"
+                               name="preview"
+                               id="preview"
+                               class="button button-secondary button-large"
+                                value="preview">{{ future or not published ? 'pre' }}view</button>
+                        </a>
+                    </div>
 
-                    <div class="soup-submit col-sm-4 ">
+                    <div class="soup-submit">
                         <button type="submit"
                                 name="post_status"
                                 id="save-post"
@@ -854,7 +862,7 @@
                                 value="draft">{{ published ? 'unpublish' : 'save draft' }}</button>
                     </div>
 
-                    <div class="soup-submit col-sm-4 ">
+                    <div class="soup-submit">
                         <button type="button"
                                name="conceal"
                                id="conceal"
