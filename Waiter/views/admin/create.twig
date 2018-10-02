@@ -893,6 +893,7 @@
                         </select>
                     {% endif %}
                 </div>
+
                 <div class="vs-field hideable hidden vs-days">
                     <label for="days">Wait</label>
                     <input type="number" id="days" value="2" onchange="setPostDate()"/> days before posting
@@ -900,6 +901,8 @@
                 <div class="vs-field hideable hidden vs-date">
                     <label for="datepicker">Post this on: </label>
                     <input type="text" class="datepicker" id="datepicker" value="{{ new_post.post_date|date('Y-m-d') }}" onchange="setPostDate()"/>
+                </div>
+                <div class="vs-field hideable hidden vs-date">
                     <label for="timepicker">at: </label>
                     <input type="text" class="" id="timepicker" value="{{ new_post.post_date|date('H:i') }}" onchange="setPostDate()"/>
                 </div>

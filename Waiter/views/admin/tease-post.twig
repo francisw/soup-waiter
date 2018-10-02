@@ -40,8 +40,9 @@
         </h4>
         <p class="align-left">{{ post.get_preview(20,true,'') }}
         <span class="align-right">
-                {{ post.status=='draft'? 'draft': post.date|time_ago }}
+                {{ post.status=='draft'? 'draft': post.post_date_gmt|time_ago }}
         </span></p>
+
         <span class="clear"></span>
     </div>
 {% endblock %}
