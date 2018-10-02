@@ -47,10 +47,10 @@ class UserPersistedMultiton extends Multiton  {
 
 		$persisted = get_user_meta($user,$key,true);
 		if (!$persisted){
-			$persisted = get_option(get_called_class());
+			$persisted = get_option('vs-'.get_called_class());
 			if ($persisted){
 				update_user_meta($user,$key,$persisted);
-				delete_option(get_called_class());
+				delete_option('vs-'.get_called_class());
 			}
 		}
 

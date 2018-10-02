@@ -1,15 +1,24 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.2.1 (2018.09.02)
+
+* **Enhancements**:
+
+* **Bug Fixes**:
+- Corrected error in migration code
+
 ## 1.2.0 (2018.08.30)
 
 * **Enhancements**:
 - Each WP user now has their own settings
 - Refactored form submission
+- Added ability to schedule a post at a specified time
 
 * **Bug Fixes**:
 - Some forms complained they could not contact the server
 - Removed slashes from meta keys explicitly
 - Stopped causing blank posts from being created
+- Fixed various bugs in time of posting
 
 ## 1.0.18 (2018.03.26)
 
