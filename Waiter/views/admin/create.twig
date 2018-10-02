@@ -691,6 +691,9 @@
     #conceal_checkbox_inverse{
         display: none;
     }
+    .margin-top {
+        margin-top: 15px;
+    }
 </style>
     {%- set published = new_post.post_status in [ 'publish','future'] -%}
     {%- set future = new_post.post_status == 'future' or published and "now"|date('Y-m-d H:i:s') < new_post.post_status('Y-m-d H:i:s') -%}
@@ -898,15 +901,15 @@
                     <label for="days">Wait</label>
                     <input type="number" id="days" value="2" onchange="setPostDate()"/> days before posting
                 </div>
-                <div class="vs-field hideable hidden vs-date">
-                    <label for="datepicker">Post this on: </label>
+                <div class="vs-field hideable hidden vs-date margin-top">
+                    <label for="datepicker">on: </label>
                     <input type="text" class="datepicker" id="datepicker" value="{{ new_post.post_date|date('Y-m-d') }}" onchange="setPostDate()"/>
                 </div>
                 <div class="vs-field hideable hidden vs-date">
                     <label for="timepicker">at: </label>
                     <input type="text" class="" id="timepicker" value="{{ new_post.post_date|date('H:i') }}" onchange="setPostDate()"/>
                 </div>
-                <div class="soup-submit">
+                <div class="soup-submit margin-top">
                     <button type="submit"
                             name="post_status"
                             id="publish"
@@ -927,8 +930,8 @@
                     <ul>
                         <li class="recent_trigger" data-page="1">
                             <img src="{{ soup.image_url }}/loading.svg"
-                                 title="More Recent Properties"
-                                 alt="More Recent Properties">
+                                 title="More Recent Posts"
+                                 alt="More Recent Posts">
                         </li>
                     </ul>
                 </div>
