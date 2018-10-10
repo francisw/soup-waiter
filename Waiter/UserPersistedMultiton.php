@@ -41,25 +41,35 @@ class UserPersistedMultiton extends Multiton  {
             throw new \Exception("Can not retrieve ".get_called_class()." without a key");
         }
 
-		$key = self::_persistedName($id);
 		$user = get_current_user_id();
 
-
-		$persisted = get_user_meta($user,$key,true);
+		$persisted = get_user_meta($user,self::_persistedName($id),true);
 		if (!$persisted){
-			$persisted = get_option('vs-'.get_called_class());
+			$persisted = get_option(self::_persistedName($id,true));
 			if ($persisted){
-				update_user_meta($user,$key,$persisted);
-				delete_option('vs-'.get_called_class());
+				update_user_meta($user,self::_persistedName($id),$persisted);
+				delete_option(self::_persistedName($id,true));
 			}
 		}
 
-
 		return $persisted;
 	}
-	static private function _persistedName($key){
+
+	/**
+	 * @param integer $key Index for which multiton
+	 * @param bool $raw=false use raw name (including \ in class names, as was used for option storage originally)
+	 *
+	 * @return string
+	 */
+	static private function _persistedName($key,$raw=false){
 		$class = get_called_class();
-		return stripslashes("vs-{$class}-{$key}");
+		$persistedName = "vs-{$class}-{$key}";
+
+		if ($raw) {
+			return $persistedName;
+		} else {
+			return stripslashes($persistedName);
+		}
 	}
 
 	public function onCreate($key){

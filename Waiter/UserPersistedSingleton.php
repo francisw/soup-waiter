@@ -21,22 +21,26 @@ class UserPersistedSingleton extends Singleton  {
 		return $this;
 	}
 	static protected function getPersisted($key=null){
-		$key = self::_persistedName();
 		$user = get_current_user_id();
 		
-		$persisted = get_user_meta($user,$key,true);
+		$persisted = get_user_meta($user,self::_persistedName(),true);
 		if (!$persisted){
-			$persisted = get_option('vs-'.get_called_class());
+			$persisted = get_option(self::_persistedName(true));
 			if ($persisted){
-				update_user_meta($user,$key,$persisted);
-				delete_option('vs-'.get_called_class());
+				update_user_meta($user,self::_persistedName(),$persisted);
+				delete_option(self::_persistedName(true));
 			}
 		} 
 			
 		return $persisted;
 	}
-	static private function _persistedName(){
-		$class = get_called_class();
-		return stripslashes("vs-{$class}");
+	static private function _persistedName($raw=false){
+		$persistedName = 'vs-'.get_called_class();
+
+		if ($raw) {
+			return $persistedName;
+		} else {
+			return stripslashes($persistedName);
+		}
 	}
 }
