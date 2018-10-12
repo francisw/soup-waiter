@@ -419,23 +419,23 @@ class SoupWaiterAdmin extends Singleton {
 			'Vacation Soup',
 			'Vacation Soup',
 			'publish_posts',
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			 null, // this allows the 1st sub-menu to be called
 			'dashicons-admin-site',
 			4
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
 		$page = add_submenu_page(
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			'Create Post',
 			'Create',
 			'publish_posts',
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			array( $this, 'create_admin_page_create' )
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
 		$page = add_submenu_page(
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			'Owner Details',
 			'Owner Details',
 			'publish_posts',
@@ -444,7 +444,7 @@ class SoupWaiterAdmin extends Singleton {
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
 		$page = add_submenu_page(
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			'Property Details',
 			'Property Details',
 			'publish_posts',
@@ -453,7 +453,7 @@ class SoupWaiterAdmin extends Singleton {
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
 		$page = add_submenu_page(
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			'Vacation Soup Settings',
 			'Connect',
 			'administrator',
@@ -462,7 +462,7 @@ class SoupWaiterAdmin extends Singleton {
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
 		$page = add_submenu_page(
-			'vacation-soup-admin',
+			'vacation-soup-admin-create',
 			'Release Notes',
 			'Release Notes',
 			'publish_posts',
