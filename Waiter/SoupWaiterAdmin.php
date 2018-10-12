@@ -4,6 +4,7 @@ require_once (SOUP_PATH . "soup-pixabay-images.php");
 
 use Timber\Timber;
 use Timber\Term as TimberTerm;
+use Timber\User as User;
 
 require_once( ABSPATH . 'wp-includes/pluggable.php' );
 
@@ -13,7 +14,7 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
  * Date: 03/07/2017
  * Time: 21:02
  */
-class SoupWaiterAdmin extends UserPersistedSingleton {
+class SoupWaiterAdmin extends Singleton {
 	/**
 	 * @var boolean $hasFeaturedImages
 	 */
@@ -88,6 +89,11 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 			foreach ($menu as $menu_item){
 				switch($menu_item[2]){
 					case 'vacation-soup-admin':
+					case 'vacation-soup-admin-owner':
+					case 'vacation-soup-admin-property':
+					case 'vacation-soup-admin-settings':
+					case 'vacation-soup-admin-release':
+					case 'vacation-soup-admin-create':
 					case 'index.php':
 						break;
 					default:
@@ -390,7 +396,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 	 * If the POST array is populated form Vacation Soup, process it
 	 */
 	public function process_post_data(){
-		if (isset($_REQUEST['page']) && $_REQUEST['page']==='vacation-soup-admin' &&
+		if (isset($_REQUEST['page']) && strncmp($_REQUEST['page'],'vacation-soup-admin',18) &&
 		    isset($_REQUEST['tab']) &&
 		    !wp_doing_ajax() &&
 		    !empty($_POST)) {
@@ -414,11 +420,57 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 			'Vacation Soup',
 			'publish_posts',
 			'vacation-soup-admin',
-			array( $this, 'create_admin_page' ),
+			 null, // this allows the 1st sub-menu to be called
 			'dashicons-admin-site',
 			4
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+		$page = add_submenu_page(
+			'vacation-soup-admin',
+			'Create Post',
+			'Create',
+			'publish_posts',
+			'vacation-soup-admin',
+			array( $this, 'create_admin_page_create' )
+		);
+		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+		$page = add_submenu_page(
+			'vacation-soup-admin',
+			'Owner Details',
+			'Owner Details',
+			'publish_posts',
+			'vacation-soup-admin-owner',
+			array( $this, 'create_admin_page_owner' )
+		);
+		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+		$page = add_submenu_page(
+			'vacation-soup-admin',
+			'Property Details',
+			'Property Details',
+			'publish_posts',
+			'vacation-soup-admin-property',
+			array( $this, 'create_admin_page_property' )
+		);
+		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+		$page = add_submenu_page(
+			'vacation-soup-admin',
+			'Vacation Soup Settings',
+			'Connect',
+			'administrator',
+			'vacation-soup-admin-settings',
+			array( $this, 'create_admin_page_connect' )
+		);
+		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+		$page = add_submenu_page(
+			'vacation-soup-admin',
+			'Release Notes',
+			'Release Notes',
+			'publish_posts',
+			'vacation-soup-admin-release',
+			array( $this, 'create_admin_page_release' )
+		);
+		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+
 	}
 	public function admin_enqueue_styles(){
 		wp_enqueue_style( 'vs-bootstrap' );
@@ -517,6 +569,31 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		// ...and go do That Voodoo that You Do ... so well!
 		Timber::render( array( "admin/{$tab}.twig" ), $this->$fn_context() );
 	}
+	public function create_admin_page_create() {
+		$this->assignTab('create');
+		return $this->create_admin_page();
+	}
+	public function create_admin_page_owner() {
+		$this->assignTab('owner');
+		return $this->create_admin_page();
+	}
+	public function create_admin_page_property() {
+		$this->assignTab('property');
+		return $this->create_admin_page();
+	}
+	public function create_admin_page_connect() {
+		$this->assignTab('connect');
+		return $this->create_admin_page();
+	}
+	public function create_admin_page_release() {
+		$this->assignTab('release');
+		return $this->create_admin_page();
+	}
+
+	private function assignTab($tab){
+		$_GET['tab']=$_REQUEST['tab']=$tab;
+	}
+
 
 	public function process_create_data( ){
 		if (!isset($_POST['post_status']) ||
@@ -641,7 +718,8 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 		$context['tab'] = $tab;     // Used to decide current and next actions
 		$context['soup'] = SoupWaiter::single();   // Exposing the waiter and soup.admin (in twig) is the SoupWaiterAdmin
 		$context['admin'] = $this;
-		$context['current_user'] = new \Timber\User();
+		$context['current_user'] = new User();
+		$context['userType'] = (current_user_can('administrator'))?'administrator':'author';
 		$context['offsetTZ'] = isset($_COOKIE['offsetTZ'])?$_COOKIE['offsetTZ']:0;
 		return $context;
 	}
@@ -677,7 +755,7 @@ class SoupWaiterAdmin extends UserPersistedSingleton {
 			if ($test_post) {
 				$new_post = $test_post->to_array();
 			}
-			if ('trash' === $new_post['post_status']){
+			if ('trash' === $test_post->post_status){
 				$new_post = null; // Force create new
 			}
 		}
