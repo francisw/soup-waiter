@@ -9,17 +9,34 @@ namespace Waiter;
  */
 class SitePersistedSingleton extends Singleton  {
     /**
-     * Persist and recall this object in options
+     * Persist this object in options
      * @param null $key
-     * @return SitePersistedSingleton The object calling this method
+     * @return Singleton The object calling this method
      */
 	protected function persist($key=null){
 		$class = get_called_class();
-		update_option(stripslashes("vs-{$class}"),$this,false);
+		update_option("vs-{$class}",$this,false);
 		return $this;
 	}
+
+	/**
+	 * Return persisted object
+	 * @param null $key
+	 *
+	 * @return Singleton|null
+	 */
 	static protected function getPersisted($key=null){
 		$class = get_called_class();
-		return get_option(stripslashes("vs-{$class}"));
+		return get_option("vs-{$class}");
+	}
+	/**
+	 * Delete persisted object
+	 * @param null $key
+	 *
+	 * @return void
+	 */
+	static public function deletePersisted($key=null){
+		$class = get_called_class();
+		delete_option("vs-{$class}");
 	}
 }

@@ -9,7 +9,7 @@
 namespace Waiter;
 
 
-class Property extends UserPersistedMultiton
+class Property extends PersistedMultiton
 {
     protected $title;
 	protected $join;

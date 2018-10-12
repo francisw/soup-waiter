@@ -10,7 +10,7 @@ use Exception;
  * Date: 23/06/2017
  * Time: 16:41
  */
-class SoupWaiter extends UserPersistedSingleton {
+class SoupWaiter extends PersistedSingleton {
 	const REGISTRY_USER = 'soup-kitchen-registry';
 	const REGISTRY_PASS = 'OpenDoor';
 	const APIUSER_PASS  = 'OpenDoor';
@@ -81,6 +81,21 @@ class SoupWaiter extends UserPersistedSingleton {
 	 * @var string|null $kitchen_sync the count of posts that need synch
 	 */
 	protected $kitchen_sync;
+
+	/**
+	 * @param boolean $value Is this site multi-user? Configurations will be stored per-user
+	 */
+    public static function set_multiuser($value){
+        update_option('vs-multiuser',($value)?true:false,true);
+        SoupWaiter::single(true); // purge the cache so it reloads properly
+    }
+
+	/**
+	 * @return boolean Is this site configured for multi-user
+	 */
+    public static function is_multiuser(){
+        return (get_option('vs-multiuser'))?true:false;
+    }
 
 	/**
 	 * @return int
