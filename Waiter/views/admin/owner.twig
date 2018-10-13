@@ -22,13 +22,13 @@
                                        id="owner_name"
                                        required value="{{ soup.owner_name }}"/>
                             </div>
-                            <input type="submit" value="next" onClick="
+                            <input type="button" value="done" onClick="
                             if (document.getElementById('owner_name').validity.valid && !document.unloading)
                             {
-                                window.location.reload()
-                            } else {
-                                return false
-                            }"/>
+                                window.location.href = '?page=vacation-soup-admin-create';
+                            }
+                                return false;
+                            "/>
                         </div>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                         <div id="title" class="col-sm-12">
                             <h1>Information</h1>
                         </div>
-                        <p>We will ask you more owner details in a future release.</p>
+                        <p>All other owner details are managed <a href="https://vacationsoup.com/profile-page" target="_blank">in The Soup</a></p>
                     </div>
                 </div>
             </div>
