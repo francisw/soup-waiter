@@ -133,7 +133,7 @@
             }
         }).fail(function(jqXHR,status,error) {
             if (document.unloading) return;
-            alert('Error: Waiter failed to contact Kitchen\n'+error);
+            jQuery('#publish').append('<div class="error">Error retrieving topics</div>');
         }).done(function(response) {
             if (document.unloading) return;
             var html='';
@@ -189,7 +189,7 @@
                     jQuery('#topic-refresh').removeClass('active');
                 }).fail(function(jqXHR,status,error) {
                     if (document.unloading) return;
-                    alert('Error: Waiter failed to contact Kitchen\n'+error);
+                    jQuery('#publish').append('<div class="error">Error retrieving tags</div>');
                 }).done(function(response) {
                     if (document.unloading) return;
                     var html='';
