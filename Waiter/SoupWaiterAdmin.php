@@ -396,7 +396,7 @@ class SoupWaiterAdmin extends Singleton {
 	 * If the POST array is populated form Vacation Soup, process it
 	 */
 	public function process_post_data(){
-		if (isset($_REQUEST['page']) && strncmp($_REQUEST['page'],'vacation-soup-admin',18) &&
+		if (isset($_REQUEST['page']) && 0===strncmp($_REQUEST['page'],'vacation-soup-admin',18) &&
 		    isset($_REQUEST['tab']) &&
 		    !wp_doing_ajax() &&
 		    !empty($_POST)) {
@@ -452,11 +452,16 @@ class SoupWaiterAdmin extends Singleton {
 			array( $this, 'create_admin_page_property' )
 		);
 		add_action( "admin_print_styles-{$page}", [ $this, 'admin_enqueue_styles' ] );
+		if (SoupWaiter::is_multiuser()){
+			$capability = 'publish_posts';
+		} else {
+			$capability = 'administrator';
+		}
 		$page = add_submenu_page(
 			'vacation-soup-admin-create',
 			'Vacation Soup Settings',
 			'Connect',
-			'administrator',
+			$capability,
 			'vacation-soup-admin-settings',
 			array( $this, 'create_admin_page_connect' )
 		);
