@@ -77,7 +77,7 @@
                 .fail(function(jqXHR,status,error) {
                     if (document.unloading) return;
                     console.log('fail (vacation-soup) '+status+' '+error);
-                    alert('Error: Could not save change, refreshing page may help\n'+status);
+                    // alert('Error: Could not save change, refreshing page may help\n'+status);
                 })
                 .done(function(response) {
                     if (document.unloading) return;

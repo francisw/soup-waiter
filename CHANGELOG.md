@@ -1,11 +1,21 @@
 # Changelog for Vacation Soup Waiter
 
-## 1.2.1 (2018.09.02)
+## 1.2.2 (2018.10.15)
 
 * **Enhancements**:
+- autocreate byLine for future posts as well
 
 * **Bug Fixes**:
 - Corrected error in migration code
+- Fix 'you aren't allowed hereXX' due to new page link style
+- fixed auth failure on connect tab
+- fixed auth-level permission error on connect menu/tab
+- remove false-positive alerts
+- fixed 'next' on owner
+- Fixed tab links for new menu structure
+- removed cause of alerts when rapid clicking in Safari
+- Fixed Dates/times now work in Timezones
+- Always stored as GMT, always localised in browser
 
 ## 1.2.0 (2018.08.30)
 
