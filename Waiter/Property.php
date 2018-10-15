@@ -9,7 +9,7 @@
 namespace Waiter;
 
 
-class Property extends SitePersistedMultiton
+class Property extends PersistedMultiton
 {
     protected $title;
 	protected $join;
@@ -28,7 +28,7 @@ class Property extends SitePersistedMultiton
 
     public function __set($name,$value){
     	parent::__set($name,$value);
-    	SoupWaiterAdmin::single()->get_properties(); // This loads property summaries into Waiter
+    	SoupWaiterAdmin::single()->get_properties(); // This re-loads property summaries into Waiter
     }
 
     public function onCreate($key){

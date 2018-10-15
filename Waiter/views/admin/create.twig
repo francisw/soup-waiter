@@ -15,8 +15,13 @@
 
     var autosaveRedirect = null;
     var doAutosave = function(e){
+
         jQuery('INPUT[type=submit]').prop('disabled',true);
-        tinyMCE.triggerSave();
+        //tinyMCE.triggerSave(); // move editor buffer to post_content
+        if (autosaveRedirect && e) {
+            e.preventDefault();
+            document.unloading = true;
+        }
         jQuery.post( ajaxurl+'?action=soup_create',
             jQuery('FORM.tab-create').serialize(),
             function(data) {
@@ -36,6 +41,14 @@
 
     // Autosubmit form on each field
     jQuery(function(){
+        tinyMCE.init({
+            selector: "textarea",
+            setup: function (editor) {
+                editor.on('change', function () {
+                    editor.save();
+                });
+            }
+        });
         jQuery('FORM.tab-create *')
             .filter(':input:visible')
             .filter(':not(#create-or-edit)')
@@ -63,14 +76,14 @@
             }
         }).statusCode({
             400: function(){ // This means we have gone past the end of the list
-                if (unloading) return;
+                if (document.unloading) return;
                 if (offset.val() !== 0){ // reset back to the start
                     offset.val(0).change();
                     return getMOTD();
                 }
             }
         }).done(function (response) {
-            if (unloading) return;
+            if (document.unloading) return;
             var motd = jQuery("#motd");
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>' + response.error.message;
@@ -87,12 +100,12 @@
                 }
             }
         }).always(function (response) {
-            if (unloading) return;
+            if (document.unloading) return;
             jQuery("#motd").removeClass("checking");
         });
     }
 
-    const topicsPerPage = 5;
+    var topicsPerPage = 5;
     var topicPageAdvanced = false;
     var binEndTopics = []; // temporary storage of last few topics when cycling back to start
     var getTrendingTopics = function(){
@@ -111,7 +124,7 @@
             }
         }).statusCode({
             400: function(){ // Bad Params: normally means we have gone past the end of the list
-                if (unloading) return;
+                if (document.unloading) return;
                 var offset = jQuery('#next_topic');
                 if (offset.val() !== 0){ // reset back to the start, but only once
                     offset.val(0);
@@ -119,10 +132,10 @@
                 }
             }
         }).fail(function(jqXHR,status,error) {
-            if (unloading) return;
-            alert('Error: Waiter failed to contact Kitchen\n'+error);
+            if (document.unloading) return;
+            jQuery('#publish').append('<div class="error">Error retrieving topics</div>');
         }).done(function(response) {
-            if (unloading) return;
+            if (document.unloading) return;
             var html='';
             if (response.error) {
                 html = '<p>Error: Waiter failed to contact Kitchen</p>'+response.error.message;
@@ -171,14 +184,14 @@
                         per_page: (k_tags.length)?k_tags.length:1
                     }
                 }).always(function(jqXHR,status,error) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     jQuery("#trending-topics").removeClass("checking");
                     jQuery('#topic-refresh').removeClass('active');
                 }).fail(function(jqXHR,status,error) {
-                    if (unloading) return;
-                    alert('Error: Waiter failed to contact Kitchen\n'+error);
+                    if (document.unloading) return;
+                    jQuery('#publish').append('<div class="error">Error retrieving tags</div>');
                 }).done(function(response) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     var html='';
                     k_tags = [];
                     if (response.error) {
@@ -321,35 +334,88 @@
     }
 
     var postDateElem,postStatusElem;
-    var setPostDateAndStatus = function(){
-        var postDate, postStatus;
+    var setPostDate = function(e){
+        var postDate,dateStr,localDate,gmtDate;
         var when = jQuery('#when').val();
         postDateElem = jQuery('#post_date');
-        postStatusElem = jQuery('#post_status');
         var dayInMsec = 86400000; // 24 * 60 * 60 * 1000 = 1 day in msec
         var futureDays = 1; // Default to adding one day, for 'tomorrow'
+        var offsetTZ = (new Date).getTimezoneOffset() * 60 * 1000; // adjustment as msec
 
         switch(when){
             case 'days':
                 futureDays = jQuery('#days').val();
                 // Fall-through to tomorrow code
             case 'tomorrow':
-                postStatusElem.val('future');
                 postDate = new Date(new Date().getTime() + (futureDays * dayInMsec));
-                postDateElem.val(postDate.toISOString().split('T')[0]);
+                dateStr = postDate.toISOString();
+                postDateElem.val(dateStr.substr(0,10)+' '+dateStr.substr(11,8));
                 break;
             case 'date':
-                postDateElem.val(jQuery('#datepicker').val());
-                postStatusElem.val('future'); // postDateElem already set
+                localDate = new Date(jQuery('#datepicker').val().substr(0,10)+'T'+jQuery('#timepicker').val().substr(0,5)+'Z');
+                gmtDate = new Date(localDate.getTime() + offsetTZ);
+                dateStr = gmtDate.toISOString();
+                postDateElem.val(dateStr.substr(0,10)+' '+dateStr.substr(11,8));
                 break;
             case '': // Now!
+                postDate = new Date();
+                dateStr = postDate.toISOString();
+                postDateElem.val(dateStr.substr(0,10)+' '+dateStr.substr(11,8));
+                break;
             default:
-                postDateElem.val('');
+                return false;
+        }
+        return true;
+    };
+    var preparePostDate = function (e){
+        var $this = jQuery(e)[0];
+        var offsetTZ = (new Date).getTimezoneOffset() * 60 * 1000; // adjustment as msec
+
+
+        if ('date' === $this.options[$this.selectedIndex].value){
+            var localDate = new Date(jQuery('#datepicker').val().substr(0,10)+'T'+jQuery('#timepicker').val().substr(0,5)+'Z');
+            var gmtDate = new Date(localDate.getTime() + offsetTZ);
+            var localNow = new Date((new Date()).getTime() - offsetTZ);
+            var gmtNow = new Date();
+            // if before Now reset datepicker/timepicker
+            if (gmtDate < gmtNow){
+                jQuery('#datepicker').val(localNow.toISOString().substr(0,10));
+                jQuery('#timepicker').val(localNow.toISOString().substr(11,5));
+            }
+        }
+        jQuery('.vs-field.hideable').addClass('hidden');
+        jQuery('[autofocus]').removeProp('autofocus');
+        jQuery('.vs-field.vs-'+$this.options[$this.selectedIndex].value).removeClass('hidden'); // e.g. unhide .vs-days input
+        jQuery('.vs-field.vs-'+$this.options[$this.selectedIndex].value+' INPUT').prop('autofocus',true).focus();
+    }
+    /* Fired on publish button
+     *
+     *
+     */
+    var setPublishedStatus = function(){
+        var when = jQuery('#when').val();
+        postStatusElem = jQuery('#post_status');
+
+        switch(when){
+            case 'days':
+            case 'tomorrow':
+            case 'date':
+                postStatusElem.val('future');
+                break;
+            case '': // Now
                 postStatusElem.val('publish');
                 break;
+            default:
+                alert ("Shouldn't be here");
+                return false;
         }
-
+        return true;
     };
+    var setDraftStatus = function(){
+        jQuery('#post_status').val('draft');
+        return true;
+    };
+
     var haveWarnedOfShortcodes = false;
     var doDraftValidation = function(e){
         var $recent_titles = jQuery('.recent_post_title');
@@ -375,7 +441,7 @@
         }
 
         if ( !haveWarnedOfShortcodes &&
-            jQuery('#post_content').val().search('[') !== -1){
+            jQuery('#post_content').val().indexOf("\[") !== -1){
             haveWarnedOfShortcodes = true;
             $notify
                 .addClass('error')
@@ -457,7 +523,8 @@
                 data: {
                     action: 'soup_recent',
                     _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
-                    p: page
+                    p: page,
+                    current: {{ new_post.ID }}
                 }
             }
             jQuery.ajax(ajax).done(function(response){
@@ -510,7 +577,7 @@
 
                 jQuery.ajax(ajaxCall) // Not Asynchronous so the window.location waits for completion
                     .fail(function(jqXHR,status,error) {
-                        if (unloading) return;
+                        if (document.unloading) return;
                         console.log('fail (vacation-soup) '+status+' '+error);
                         alert('Error: Could rewind topics\n'+status);
                     });
@@ -525,7 +592,7 @@
             jQuery.post(ajaxurl,
                 args,
                 function(data) {
-                    window.location.href = "?page=vacation-soup-admin&tab=create";
+                    window.location.href = "?page=vacation-soup-admin-create";
                 },
                 'json' // I expect a JSON response
             );
@@ -568,46 +635,82 @@
     }
     .notice { display: none; } /* Hide system notices, they will have already seen and ignored them */
     .notice.soup { display: block; } /* Show our notices */
-    .tease-post I.fa {
-        font-size: 1.6em;
+
+    .tease-post .deface a {
+        text-decoration: unset;
+    }
+    .tease-post .deface I.fa {
+        font-size: 1.2em;
         color: white;
-        position: absolute;
         top: 4px;
         width: inherit;
         padding: 6px;
         border-radius: 2px;
         background: rgba(0,0,0,0.2);
+        text-align: center;
+        display: inline;
     }
-    .tease-post .fa:hover {
+    .tease-post .deface I.fa:hover {
         color: #f08237;
         background: rgba(0,0,0,0.9);
         transition: all 0.15s ease-in;
     }
-    .tease-post #edit_recent {
-        margin-left: 4px;
+
+    .tease-post .deface-container {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        padding-left: 19px;
+        width:100%;
     }
-    .tease-post #preview_local I.fa.fa-eye {
-        right: 4px;
-        top: 4px;
+    .tease-post .deface {
+        position: relative;
+        margin: auto;
+        float: left;
+        display: inline-block;
+        width: 33%;
     }
-    .tease-post #preview_remote I.fa.fa-eye {
+    .tease-post .deface.left {
+    }
+    .tease-post .deface.right {
+        float: right;
+    }
+    .tease-post .deface.centre I {
         color: #f08237;
-        background: rgba(255,255,255,0.4);
-        left: 50%;
-        transform: translateX(-35%);
     }
-    .tease-post #preview_remote I.fa:hover {
-        color: black;
-        background: #f08237;
-    }
+
+
     #post-lister-content.to-do-when-designed {
         height: 700px;
         overflow: scroll;
         margin: 0;
         padding: 0;
     }
+    #confirm_conceal {
+        height: auto;
+        overflow: hidden;
+        transition: all 0.5s ease-in;
+    }
+    #confirm_conceal.hide {
+        height: 0;
+    }
+    #conceal_checkbox_inverse{
+        display: none;
+    }
+    .soup-submit.margin-top {
+        margin-top: 15px;
+    }
+    .row.actions {
+        overflow: scroll;
+    }
+    .soup-submit {
+        margin: auto;
+    }
 </style>
-{% embed 'admin/post-form.twig' %}{% block form_content %}
+    {%- set published = new_post.post_status in [ 'publish','future'] -%}
+    {%- set future = new_post.post_status == 'future' or published and "now"|date('Y-m-d H:i:s') < new_post.post_status('Y-m-d H:i:s') -%}
+
+    {% embed 'admin/post-form.twig' %}{% block form_content %}
     <input type="hidden" id="latitude" name="latitude" value="{{ new_post.latitude }}">
     <input type="hidden" id="longitude" name="longitude" value="{{ new_post.longitude }}">
     <input type="hidden" id="destination_id" name="destination_id" value="{{ new_post.destination_id }}">
@@ -654,7 +757,17 @@
             </div>
             <div class="col-sm-12">
                 <div id="wp-content-editor-container">
-                    {{ fn('wp_editor',new_post.post_content,'post_content') }}
+                    {{ fn('wp_editor',new_post.post_content,'post_content',
+                        { tinymce:
+                            {
+                                setup: "function (editor) {
+                                    editor.on('blur', function () {
+                                        editor.save();
+                                    });
+                                }"
+                            }
+                        }
+                    ) }}
                 </div>
             </div>
             {#- Layout the tags in a centered column (lg) or on its own (sm) -#}
@@ -728,50 +841,96 @@
                 <input type="number" title="Latitude" step="any" min="-85" max="85" placeholder="Latitude" name="latitude_entry" id="latitude_entry" value="{{ new_post.latitude_entry }}"/>
                 <input type="number" title="Longitude" step="any" min="-180" max="180"  placeholder="Longitude" name="longitude_entry" id="longitude_entry" value="{{ new_post.longitude_entry }}"/>
 
-                <h2><label for="when">Schedule</label></h2>
-                <div id="publish_error" class=""></div>
-                <a href="{{ fn('get_home_url') }}?p={{ new_post.ID }}&preview=true" target="_blank">
-                <input type="button"
-                       name="preview"
-                       id="preview"
-                       class="button button-secondary button-large"
-                       value="preview"></a>
-                <div class="soup-submit">
-                <input type="submit"
-                       name="post_status"
-                       id="save-post"
-                       class="button button-secondary button-large"
-                       onclick="return doDraftValidation(event);"
-                       value="draft"></div>
-                <div class="soup-submit">
-                <input type="submit"
-                       name="post_status"
-                       id="publish"
-                       class="button button-primary button-large"
-                       onclick="return doPublishValidation(event);"
-                       value="publish"></div>
-                <div class="vs-field">
-                    <select id="when" onchange="
-                           setPostDateAndStatus();
-                           jQuery('.vs-field.hideable').addClass('hidden');
-                           jQuery('[autofocus]').removeProp('autofocus');
-                           jQuery('.vs-field.vs-'+this.options[this.selectedIndex].value).removeClass('hidden'); // e.g. unhide .vs-days input
-                           jQuery('.vs-field.vs-'+this.options[this.selectedIndex].value+' INPUT').prop('autofocus',true).focus();
-                        ">
-                        <option value="" selected>Now</option>
-                        <option value="tomorrow">Tomorrow</option>
-                        <option value="days">Wait a number of days</option>
-                        <option value="date">Select date</option>
-                    </select>
+                <h2><label for="when">Actions</label></h2>
+                <div class="row actions">
+                    <div id="publish_error" class=""></div>
+                    <div class="soup-submit">
+                        <a href="{{ fn('get_home_url') }}?p={{ new_post.ID }}&preview=true" target="_blank">
+                        <button type="button"
+                               name="preview"
+                               id="preview"
+                               class="button button-secondary button-large"
+                                value="preview">{{ future or not published ? 'pre' }}view</button>
+                        </a>
+                    </div>
+
+                    <div class="soup-submit">
+                        <button type="submit"
+                                name="post_status"
+                                id="save-post"
+                                class="button button-secondary button-large"
+                                onclick="return setDraftStatus() && doDraftValidation(event) ;"
+                                value="draft">{{ published ? 'unpublish' : 'save draft' }}</button>
+                    </div>
+
+                    <div class="soup-submit">
+                        <button type="button"
+                               name="conceal"
+                               id="conceal"
+                               class="button button-secondary button-large"
+                               onclick="jQuery('#confirm_conceal').toggleClass('hide')"
+                                value="conceal">conceal{{  new_post.conceal ?'ed' }}</button>
+                    </div>
                 </div>
+                <div id="confirm_conceal" class="hide col-sm-12">
+                    <label for="conceal_checkbox">Only check this if you don't want your post to go to Vacation Soup, or if it promotes your property in a way The Soup will not allow</label>
+                    <input type="checkbox" name="conceal" id="conceal_checkbox" value="1"
+                           onchange="
+                           var concealed = jQuery('#conceal_checkbox').prop('checked');
+                           jQuery('#conceal_checkbox_inverse').prop('checked',!concealed);
+                           jQuery('#conceal').html(concealed ? 'concealed':'conceal') ;
+                            " {{ (new_post.conceal)?'checked':'notchecked' }}/>
+                    <input type="checkbox" name="conceal" id="conceal_checkbox_inverse" value="0"/>
+                </div>
+                <h2>Publish</h2>
+
+                {% if published %}
+                    <div>
+                        {% if future %}
+                            Will publish {{ new_post.post_date_gmt|time_ago }} at {{ new_post.post_date|date("H:i") }}
+                        {% else %}
+                            Published {{ new_post.post_date_gmt|time_ago }} at {{ new_post.post_date|date('H:i') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <div class="vs-field">
+                    {% if not published %}
+                        <select id="when" onchange="
+                               preparePostDate(this);
+                            ">
+                            {% if future %}
+                            <option value="date" selected>{{ new_post.post_date_gmt|time_ago }}</option>
+                            {% endif %}
+                            <option value="" {{ not future ? 'selected' }}>Now</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="days">Wait a number of days</option>
+                            <option value="date">Select date</option>
+                        </select>
+                    {% endif %}
+                </div>
+
                 <div class="vs-field hideable hidden vs-days">
                     <label for="days">Wait</label>
-                    <input type="number" id="days" value="2" onchange="setPostDateAndStatus()"/> days before posting
+                    <input type="number" id="days" value="2" onchange="setPostDate()"/> days before posting
+                </div>
+                <div class="vs-field hideable hidden vs-date margin-top">
+                    <label for="datepicker">on: </label>
+                    <input type="text" class="datepicker" id="datepicker" value="{{ new_post.post_date|date('Y-m-d') }}" onchange="setPostDate()"/>
                 </div>
                 <div class="vs-field hideable hidden vs-date">
-                    <label for="datepicker">Post this on: </label>
-                    <input type="text" class="datepicker" id="datepicker" onchange="setPostDateAndStatus()"/>
+                    <label for="timepicker">at: </label>
+                    <input type="text" class="" id="timepicker" value="{{ new_post.post_date|date('H:i') }}" onchange="setPostDate()"/>
                 </div>
+                <div class="soup-submit margin-top">
+                    <button type="submit"
+                            name="post_status"
+                            id="publish"
+                            class="button button-primary button-large {{ published ? 'hidden' }}"
+                            onclick="return doPublishValidation(event) && setPostDate() && setPublishedStatus();"
+                            value="publish">publish</button>
+
+                </div>
+
             </div>
         </div>
     </div>
@@ -783,8 +942,8 @@
                     <ul>
                         <li class="recent_trigger" data-page="1">
                             <img src="{{ soup.image_url }}/loading.svg"
-                                 title="More Recent Properties"
-                                 alt="More Recent Properties">
+                                 title="More Recent Posts"
+                                 alt="More Recent Posts">
                         </li>
                     </ul>
                 </div>

@@ -31,7 +31,7 @@
                 };
                 jQuery.ajax(ServiceAjaxCall)
                     .fail(function (jqXHR, status, error) {
-                        if (unloading) return;
+                        if (document.unloading) return;
                         console.log('fail (vacation-soup) ' + status + ' ' + error);
                         jQuery(this).addClass('nok fail')
                             .find('I')
@@ -39,7 +39,7 @@
                             .addClass('fa-chain-broken');
                     })
                     .done(function (response) {
-                        if (unloading) return;
+                        if (document.unloading) return;
                         var status,title;
                         if (response.success){
                             status = response.status;
@@ -56,7 +56,7 @@
                             .parent().prop('title',title);
                     })
                     .always(function(){
-                        if (unloading) return;
+                        if (document.unloading) return;
                         jQuery(this).removeClass("checking");
                     });
             });
@@ -136,9 +136,13 @@
         });
     });
     </script>
-
+<style>
+    input[type="checkbox"].hidden {
+        display: none;
+    }
+</style>
 <div class="vs-content tab-connect row">
-    <div class="col-lg-6 col-md-6 col-xs-12 center-xs">
+    <div class="col-xl-7 col-md-6 col-xs-12 center-xs">
         <div id="connect-params" class="vs-panel row field-container">
             <div id="title" class="col-sm-12">
                 <h1>The Soup Settings</h1>
@@ -150,7 +154,7 @@
                     <label for="kitchen_user">
                         Username <span class="required">*</span>
                     </label>
-                    <input type="text" class="no-persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="vacationsoup.com" value="{{ soup.kitchen_user }}"/>
+                    <input type="text" class="no-persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="new-password" value="{{ soup.kitchen_user }}"/>
                 </div>
                 <div class="field required">
                     <label for="kitchen_password">
@@ -165,29 +169,10 @@
                     {% endif %}
                     <input type="submit" value="submit" class="margin_5_ no-unload" id="no-done">
                 </div>
-                <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
-                <div class="field">
-                    <label for="kitchen_host">
-                        Kitchen
-                    </label>
-                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
-                </div>
-                <div class="field">
-                    <label for="kitchen_auth_api">
-                        Auth API
-                    </label>
-                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
-                </div>
-                <div class="field">
-                    <label for="kitchen_api">
-                        Kitchen API
-                    </label>
-                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
-                </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-6 col-md-6 col-xs-12 center-xs">
+    <div class="col-xl-5 col-md-6 col-xs-12 center-xs">
         <div class="vs-panel row">
             <div id="title" class="col-sm-12">
                 <h1>Vacation Soup Status</h1>
@@ -215,6 +200,54 @@
             </div>
         </div>
     </div>
+    {% if userType == "administrator" %}
+    <div class="col-xl-7 col-md-6 col-xs-12 center-xs">
+        <div id="connect-params" class="vs-panel row field-container">
+            <div id="title" class="col-sm-12">
+                <h1>Advanced Settings</h1>
+                <p>You should not change these values unless advised to do so by a member of the Vacation Soup team.</p>
+                <h2>
+                    Multi-User
+                </h2>
+                <p>
+                    This option configures the Vacation Soup plugin to store different Owner, Property and Connection details for each Wordpress user on this site.
+                    If unchecked, all users will share the same owner settings, which suits most websites.
+                </p>
+                <div class="field">
+                    <label for="multiuser_checkbox">Multi-User</label>
+                    <input type="checkbox" class="persist" name="SoupWaiter.multiuser" id="multiuser_checkbox" value="1"
+                           onchange="
+                           var multiuser = jQuery('#multiuser_checkbox').prop('checked');
+                           jQuery('#multiuser_checkbox_inverse').prop('checked',!multiuser);
+                            " {{ (soup.multiuser)?'checked':'' }}/>
+                    <input type="checkbox" name="SoupWaiter.multiuser" class="persist hidden" id="multiuser_checkbox_inverse" value="0"/>
+                </div>
+                <h2>
+                    API Configuration
+                </h2>
+
+                <div class="field">
+                    <label for="kitchen_host">
+                        Kitchen
+                    </label>
+                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_host" id="kitchen_host" value="{{ soup.kitchen_host }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_auth_api">
+                        Auth API
+                    </label>
+                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_jwt_api" id="kitchen_auth_api" value="{{ soup.kitchen_jwt_api }}"/>
+                </div>
+                <div class="field">
+                    <label for="kitchen_api">
+                        Kitchen API
+                    </label>
+                    <input type="text" readonly class="persist" name="SoupWaiter.kitchen_api" id="kitchen_api" value="{{ soup.kitchen_api }}"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock form_content -%}{% endembed %}
 {% endblock content %}

@@ -1,7 +1,21 @@
 <script>
-    var unloading = false;
-    jQuery(window).unload(function(){
-        unloading = true;
+    document.unloading = false;
+    jQuery(window).on('beforeunload',function(){
+        document.unloading = true;
+    });
+
+    jQuery(function(){
+        
+        jQuery('FORM').on('submit',function(e){
+            // Prevent form submit if fields are already submitted
+            var busy = jQuery(this).attr('submitting');
+            if (busy){
+                e.preventDefault();
+                e.cancelBubble = true;
+                return false;
+            }
+            return true;
+        });
     });
 
     jQuery(function() {
@@ -9,6 +23,14 @@
             var ajaxCall;
             var jElem = jQuery(this);
             this.disabled=true;
+            jQuery('INPUT[type=submit]').prop('disabled',true);
+
+            var form = jElem.closest('form');
+            var busy = form.attr('submitting');
+            if (!busy) {
+                busy = 0;
+            }
+            form.attr('submitting',busy+1);
 
             var value = jElem.val();
             if ('checkbox'===this.type){
@@ -53,14 +75,19 @@
 
             jQuery.ajax(ajaxCall)
                 .fail(function(jqXHR,status,error) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     console.log('fail (vacation-soup) '+status+' '+error);
-                    alert('Error: Could not save change, refreshing page may help\n'+status);
+                    // alert('Error: Could not save change, refreshing page may help\n'+status);
                 })
                 .done(function(response) {
-                    if (unloading) return;
+                    if (document.unloading) return;
                     var msg = 'Not connected to Kitchen';
-                    this.disabled=false;
+                    var $this = jQuery(this);
+                    $this.attr('disabled',false);
+                    var form = $this.closest('form');
+                    var busy = form.attr('submitting');
+                    form.attr('submitting',busy-1);
+
                     if (!response || response.error && !jQuery(this).hasClass('quiet')) {
                         if (response && response.error) {
                             msg = response.error.message;
@@ -69,8 +96,9 @@
                     }
                 })
                 .always(function(response){
-                    if (unloading) return;
+                    if (document.unloading) return;
                     jQuery(this).removeClass('required');
+                    jQuery('INPUT[type=submit]').prop('disabled',false);
                     var thenDo = jQuery(this).data('persist-action');
                     if (thenDo){
                         eval(thenDo);
@@ -88,6 +116,7 @@
     <input type="hidden" id="tab" name="tab" value="{{ tab }}">
     <input type="hidden" id="requested-tab" name="requested-tab" value="{{ admin.requested_tab }}">
     <input type="hidden" id="user-id" name="user_ID" value="{{ user.id }}">
+    <input type="hidden" id="tzoffset" name="tzoffset">
     {% block form_header %}{% endblock form_header %}
     {% block form_content %}{% endblock form_content %}
 </form>

@@ -10,12 +10,17 @@ namespace Waiter;
 class Singleton extends Base  {
 	/**
 	 * Get a singleton of this class.
+	 * @param bool $purge True to purge the cache
 	 *
-	 * @return SoupWaiter
+	 * @return Singleton
 	 */
-	static function single(){
+	static function single($purge=false){
 		static $single = [];
 		$class = get_called_class();
+
+		if ($purge) {
+			$single = [];
+		}
 
 		if( empty($single[$class]) ) {
 			$single[$class] = static::getPersisted();

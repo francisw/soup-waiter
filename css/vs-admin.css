@@ -195,8 +195,7 @@ DIV.media-selector {
     width: 100%;
 }
 #scheduler INPUT.button-large {
-    width: 100px;
-    display: block;
+    width: 100%;
     clear: left;
     margin: 5px 20px 10px 0;
 }

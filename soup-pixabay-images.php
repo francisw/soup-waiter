@@ -278,7 +278,7 @@ function media_soup_pixabay_images_tab() {
 
         function call_api(q, p) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'https://pixabay.com/api/?key=27347-23fd1708b1c4f768195a5093b&response_group=high_resolution&lang=' + lang + '&image_type=photo&orientation=horizontal&per_page=' + per_page + '&page=' + p + '&search_term=' + encodeURIComponent(q));
+            xhr.open('GET', 'https://pixabay.com/api/?key=8496593-6b701fe76874be81ba16ace4e&response_group=high_resolution&lang=' + lang + '&image_type=photo&orientation=horizontal&per_page=' + per_page + '&page=' + p + '&search_term=' + encodeURIComponent(q));
             xhr.onreadystatechange = function () {
                 if (this.status == 200 && this.readyState == 4) {
                     var data = JSON.parse(this.responseText);
@@ -306,7 +306,7 @@ function media_soup_pixabay_images_tab() {
             pages = Math.ceil(data.totalHits / per_page);
             var s = '';
             jQuery.each(data.hits, function (k, v) {
-                s += '<div class="item upload" data-url="' + v.largeImageURL + '" data-user="' + v.user + '" data-w="' + v.webformatWidth + '" data-h="' + v.webformatHeight + '"><img src="' + v.previewURL.replace('_150', '_340') + '"><div class="download"><img src="<?= plugin_dir_url( __FILE__ ) . 'img/download.svg' ?>"><div>' + (v.webformatWidth * 2) + '×' + (v.webformatHeight * 2) + '<br><a href="https://pixabay.com/users/' + v.user + '/" target="_blank"">' + v.user + '</a> @ <a href="https://pixabay.com/' + lang + '/photos/?order=popular&image_type=' + image_type + '&orientation=' + orientation + '&q=' + escapejs(q) + '" target="_blank">Pixabay</a></div></div></div>';
+                s += '<div class="item upload" data-url="' + v.largeImageURL + '" data-user="' + v.user + '" data-w="' + v.webformatWidth + '" data-h="' + v.webformatHeight + '"><img src="' + v.webformatURL + '"><div class="download"><img src="<?= plugin_dir_url( __FILE__ ) . 'img/download.svg' ?>"><div>' + (v.webformatWidth * 2) + '×' + (v.webformatHeight * 2) + '<br><a href="https://pixabay.com/users/' + v.user + '/" target="_blank"">' + v.user + '</a> @ <a href="https://pixabay.com/' + lang + '/photos/?order=popular&image_type=' + image_type + '&orientation=' + orientation + '&q=' + escapejs(q) + '" target="_blank">Pixabay</a></div></div></div>';
             });
             jQuery('#soup_pixabay_results').html(jQuery('#soup_pixabay_results').html() + s);
             jQuery('#load_animation').remove();

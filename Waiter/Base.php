@@ -22,6 +22,12 @@ class Base {
 		return null;
 	}
 
+	/**
+	 * @param $name
+	 * @param $value
+	 *
+	 * @throws Exception
+	 */
 	public function __set($name,$value){
 		$method = self::PFX_SET.$name;
 		if(method_exists($this,$method)){
@@ -37,6 +43,12 @@ class Base {
 		$this->persist();
 	}
 
+	/**
+	 * @param $name
+	 *
+	 * @return mixed
+	 * @throws Exception
+	 */
 	public function __get($name){
 		$methods = [self::PFX_GET,self::PFX_IS];
 		foreach ($methods as $method){
@@ -64,4 +76,5 @@ class Base {
 	public function __unset($name){
 		unset($this->$name);
 	}
+
 }

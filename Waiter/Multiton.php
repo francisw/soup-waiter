@@ -28,7 +28,7 @@ class Multiton extends Base  {
 			$SoupMultitonCache[$class] = [];
         }
 
-		if( empty($SoupMultitonCache[$class][$key]) ) {
+		if( !isset($SoupMultitonCache[$class][$key]) || empty($SoupMultitonCache[$class][$key]) ) {
 			$SoupMultitonCache[$class][$key] = static::getPersisted($key);
 			if (!$SoupMultitonCache[$class][$key]) {
 				if ($create){
@@ -39,7 +39,7 @@ class Multiton extends Base  {
 				}
 			}
 		}
-		return $SoupMultitonCache[$class][$key];
+		return @$SoupMultitonCache[$class][$key];
 	}
 
 	static function findAll(){

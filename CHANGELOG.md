@@ -1,5 +1,42 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.2.2 (2018.10.15)
+
+* **Enhancements**:
+- Added Enhanced Multi-user capabilities
+- Enabled switchable multi-user or shared user settings
+- autocreate byLine for future posts as well
+
+* **Bug Fixes**:
+- Corrected error in migration code
+- Fix 'you aren't allowed hereXX' due to new page link style
+- fixed auth failure on connect tab
+- fixed auth-level permission error on connect menu/tab
+- remove false-positive alerts
+- fixed 'next' on owner
+- Fixed tab links for new menu structure
+- removed cause of alerts when rapid clicking in Safari
+- Fixed Dates/times now work in Timezones
+- Always stored as GMT, always localised in browser
+
+## 1.2.0 (2018.08.30)
+
+* **Enhancements**:
+- Each WP user now has their own settings
+- Refactored form submission
+- Added ability to schedule a post at a specified time
+
+* **Bug Fixes**:
+- Some forms complained they could not contact the server
+- Removed slashes from meta keys explicitly
+- Stopped causing blank posts from being created
+- Fixed various bugs in time of posting
+
+## 1.0.18 (2018.03.26)
+
+* **Bug Fixes**:
+- Upgraded Pixabay API to match remote changes
+
 ## 1.0.17 (2018.03.23)
 
 * **Bug Fixes**:
