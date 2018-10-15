@@ -857,7 +857,7 @@ class SoupWaiterAdmin extends Singleton {
 		wp_die();
 	}
 	private function get_recent_posts($page) {
-		$new_post_id = get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
+		$new_post_id = isset($_REQUEST['current'])?$_REQUEST['current']:get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
 		$args = array(
 			'author' => get_current_user_id(),
 			'posts_per_page' => 6,

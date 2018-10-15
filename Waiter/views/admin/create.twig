@@ -523,7 +523,8 @@
                 data: {
                     action: 'soup_recent',
                     _vs_nonce: jQuery('INPUT[name="_vs_nonce"]').val(),
-                    p: page
+                    p: page,
+                    current: {{ new_post.ID }}
                 }
             }
             jQuery.ajax(ajax).done(function(response){
