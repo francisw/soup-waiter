@@ -397,7 +397,6 @@ class SoupWaiterAdmin extends Singleton {
 	 */
 	public function process_post_data(){
 		if (isset($_REQUEST['page']) && 0===strncmp($_REQUEST['page'],'vacation-soup-admin',18) &&
-		    isset($_REQUEST['tab']) &&
 		    !wp_doing_ajax() &&
 		    !empty($_POST)) {
 
