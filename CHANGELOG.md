@@ -3,6 +3,8 @@
 ## 1.2.2 (2018.10.15)
 
 * **Enhancements**:
+- Added Enhanced Multi-user capabilities
+- Enabled switchable multi-user or shared user settings
 - autocreate byLine for future posts as well
 
 * **Bug Fixes**:
