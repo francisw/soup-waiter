@@ -664,7 +664,7 @@ class SoupWaiterAdmin extends Singleton {
 		$newpost = $_POST;
 
 		// When publishing add byline
-		if ('publish'===$_POST['post_status'] &&
+		if (in_array($_POST['post_status'],['publish','future']) &&
 			stripos($newpost['post_content'],'autocreated byline')===false){
 			$newpost['post_content'] .= "<p class='autocreated byline'>Travel Tip created by ".SoupWaiter::single()->owner_name." in association with <a href='https://vacationsoup.com'>Vacation Soup</a></p>";
 		}
