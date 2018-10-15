@@ -610,7 +610,7 @@ class SoupWaiterAdmin extends Singleton {
 		delete_user_meta(get_current_user_id(),'_vs-new-post-id');
 		// SoupWaiter::single()->wp_async_save_post($postId,get_post($postId));
 		if (isset($_GET['p'])){ // if it was an edit, remove the query param
-			header("Location: {$_SERVER['PHP_SELF']}?page=vacation-soup-admin&tab=create");
+			header("Location: {$_SERVER['PHP_SELF']}?page=vacation-soup-admin-create");
 			exit;
 		}
 	}
