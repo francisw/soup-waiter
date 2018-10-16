@@ -859,7 +859,7 @@ class SoupWaiter extends PersistedSingleton {
 	public function needs_syndication(){
 		global $wpdb,$table_prefix;
 
-		if (null === $this->kitchen_sync && !isset($_GET['bypass'])){
+		if (null === $this->kitchen_sync && !isset($_GET['bypass'])  &!defined('SOUP_SYNC_BYPASS')){
             // Faster version than WP_Query generates. Slow speed caused problems for Terry
 			$query = "
 SELECT  count(*)
