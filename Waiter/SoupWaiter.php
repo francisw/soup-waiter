@@ -81,7 +81,10 @@ class SoupWaiter extends PersistedSingleton {
 	 * @var string|null $kitchen_sync the count of posts that need synch
 	 */
 	protected $kitchen_sync;
-
+	/**
+	 * @var bool Called if the host install configures authentication for us, e.g. writers.vs.com
+	 */
+    protected $host_authentication = false;
 	/**
 	 * @param boolean $value Is this site multi-user? Configurations will be stored per-user
 	 */
@@ -90,6 +93,13 @@ class SoupWaiter extends PersistedSingleton {
         SoupWaiter::single(true); // purge the cache so it reloads properly
     }
 
+	/**
+	 * @return bool if we support authentication for the user
+	 */
+    public function canAuthenticate(){
+        if ($this->multiuser && !$this->host_authentication) return true;
+        else return false;
+    }
 	/**
 	 * @return boolean Is this site configured for multi-user
 	 */

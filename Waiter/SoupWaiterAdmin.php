@@ -94,7 +94,7 @@ class SoupWaiterAdmin extends Singleton {
 					case 'vacation-soup-admin-settings':
 					case 'vacation-soup-admin-release':
 					case 'vacation-soup-admin-create':
-					case 'index.php':
+					//case 'index.php':
 						break;
 					default:
 						remove_menu_page($menu_item[2]);
