@@ -758,9 +758,9 @@ class SoupWaiterAdmin extends Singleton {
 			$test_post = get_post($new_post_id);
 			if ($test_post) {
 				$new_post = $test_post->to_array();
-			}
-			if ('trash' === $test_post->post_status){
-				$new_post = null; // Force create new
+				if ('trash' === $test_post->post_status){
+					$new_post = null; // Force create new
+				}
 			}
 		}
 		if (isset($new_post)) {
@@ -859,7 +859,6 @@ class SoupWaiterAdmin extends Singleton {
 	private function get_recent_posts($page) {
 		$new_post_id = isset($_REQUEST['current'])?$_REQUEST['current']:get_user_meta(get_current_user_id(),'_vs-new-post-id',true);
 		$args = array(
-			'author' => get_current_user_id(),
 			'posts_per_page' => 6,
 			'paged' => $page,
 			'orderby' => 'post_date',
@@ -869,6 +868,9 @@ class SoupWaiterAdmin extends Singleton {
 			'post_status' => 'draft, publish, future',
 			'suppress_filters' => true
 		);
+		if (SoupWaiter::is_multiuser()) {
+			$args['author'] = get_current_user_id();
+		}
 		return Timber::get_posts( $args );
 	}
 

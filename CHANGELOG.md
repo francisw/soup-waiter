@@ -1,5 +1,13 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.2.3 (xx.xx.xx)
+
+* **Enhancements**:
+
+* **Bug Fixes**:
+- Recent posts show all user's posts in single user mode
+
+
 ## 1.2.2 (2018.10.15)
 
 * **Enhancements**:
