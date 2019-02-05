@@ -2,7 +2,7 @@
 Contributors: vacationsoup
 Tags: vacationrental, vr, vacation, autopost, str, short term rental, airbnb, homeaway, vrbo, holiday rentals, vacation marketing
 Requires at least: 4.7.0
-Tested up to: 4.9.7
+Tested up to: 5.0.3
 Requires PHP: 5.4.0
 Stable tag: trunk
 License: GPL3
