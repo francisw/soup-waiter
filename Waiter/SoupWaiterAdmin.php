@@ -990,9 +990,7 @@ class SoupWaiterAdmin extends Singleton {
 		$context = $this->get_context('property');
         $properties = $this->get_properties();
 		$newAllowed = 1;
-		if (count($properties) >= 10){
-		    $newAllowed = 0;
-        }
+
         for ($i=0;$i<(count($properties));$i++){
             $property = $properties[$i];
             if (empty($property->title)){ // Then this will be the 'New' property
