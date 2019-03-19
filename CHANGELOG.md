@@ -3,6 +3,7 @@
 ## 1.2.3 (xx.xx.xx)
 
 * **Enhancements**:
+- Removed 10 property limit 
 
 * **Bug Fixes**:
 - Recent posts show all user's posts in single user mode
