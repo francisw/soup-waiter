@@ -2,7 +2,7 @@
 Contributors: vacationsoup
 Tags: vacationrental, vr, vacation, autopost, str, short term rental, airbnb, homeaway, vrbo, holiday rentals, vacation marketing
 Requires at least: 4.7.0
-Tested up to: 5.0.3
+Tested up to: 5.1.1
 Requires PHP: 5.4.0
 Stable tag: trunk
 License: GPL3
@@ -15,9 +15,9 @@ Become a marketing expert for your Vacation Rental Property with this simple-to-
 Vacation Soup exists to empower VR owners to break-away from the Online Travel Agents that eat away at your hard-earned profit.
 
 We provide:
+* [The Soup](https://vacationsoup.com "Vacation Soup") itself, the only destination based travel site written by VR owners, with local secrets, ideas and properties.
 * [expert training](https://learn.vacationsoup.com "The Learning Centre") in all aspects of Vacation Rental marketing with hundreds of hours of video tutorials from Alan Egan and the team.
 * A vibrant [community](https://community.vacationsoup.com "Community") of experts and owners just like you who strive for independence, and want to help you.
-* [The Soup](https://vacationsoup.com "Vacation Soup") itself, the only destination based travel site written by VR owners, with local secrets, ideas and properties.
 
 What traveller starts their dream vacation by looking for a 4-bed 2-bath property? The secret to Vacation Rental marketing is talking about the experience: the aroma of orange blossom in April, the bustling market, the beach cafe or the best golf courses.
 
