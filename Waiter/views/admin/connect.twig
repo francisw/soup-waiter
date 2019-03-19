@@ -146,29 +146,37 @@
         <div id="connect-params" class="vs-panel row field-container">
             <div id="title" class="col-sm-12">
                 <h1>The Soup Settings</h1>
-                <p>Please enter the username (email) and password you <a href="https://vacationsoup.com/owners-area/#login" target="_blank">registered with Vacation Soup</a>. Once set, you cannot change your username. </p>
-                {% if admin.error_msg %}
-                    <div id="error-message" class="error">{{ admin.error_msg }}</div>
-                {% endif %}
-                <div class="field">
-                    <label for="kitchen_user">
-                        Username <span class="required">*</span>
-                    </label>
-                    <input type="text" class="no-persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="new-password" value="{{ soup.kitchen_user }}"/>
-                </div>
-                <div class="field required">
-                    <label for="kitchen_password">
-                        Password <span class="required">*</span>
-                    </label>
-                    <input type="password" class="no-persist" name="SoupWaiter.kitchen_password" id="kitchen_password" autocomplete="new-password" value=""
-                    data-persist-action="doAllServiceChecks()"/>
-                </div>
-                <div class="label-indent">
-                    {% if autoSync %}
-                        <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. {{ autoSync > 1 ? 'They':'It' }} will synchronize in the background.</div>
+                {% if userType == "administrator" or ( soup.multiuser and not soup.host_authentication ) %}
+                    <p>Please enter the username (email) and password you <a href="https://vacationsoup.com/owners-area/#login" target="_blank">registered with Vacation Soup</a>. Once set, you cannot change your username. </p>
+                    {% if admin.error_msg %}
+                        <div id="error-message" class="error">{{ admin.error_msg }}</div>
                     {% endif %}
-                    <input type="submit" value="submit" class="margin_5_ no-unload" id="no-done">
-                </div>
+                    <div class="field">
+                        <label for="kitchen_user">
+                            Username <span class="required">*</span>
+                        </label>
+                        <input type="text" class="no-persist" name="SoupWaiter.kitchen_user" id="kitchen_user" autocomplete="new-password" value="{{ soup.kitchen_user }}"/>
+                    </div>
+                    <div class="field required">
+                        <label for="kitchen_password">
+                            Password <span class="required">*</span>
+                        </label>
+                        <input type="password" class="no-persist" name="SoupWaiter.kitchen_password" id="kitchen_password" autocomplete="new-password" value=""
+                        data-persist-action="doAllServiceChecks()"/>
+                    </div>
+                    <div class="label-indent">
+                        {% if autoSync %}
+                            <div id="sync-message" class="error">You have <span id="sync-message-count">{{ autoSync }}</span> post{{ autoSync > 1 ? 's' }} waiting to send to Vacation Soup. {{ autoSync > 1 ? 'They':'It' }} will synchronize in the background.</div>
+                        {% endif %}
+                        <input type="submit" value="submit" class="margin_5_ no-unload" id="no-done">
+                    </div>
+                {% else %}
+                    {% if soup.host_authentication %}
+                    <p>You are connected to Vacation Soup as {{ current_user.name }}.</p>
+                    {% else %}
+                    <p>The connection to Vacation Soup is not configured. Please contact the Site Administrator</p>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
