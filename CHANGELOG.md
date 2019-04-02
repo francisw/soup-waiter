@@ -7,6 +7,7 @@
 
 * **Bug Fixes**:
 - Recent posts show all user's posts in single user mode
+- Fixed sometimes not synchronising
 
 
 ## 1.2.2 (2018.10.15)

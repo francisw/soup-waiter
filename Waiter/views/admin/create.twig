@@ -704,7 +704,17 @@
         overflow: scroll;
     }
     .soup-submit {
-        margin: auto;
+        margin: 10px 0 0 0;
+    }
+    #publish_error:empty {
+        display: none;
+    }
+    #publish_error {
+        width: 100%;
+    }
+    DIV.row.actions {
+        justify-content: space-between;
+        margin-top: -10px;
     }
 </style>
     {%- set published = new_post.post_status in [ 'publish','future'] -%}
@@ -854,6 +864,16 @@
                         </a>
                     </div>
 
+                    {% if published %}
+                    <div class="soup-submit">
+                        <button type="submit"
+                                name="post_status"
+                                id="save-post"
+                                class="button button-secondary button-large"
+                                onclick="return doDraftValidation(event) ;"
+                                value="publish">update</button>
+                    </div>
+                    {% endif %}
                     <div class="soup-submit">
                         <button type="submit"
                                 name="post_status"

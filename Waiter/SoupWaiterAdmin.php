@@ -669,7 +669,7 @@ class SoupWaiterAdmin extends Singleton {
 		}
 
 		$waiter = SoupWaiter::single();
-		$waiter->skipSyndicate = true;
+		$waiter->skipSyndicate = true; // Rather than lots of updates to VS, make changes then sync
 		$postId = wp_insert_post($newpost,$error_obj);
 		if (!is_wp_error($postId)){
 			wp_set_post_tags($postId, $_POST['tags']);
@@ -689,6 +689,8 @@ class SoupWaiterAdmin extends Singleton {
 		} else return false;
 		// Because we skipped syndication above, we now need to do it
 		$waiter->skipSyndicate = false;
+		$postId = wp_update_post($newpost,$error_obj);
+
 
 		unset($_POST['post_status']); // Stop anything else from processing this post
 		return $postId; // Causes a fall-through to create the page if we want, as we are not redirecting after persistence
