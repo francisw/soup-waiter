@@ -1,5 +1,11 @@
 # Changelog for Vacation Soup Waiter
 
+## 1.2.4 (2019.04.02)
+
+* **Bug Fixes**:
+- Fixed sometimes not synchronising
+- Added Update button in Create
+
 ## 1.2.3 (xx.xx.xx)
 
 * **Enhancements**:
