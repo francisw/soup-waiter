@@ -358,7 +358,10 @@ class SoupWaiter extends PersistedSingleton {
 			$response = wp_remote_post($auth, $request);
 
 			if (!$this->api_success($response)) {
-			    echo '<!-- FW '.$this->api_error_message($response).' -->';
+				ob_start();
+				var_dump($response);
+				$out = ob_get_clean();
+				echo '<!-- FW '.$this->api_error_message($response).' / '.htmlentities($out).' -->';
 				throw new \Exception($this->api_error_message($response));
 			}
 			$tokenResponse = json_decode( wp_remote_retrieve_body( $response ) );
