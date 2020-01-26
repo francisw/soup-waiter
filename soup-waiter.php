@@ -76,3 +76,22 @@ function soup_waiter_init(){
 	SoupWaiter::single()->init();
 }
 add_action ('init','Waiter\soup_waiter_init');
+
+add_shortcode('soup_ping','Waiter\soup_ping');
+function soup_ping($attributes)
+{
+	$errno = $errstr = null;
+	$attributes = shortcode_atts([
+		'host' => null,
+		'port'=> 443,
+		'timeout'=> 30,
+		'tag'=> 'pre',
+	],$attributes);
+
+	$tB = microtime(true);
+	$fP = fSockOpen($attributes['host'], $attributes['port'], $errno, $errstr, $attributes['timeout']);
+	if (!$fP) { return "<{$attributes['tag']}>Error connecting to {$attributes['host']} [".$errno."]: ".$errstr."</{$attributes['tag']}>"; }
+	$tA = microtime(true);
+	return "<{$attributes['tag']}>{$attributes['host']}: ".round((($tA - $tB) * 1000), 0)." ms\n</{$attributes['tag']}>";
+}
+
