@@ -1012,40 +1012,9 @@ class SoupWaiterAdmin extends Singleton {
 	private function get_connect_context(){
 		// Grab the basics
 		$context = $this->get_context('connect');
-
-		/*$context['social']['FB'] = FB::single();
-		$context['social']['TW'] = TW::single();
-		$context['social']['PI'] = PI::single();
-		$context['social']['GP'] = GP::single();
-		$context['social']['LI'] = LI::single();
-		$context['social']['RD'] = RD::single();
-		$context['social']['SU'] = SU::single();
-		$context['social']['IG'] = IG::single();*/
-		/*
-		 * Still to add
-		 * vk.com
-		 * Weibo
-		 * Xing
-		 * renren
-		 * weixin (wechat)
-		 */
-/*		 $sql = $wpdb->prepare( "
-    SELECT DISTINCT p.*,
-    FROM $wpdb->posts p
-    INNER JOIN $wpdb->postmeta pm ON p.ID = pm.post_id
-    WHERE $user_id.ID=%d
-    ",
-			$earth_radius,
-			$attributes['latitude'],
-			$attributes['longitude'],
-			$attributes['latitude'],
-			$type,
-			$offset,
-			$limit
-		);
-
-		$posts = $wpdb->get_results( $sql, OBJECT);
-*/
+		if (!soup_ping(['bool'=>true])){
+			$this->error_msg = "<h2>Error</h2>Unable to connect to vacationsoup.com, please contact your hosting provider with the following error:\n".soup_ping();
+		}
 		return $context;
 	}
 

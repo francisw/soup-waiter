@@ -147,7 +147,7 @@
             <div id="title" class="col-sm-12">
                 <h1>The Soup Settings</h1>
                 {% if userType == "administrator" or ( soup.multiuser and not soup.host_authentication ) %}
-                    <p>Please enter the username (email) and password you <a href="https://vacationsoup.com/owners-area/#login" target="_blank">registered with Vacation Soup</a>. Once set, you cannot change your username. </p>
+                    <p>Please enter the username (email) and password you <a href="https://vacationsoup.com/owners-area/#login" target="_blank">registered with Vacation Soup</a>. </p>
                     {% if admin.error_msg %}
                         <div id="error-message" class="error">{{ admin.error_msg }}</div>
                     {% endif %}

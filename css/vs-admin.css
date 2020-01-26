@@ -525,6 +525,10 @@ I.fa-refresh.active {
 .error.vs {
     margin-top: 15px;
 }
+#error-message {
+    overflow: scroll;
+}
+
 
 .tab-owner.requested-tab-create SPAN.required,
 .tab-property.requested-tab-create SPAN.required,

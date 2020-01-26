@@ -78,7 +78,7 @@ function soup_waiter_init(){
 add_action ('init','Waiter\soup_waiter_init');
 
 add_shortcode('soup_ping','Waiter\soup_ping');
-function soup_ping($attributes)
+function soup_ping($attributes=[])
 {
 	$errno = $errstr = null;
 	$attributes = shortcode_atts([
@@ -86,11 +86,15 @@ function soup_ping($attributes)
 		'port'=> 443,
 		'timeout'=> 30,
 		'tag'=> 'pre',
+		'bool'=>false,
 	],$attributes);
 
 	$tB = microtime(true);
-	$fP = fSockOpen($attributes['host'], $attributes['port'], $errno, $errstr, $attributes['timeout']);
-	if (!$fP) { return "<{$attributes['tag']}>Error connecting to {$attributes['host']} [".$errno."]: ".$errstr."</{$attributes['tag']}>"; }
+	$fP = @fSockOpen($attributes['host'], $attributes['port'], $errno, $errstr, $attributes['timeout']);
+	if (!$fP) {
+		if ($attributes['bool']) return false;
+		else return "<{$attributes['tag']}>Error connecting to {$attributes['host']} [".$errno."]: ".$errstr."</{$attributes['tag']}>";
+	}
 	$tA = microtime(true);
 	return "<{$attributes['tag']}>{$attributes['host']}: ".round((($tA - $tB) * 1000), 0)." ms\n</{$attributes['tag']}>";
 }
